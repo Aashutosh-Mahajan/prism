@@ -183,4 +183,4 @@ and report security issues as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-[MIT](LICENSE) © AlgoSmiths
+[MIT](LICENSE) © Aashutosh Mahajan

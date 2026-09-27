@@ -6,7 +6,7 @@
 This file is the source of truth for any coding agent building PRISM. Read it fully before writing code. When something here conflicts with a quick instinct, this file wins; when something here seems wrong, raise it with the user instead of silently diverging.
 
 - Package: `prism-ctx` (PyPI) · CLI: `prism` · Python 3.10+
-- Repo: `github.com/algosmiths/prism` · Built by AlgoSmiths
+- Repo: `github.com/Aashutosh-Mahajan/prism` · Built by Aashutosh Mahajan
 
 Implementation tracking: [docs/phase-status.md](docs/phase-status.md) records verified coverage,
 test results, and remaining phase acceptance work. The roadmap below describes the target,
@@ -680,4 +680,4 @@ Do not start a phase until the previous phase's tests (especially incremental eq
 7. Is the logic duplicated between CLI, MCP, and the viewer API? → Move it into the library layer.
 
 ---
-*Derived from the PRISM project brief (AlgoSmiths), extended with the navigator, MCP server, narrator, freshness, agent-driven audit, graph visualizer, and opt-in consent design.*
+*Derived from the PRISM project brief, extended with the navigator, MCP server, narrator, freshness, agent-driven audit, graph visualizer, and opt-in consent design.*

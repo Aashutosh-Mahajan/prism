@@ -9,7 +9,7 @@ description = "A persistent, local context layer for AI coding agents."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "AlgoSmiths" }]
+authors = [{ name = "Aashutosh Mahajan" }]
 keywords = ["ai", "coding-agent", "code-index", "mcp", "context"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -47,7 +47,11 @@ dev = ["pytest>=7", "ruff>=0.5", "mypy>=1.8"]
 prism = "prism.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/algosmiths/prism"
+Homepage = "https://github.com/Aashutosh-Mahajan/prism"
+Repository = "https://github.com/Aashutosh-Mahajan/prism"
+Documentation = "https://github.com/Aashutosh-Mahajan/prism/tree/main/docs"
+Issues = "https://github.com/Aashutosh-Mahajan/prism/issues"
+Changelog = "https://github.com/Aashutosh-Mahajan/prism/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 include = ["prism*"]
