@@ -28,6 +28,8 @@ export interface GNode {
   change?: string;
   files?: number;
   community?: number; // computed by PRISM (Louvain over imports + calls); -1 for tests
+  module_count?: number;
+  entry_point?: string | null;
 }
 
 export interface GEdge {
@@ -94,6 +96,8 @@ export interface Meta {
   git: boolean;
   has_routes: boolean;
   static: boolean;
+  /** Levels available in a static export (all levels when served live). */
+  levels?: string[];
 }
 
 export type Details = Record<string, any>;

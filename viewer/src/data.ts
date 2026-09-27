@@ -35,21 +35,40 @@ export class ApiError extends Error {
   }
 }
 
+export const OFFLINE_MESSAGE = "Can't reach the PRISM server. Is `prism view` still running? Restart it and open the new link it prints.";
+export const SESSION_MESSAGE = "This page's session has ended (the server was restarted). Open the new link printed by `prism view`.";
+
+/** fetch() rejects with a bare "Failed to fetch" TypeError when the server is gone; say what happened instead. */
+async function request(url: string, init: RequestInit): Promise<Response> {
+  let res: Response;
+  try {
+    res = await fetch(url, { credentials: "same-origin", ...init });
+  } catch {
+    throw new ApiError(OFFLINE_MESSAGE, { error: "offline" });
+  }
+  if (res.status === 401) throw new ApiError(SESSION_MESSAGE, { error: "unauthorized" });
+  return res;
+}
+
 async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url, { credentials: "same-origin" });
-  const body = await res.json();
+  const res = await request(url, {});
+  let body: Record<string, unknown>;
+  try {
+    body = await res.json();
+  } catch {
+    throw new ApiError(`The server sent an unreadable response (HTTP ${res.status}).`, { error: "bad_response" });
+  }
   if (!res.ok) throw new ApiError(String(body.message ?? res.statusText), body);
   return body as T;
 }
 
 async function postJson(url: string, body: unknown): Promise<void> {
-  const res = await fetch(url, {
+  const res = await request(url, {
     method: "POST",
-    credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new ApiError("save failed", await res.json().catch(() => ({})));
+  if (!res.ok) throw new ApiError("Saving failed on the server.", await res.json().catch(() => ({})));
 }
 
 function queryString(q: GraphQuery): string {
@@ -158,10 +177,17 @@ function globToRegExp(glob: string): RegExp {
 
 export class StaticSource implements DataSource {
   readonly live = false;
-  constructor(private readonly bundle: StaticBundle) {}
+  /** Exports opened from the same origin must not share layout or views. */
+  private readonly prefix: string;
+
+  constructor(private readonly bundle: StaticBundle) {
+    const sizes = Object.entries(bundle.graphs).map(([k, g]) => `${k}:${g.nodes.length}`).sort().join(",");
+    this.prefix = `prism:${bundle.meta.project ?? "export"}:${sizes.length}:${sizes.slice(0, 64)}`;
+  }
 
   async meta() {
-    return { ...this.bundle.meta, static: true };
+    const levels = [...new Set(Object.keys(this.bundle.graphs).map((k) => k.split("|")[0]))];
+    return { ...this.bundle.meta, static: true, levels };
   }
 
   private base(level: string, layer: string): GraphPayload {
@@ -277,21 +303,21 @@ export class StaticSource implements DataSource {
 
   async layout() {
     try {
-      return JSON.parse(localStorage.getItem("prism-layout") ?? "{}");
+      return JSON.parse(localStorage.getItem(`${this.prefix}:layout`) ?? "{}");
     } catch {
       return {};
     }
   }
   async saveLayout(positions: Record<string, [number, number]>) {
     try {
-      localStorage.setItem("prism-layout", JSON.stringify(positions));
+      localStorage.setItem(`${this.prefix}:layout`, JSON.stringify(positions));
     } catch {
       /* storage may be unavailable */
     }
   }
   async views() {
     try {
-      return JSON.parse(localStorage.getItem("prism-views") ?? "{}");
+      return JSON.parse(localStorage.getItem(`${this.prefix}:views`) ?? "{}");
     } catch {
       return {};
     }
@@ -300,7 +326,7 @@ export class StaticSource implements DataSource {
     const views = await this.views();
     views[name] = state;
     try {
-      localStorage.setItem("prism-views", JSON.stringify(views));
+      localStorage.setItem(`${this.prefix}:views`, JSON.stringify(views));
     } catch {
       /* ignore */
     }
