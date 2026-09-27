@@ -58,7 +58,7 @@ BINARY_SNIFF_BYTES = 8192
 @dataclass
 class _ScopedSpec:
     base: str  # repo-relative directory the ignore file lives in ("" for root)
-    spec: pathspec.PathSpec
+    spec: pathspec.GitIgnoreSpec
 
     def check(self, rel: str, is_dir: bool) -> bool | None:
         """True = ignored, False = re-included by a `!` pattern, None = no opinion."""
@@ -70,7 +70,7 @@ class _ScopedSpec:
         return result
 
 
-def _load_spec(path: Path) -> pathspec.PathSpec | None:
+def _load_spec(path: Path) -> pathspec.GitIgnoreSpec | None:
     try:
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
     except OSError:

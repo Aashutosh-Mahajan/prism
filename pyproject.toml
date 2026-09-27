@@ -71,7 +71,8 @@ ignore = ["RUF001", "RUF002", "RUF003", "E501"]
 
 [tool.mypy]
 strict = true
-python_version = "3.10"
+# Checked against the interpreter it runs on (CI covers 3.10-3.14), so the
+# `tomllib` / `tomli` branches are each checked where they actually apply.
 packages = ["prism"]
 
 [[tool.mypy.overrides]]
