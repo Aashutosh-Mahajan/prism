@@ -4,169 +4,231 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PRISM Graph</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 27H3z' fill='none' stroke='%236c8cff' stroke-width='3'/%3E%3C/svg%3E" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 4 28 26H4z' fill='none' stroke='%238f9dff' stroke-width='2.5'/%3E%3C/svg%3E" />
     <script type="module" crossorigin src="./assets/viewer.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/viewer.css">
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand" title="PRISM code graph">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 29 27H3z" /></svg>
-        <span class="brand-name">PRISM</span><span class="brand-divider" aria-hidden="true"></span>
-        <span class="project" id="project"></span>
+    <a class="skip" href="#graph">Skip to graph</a>
+    <header class="toolbar">
+      <div class="brand">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 28 26H4z" /><path class="ray" d="M2 15h9" /></svg>
+        <span class="brand-name">PRISM</span>
+        <span class="project" id="project" title="Project"></span>
       </div>
-      <div class="search">
-        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg>
-        <input id="search" type="search" role="combobox" aria-label="Search symbols, files, and routes" aria-autocomplete="list" aria-controls="search-results" aria-expanded="false" placeholder="Search symbols, files, routes…  ( / )" autocomplete="off" spellcheck="false" />
-        <ul id="search-results" class="dropdown" role="listbox" aria-label="Search results" hidden></ul>
+
+      <div class="segmented" id="level" role="radiogroup" aria-label="Level of detail">
+        <button type="button" role="radio" data-level="package" aria-checked="false">Packages <kbd>1</kbd></button>
+        <button type="button" role="radio" data-level="file" aria-checked="false">Files <kbd>2</kbd></button>
+        <button type="button" role="radio" data-level="symbol" aria-checked="false">Symbols <kbd>3</kbd></button>
       </div>
-      <div class="topbar-actions">
-        <button id="toggle-sidebar" class="icon" title="Filters and tools" aria-label="Filters and tools"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/></svg></button>
-        <button id="theme" class="icon" title="Toggle light/dark theme" aria-label="Toggle light/dark theme"><svg viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10Z"/></svg></button>
-        <button id="help" class="icon" title="Keyboard shortcuts" aria-label="Keyboard shortcuts"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 9h1m3 0h1m3 0h1M7 13h1m3 0h1m3 0h1M8 16h8"/></svg></button>
-      </div>
-    </header>
-    <div class="viewbar">
-      <div class="segmented" id="level" role="tablist" aria-label="Level of detail">
-        <button data-level="package" role="tab">Packages</button>
-        <button data-level="file" role="tab">Files</button>
-        <button data-level="symbol" role="tab">Symbols</button>
-      </div>
-      <label class="select">
-        <span>Layer</span>
-        <select id="layer" aria-label="Layer">
+
+      <label class="select-field">
+        <span>Show</span>
+        <select id="layer">
           <option value="import">Imports</option>
           <option value="call">Calls</option>
           <option value="tests">Tests</option>
-          <option value="cochange">Co-change</option>
+          <option value="cochange">Changed together</option>
           <option value="routes">Routes</option>
         </select>
       </label>
-      <label class="select">
-        <span>Color</span>
-        <select id="color-by" aria-label="Color">
-          <option value="group">Module</option>
-          <option value="community">Community</option>
-          <option value="risk">Risk</option>
-          <option value="findings">Audit findings</option>
-          <option value="owner">Owner</option>
-          <option value="recency">Recency</option>
-          <option value="kind">Kind</option>
-          <option value="language">Language</option>
-        </select>
-      </label>
-      <label class="select">
-        <span>Size</span>
-        <select id="size-by" aria-label="Size">
-          <option value="rank">Importance</option>
-          <option value="loc">Lines of code</option>
-          <option value="fan_in">Fan-in</option>
-          <option value="blast">Blast radius</option>
-        </select>
-      </label>
-    </div>
 
-    <main class="workspace">
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-heading"><h2>Explore</h2><span>Shape your view</span></div>
-        <details open>
-          <summary>Filters</summary>
-          <label class="field"><span>Path glob</span><input id="f-path" placeholder="src/pricing/*" spellcheck="false" /></label>
-          <div class="field">
-            <span>Kinds</span>
-            <div class="chips" id="f-kinds"></div>
+      <div class="search">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4 4" /></svg>
+        <input id="search" type="search" role="combobox" aria-label="Search symbols, files, and routes"
+          aria-autocomplete="list" aria-controls="search-results" aria-expanded="false"
+          placeholder="Search code" autocomplete="off" spellcheck="false" />
+        <kbd class="search-key" aria-hidden="true">/</kbd>
+        <ul id="search-results" class="dropdown" role="listbox" aria-label="Search results" hidden></ul>
+      </div>
+
+      <div class="toolbar-actions">
+        <button type="button" id="toggle-drawer" class="icon" aria-controls="drawer" aria-expanded="true" title="Nodes and tools">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></svg>
+          <span class="sr-only">Nodes and tools</span>
+        </button>
+        <button type="button" id="theme" class="icon" title="Switch theme">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10Z" /></svg>
+          <span class="sr-only">Switch between dark and light theme</span>
+        </button>
+        <button type="button" id="help" class="icon" title="Keyboard shortcuts">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5" /><path d="M7 10h1m3 0h2m3 0h1M8 14h8" /></svg>
+          <span class="sr-only">Keyboard shortcuts</span>
+        </button>
+      </div>
+    </header>
+    <div class="spectrum" id="spectrum" aria-hidden="true"></div>
+
+    <main class="workspace" id="workspace">
+      <aside class="drawer" id="drawer" aria-label="Nodes and tools">
+        <div class="tabs" role="tablist" aria-label="Drawer">
+          <button type="button" role="tab" id="tab-nodes" aria-controls="pane-nodes" aria-selected="true">Nodes <span class="count" id="node-count"></span></button>
+          <button type="button" role="tab" id="tab-explore" aria-controls="pane-explore" aria-selected="false" tabindex="-1">Explore</button>
+        </div>
+
+        <section class="pane" id="pane-nodes" role="tabpanel" aria-labelledby="tab-nodes">
+          <div class="list-tools">
+            <input id="list-filter" type="search" placeholder="Filter this list" aria-label="Filter the node list" spellcheck="false" autocomplete="off" />
+            <label class="select-field compact">
+              <span class="sr-only">Sort nodes by</span>
+              <select id="list-sort" aria-label="Sort nodes by">
+                <option value="rank">Most important</option>
+                <option value="fan_in">Most depended on</option>
+                <option value="risk">Riskiest</option>
+                <option value="loc">Largest</option>
+                <option value="name">Name</option>
+              </select>
+            </label>
           </div>
-          <label class="check"><input type="checkbox" id="f-hide-tests" /> Hide tests</label>
-          <label class="check"><input type="checkbox" id="f-orphans" /> Orphans only</label>
-          <label class="field"><span>Min importance <output id="f-rank-out">0</output></span><input type="range" id="f-rank" min="0" max="1" step="0.01" value="0" /></label>
-          <label class="field"><span>Risk ≥ <output id="f-risk-out">0</output></span><input type="range" id="f-risk" min="0" max="1" step="0.05" value="0" /></label>
-          <label class="field"><span>Changed since (git ref)</span><input id="f-changed" placeholder="main, HEAD~5…" spellcheck="false" /></label>
-          <div class="row"><button id="f-apply" class="primary">Apply</button><button id="f-reset">Reset</button></div>
-        </details>
+          <div class="node-list" id="node-list" role="listbox" tabindex="0" aria-label="Nodes in the current view" aria-activedescendant="">
+            <div class="node-list-spacer" id="node-list-spacer"></div>
+          </div>
+        </section>
 
-        <details open>
-          <summary>Local graph</summary>
-          <p class="muted" id="local-info">Select a node and press <kbd>L</kbd>.</p>
-          <label class="field"><span>Depth <output id="depth-out">2</output></span><input type="range" id="depth" min="1" max="4" step="1" value="2" /></label>
-          <button id="local-clear">Show whole graph</button>
-        </details>
+        <section class="pane" id="pane-explore" role="tabpanel" aria-labelledby="tab-explore" hidden>
+          <details open>
+            <summary>Filters</summary>
+            <label class="field"><span>Path</span><input id="f-path" placeholder="src/pricing/*" spellcheck="false" /></label>
+            <fieldset class="field">
+              <legend>Kinds</legend>
+              <div class="chips" id="f-kinds"></div>
+            </fieldset>
+            <label class="check"><input type="checkbox" id="f-hide-tests" /> Hide tests</label>
+            <label class="check"><input type="checkbox" id="f-orphans" /> Only unconnected nodes</label>
+            <label class="field"><span>Minimum importance <output id="f-rank-out" for="f-rank">0</output></span><input type="range" id="f-rank" min="0" max="1" step="0.01" value="0" /></label>
+            <label class="field"><span>Minimum risk <output id="f-risk-out" for="f-risk">0</output></span><input type="range" id="f-risk" min="0" max="1" step="0.05" value="0" /></label>
+            <label class="field"><span>Changed since (git ref)</span><input id="f-changed" placeholder="main or HEAD~5" spellcheck="false" /></label>
+            <div class="row"><button type="button" id="f-apply" class="primary">Apply filters</button><button type="button" id="f-reset">Reset</button></div>
+          </details>
 
-        <details>
-          <summary>Overlays</summary>
-          <label class="check"><input type="checkbox" id="o-cycles" checked /> Import cycles (red)</label>
-          <label class="check"><input type="checkbox" id="o-dead" /> Dead-code candidates</label>
-          <label class="check"><input type="checkbox" id="o-activity" checked /> Agent activity trail</label>
-          <label class="check"><input type="checkbox" id="o-labels" checked /> Labels</label>
-          <label class="field"><span>Diff since (git ref or <code>drift</code>)</span><input id="o-diff" placeholder="HEAD~10" spellcheck="false" /></label>
-          <div class="row"><button id="o-diff-go">Show diff</button><button id="o-clear">Clear overlays</button></div>
-        </details>
+          <details open>
+            <summary>Focus</summary>
+            <p class="hint" id="local-info">Select a node, then press <kbd>L</kbd> to show only its neighbourhood.</p>
+            <label class="field"><span>Hops <output id="depth-out" for="depth">2</output></span><input type="range" id="depth" min="1" max="4" step="1" value="2" /></label>
+            <button type="button" id="local-clear">Show everything</button>
+          </details>
 
-        <details>
-          <summary>Path finder</summary>
-          <label class="field"><span>From</span><input id="p-from" placeholder="api/orders.py" spellcheck="false" /></label>
-          <label class="field"><span>To</span><input id="p-to" placeholder="db/session.py" spellcheck="false" /></label>
-          <button id="p-go">Find shortest path</button>
-          <p class="muted" id="p-info"></p>
-        </details>
+          <details>
+            <summary>Overlays</summary>
+            <label class="check"><input type="checkbox" id="o-cycles" checked /> Import cycles</label>
+            <label class="check"><input type="checkbox" id="o-dead" /> Dead-code candidates</label>
+            <label class="check"><input type="checkbox" id="o-activity" checked /> Agent activity</label>
+            <label class="check"><input type="checkbox" id="o-labels" checked /> Labels</label>
+            <label class="field"><span>Changes since (git ref, or <code>drift</code>)</span><input id="o-diff" placeholder="HEAD~10" spellcheck="false" /></label>
+            <div class="row"><button type="button" id="o-diff-go">Show changes</button><button type="button" id="o-clear">Clear overlays</button></div>
+          </details>
 
-        <details>
-          <summary>Physics</summary>
-          <label class="check"><input type="checkbox" id="ph-run" /> Layout running</label>
-          <label class="field"><span>Center force <output id="ph-gravity-out">1</output></span><input type="range" id="ph-gravity" min="0.05" max="10" step="0.05" value="1" /></label>
-          <label class="field"><span>Repel <output id="ph-scaling-out">20</output></span><input type="range" id="ph-scaling" min="1" max="80" step="1" value="20" /></label>
-          <label class="field"><span>Link force <output id="ph-weight-out">1</output></span><input type="range" id="ph-weight" min="0" max="2" step="0.1" value="1" /></label>
-          <label class="field"><span>Damping <output id="ph-slow-out">5</output></span><input type="range" id="ph-slow" min="1" max="30" step="1" value="5" /></label>
-          <label class="check"><input type="checkbox" id="ph-linlog" /> LinLog (tighter clusters)</label>
-          <label class="check"><input type="checkbox" id="ph-strong" checked /> Strong gravity (keep orphans close)</label>
-          <div class="row"><button id="ph-reset">Re-layout</button><button id="ph-unpin">Unpin all</button></div>
-        </details>
+          <details>
+            <summary>Path finder</summary>
+            <label class="field"><span>From</span><input id="p-from" placeholder="api/orders.py" spellcheck="false" /></label>
+            <label class="field"><span>To</span><input id="p-to" placeholder="db/session.py" spellcheck="false" /></label>
+            <button type="button" id="p-go">Find shortest path</button>
+            <p class="hint" id="p-info" aria-live="polite"></p>
+          </details>
 
-        <details>
-          <summary>Saved views</summary>
-          <div class="row"><input id="v-name" placeholder="view name" spellcheck="false" /><button id="v-save">Save</button></div>
-          <ul id="v-list" class="list"></ul>
-        </details>
+          <details>
+            <summary>Layout</summary>
+            <label class="check"><input type="checkbox" id="ph-run" /> Keep arranging</label>
+            <label class="field"><span>Pull to centre <output id="ph-gravity-out" for="ph-gravity">1</output></span><input type="range" id="ph-gravity" min="0.05" max="10" step="0.05" value="1" /></label>
+            <label class="field"><span>Spread <output id="ph-scaling-out" for="ph-scaling">12</output></span><input type="range" id="ph-scaling" min="1" max="80" step="1" value="12" /></label>
+            <label class="field"><span>Link strength <output id="ph-weight-out" for="ph-weight">1</output></span><input type="range" id="ph-weight" min="0" max="2" step="0.1" value="1" /></label>
+            <label class="field"><span>Settling speed <output id="ph-slow-out" for="ph-slow">4</output></span><input type="range" id="ph-slow" min="1" max="30" step="1" value="4" /></label>
+            <label class="check"><input type="checkbox" id="ph-linlog" checked /> Tighter clusters</label>
+            <label class="check"><input type="checkbox" id="ph-strong" /> Keep loose nodes close</label>
+            <div class="row"><button type="button" id="ph-reset">Rearrange</button><button type="button" id="ph-unpin">Unpin all</button></div>
+          </details>
+
+          <details>
+            <summary>Saved views</summary>
+            <div class="row"><input id="v-name" placeholder="View name" aria-label="View name" spellcheck="false" /><button type="button" id="v-save">Save</button></div>
+            <ul id="v-list" class="plain-list"></ul>
+          </details>
+        </section>
       </aside>
 
-      <section class="stage">
-        <div class="map-heading"><h1>Code atlas</h1><p>Explore the connections behind your code.</p></div>
-        <nav class="breadcrumb" id="breadcrumb"></nav>
-        <div id="graph" class="graph" tabindex="0" aria-label="Code graph"></div>
-        <div class="legend" id="legend"></div>
-        <div class="toast" id="toast" role="status" hidden></div>
-        <div class="empty" id="empty" hidden></div>
-        <div class="map-controls" aria-label="Graph camera">
-          <button class="icon" id="zoom-in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg></button>
-          <button class="icon" id="zoom-out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
-          <button class="icon" id="zoom-fit" aria-label="Fit graph" title="Fit graph"><svg viewBox="0 0 24 24"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"/></svg></button>
+      <section class="stage" id="stage" aria-label="Code graph">
+        <div id="graph" class="graph" tabindex="0" role="application"
+          aria-roledescription="code graph" aria-label="Code graph. Use arrow keys to move between nodes, Enter to inspect."
+          aria-describedby="graph-focus"></div>
+        <div class="scope" id="scope">
+          <div class="scope-title" id="scope-title"></div>
+          <nav class="crumbs" id="breadcrumb" aria-label="Scope"></nav>
         </div>
-        <div class="map-hint">Scroll to zoom <span>·</span> Drag to explore <span>·</span> Double-click to dive in</div>
+        <div class="hovercard" id="hovercard" aria-hidden="true" hidden></div>
+        <div class="encoding" id="encoding">
+          <button type="button" class="encoding-title" id="encoding-toggle" aria-expanded="true" aria-controls="encoding-body">Legend</button>
+          <div class="encoding-body" id="encoding-body">
+            <div class="encoding-selects">
+              <label class="select-field compact"><span>Colour</span>
+                <select id="color-by">
+                  <option value="group">Module</option>
+                  <option value="community">Community</option>
+                  <option value="risk">Risk</option>
+                  <option value="findings">Audit findings</option>
+                  <option value="owner">Owner</option>
+                  <option value="recency">Recency</option>
+                  <option value="kind">Kind</option>
+                  <option value="language">Language</option>
+                </select>
+              </label>
+              <label class="select-field compact"><span>Size</span>
+                <select id="size-by">
+                  <option value="rank">Importance</option>
+                  <option value="loc">Lines of code</option>
+                  <option value="fan_in">Fan-in</option>
+                  <option value="blast">Blast radius</option>
+                </select>
+              </label>
+            </div>
+            <ul class="swatches" id="legend"></ul>
+            <div class="shapes" id="shapes"></div>
+          </div>
+        </div>
+        <div class="camera" role="group" aria-label="Camera">
+          <button type="button" class="icon" id="zoom-in" title="Zoom in (+)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14" /></svg><span class="sr-only">Zoom in</span></button>
+          <button type="button" class="icon" id="zoom-out" title="Zoom out (-)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg><span class="sr-only">Zoom out</span></button>
+          <button type="button" class="icon" id="zoom-fit" title="Fit to screen (0)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5" /></svg><span class="sr-only">Fit to screen</span></button>
+        </div>
+        <div class="loading" id="loading" hidden><span class="loading-dot"></span><span id="loading-text">Loading graph</span></div>
+        <div class="empty" id="empty" hidden>
+          <p class="empty-title" id="empty-title"></p>
+          <p class="empty-body" id="empty-body"></p>
+          <button type="button" id="empty-action"></button>
+        </div>
+        <div class="toast" id="toast" role="status" hidden></div>
+        <p class="sr-only" id="graph-focus" aria-live="polite"></p>
       </section>
 
-      <aside class="panel" id="panel" hidden>
-        <button class="icon close" id="panel-close" title="Close (Esc)" aria-label="Close details"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></svg></button>
+      <aside class="inspector" id="panel" aria-label="Node details" hidden tabindex="-1">
+        <button type="button" class="icon close" id="panel-close" title="Close (Esc)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg><span class="sr-only">Close details</span></button>
         <div id="panel-body"></div>
       </aside>
     </main>
 
     <footer class="statusbar">
-      <span class="live" id="live" title="Live updates"><i></i><b id="live-text">connecting…</b></span>
+      <span class="live" id="live"><i aria-hidden="true"></i><span id="live-text">Connecting</span></span>
       <span id="counts"></span>
       <span id="layout-state"></span>
       <span class="spacer"></span>
-      <span id="scan-info" class="muted"></span>
+      <span id="activity" class="activity"></span>
+      <span id="scan-info" class="dim"></span>
     </footer>
 
-    <dialog id="help-dialog">
-      <h2>Keyboard shortcuts</h2>
+    <dialog id="help-dialog" aria-labelledby="help-title">
+      <h2 id="help-title">Keyboard shortcuts</h2>
       <dl>
         <dt><kbd>/</kbd></dt><dd>Search</dd>
+        <dt><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></dt><dd>Move to the nearest node in that direction (graph focused)</dd>
+        <dt><kbd>Enter</kbd></dt><dd>Inspect the focused node</dd>
+        <dt><kbd>N</kbd></dt><dd>Jump to the node list</dd>
+        <dt><kbd>L</kbd></dt><dd>Show only the selected node's neighbourhood</dd>
+        <dt><kbd>B</kbd></dt><dd>Show what depends on the selected node</dd>
+        <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Packages, files, symbols</dd>
+        <dt><kbd>+</kbd> <kbd>-</kbd> <kbd>0</kbd></dt><dd>Zoom in, out, fit</dd>
+        <dt><kbd>Space</kbd></dt><dd>Start or stop arranging</dd>
         <dt><kbd>Esc</kbd></dt><dd>Clear selection and overlays</dd>
-        <dt><kbd>L</kbd></dt><dd>Local graph around the selected node</dd>
-        <dt><kbd>B</kbd></dt><dd>Blast radius of the selected node</dd>
-        <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Packages / Files / Symbols</dd>
-        <dt><kbd>Space</kbd></dt><dd>Start / stop the layout</dd>
-        <dt>Double-click</dt><dd>Drill into a package</dd>
+        <dt>Double-click</dt><dd>Open a package, or a file's symbols</dd>
         <dt>Drag</dt><dd>Move and pin a node</dd>
       </dl>
       <form method="dialog"><button class="primary">Close</button></form>
