@@ -10,7 +10,7 @@ from prism.core.tokens import estimate_tokens
 from prism.lifecycle import apply_init, plan_init, scan
 from prism.navigator import api, render
 from prism.navigator.store import IndexStore
-from prism.navigator.text import tokenize
+from prism.navigator.text import stem, tokenize
 from prism.writers.activity import read_activity
 from prism.writers.agents_md import BRIEF_TOKEN_LIMIT
 
@@ -26,8 +26,33 @@ def store(small_repo: Path) -> Iterator[IndexStore]:
 
 def test_tokenize_splits_identifiers() -> None:
     toks = tokenize("applyDiscount apply_discount HTTPServer the")
-    assert {"apply", "discount", "apply_discount", "http", "server", "applydiscount"} <= set(toks)
+    assert {
+        stem("apply"),
+        "discount",
+        "apply_discount",
+        "http",
+        stem("server"),
+        "applydiscount",
+    } <= set(toks)
     assert "the" not in toks
+
+
+def test_search_terms_are_stemmed_consistently() -> None:
+    # A bug report's wording meets the identifiers it is about.
+    assert set(tokenize("recording findings")) & set(tokenize("record_finding")) >= {"record"}
+    assert set(tokenize("enabled")) == set(tokenize("enable"))
+    assert set(tokenize("ranks")) == set(tokenize("rank"))
+    assert "record_finding" in tokenize("record_finding")  # exact identifiers survive
+
+
+def test_token_benchmark_harness_runs_on_the_seeded_fixture() -> None:
+    from tests.benchmarks.tokens import SEEDED_TASKS, benchmark_repo
+
+    fixture = Path(__file__).resolve().parents[1] / "fixtures" / "repos" / "seeded"
+    report = benchmark_repo(fixture, SEEDED_TASKS[:2])
+    assert report["tasks_run"] == 2
+    assert report["search_top3"] == 2
+    assert all(t["with_prism"] > 0 and t["without"] > 0 for t in report["tasks"])
 
 
 def test_store_requires_an_index(tiny_repo: Path) -> None:

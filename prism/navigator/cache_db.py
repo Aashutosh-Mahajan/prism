@@ -21,7 +21,7 @@ from typing import Any
 from prism.core.paths import AICONTEXT
 from prism.navigator.text import term_counts
 
-CACHE_FORMAT = "4"
+CACHE_FORMAT = "5"  # 5: stemmed search terms
 
 SCHEMA = """
 CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
