@@ -4,7 +4,7 @@
 import type { App } from "./app";
 import { KIND_LABELS } from "./app";
 import type { Details, GNode, Layer } from "./types";
-import { $, el, formatAgo, plural, toast } from "./ui";
+import { $, el, formatAgo, plural, stored, toast } from "./ui";
 
 const LIST_LIMIT = 12;
 
@@ -79,7 +79,7 @@ function stat(label: string, value: string | number, small?: string): HTMLElemen
 }
 
 function editorLink(editor: { path: string; line: number }): string {
-  const scheme = localStorage.getItem("prism-editor") ?? "vscode";
+  const scheme = stored("prism-editor") ?? "vscode";
   const path = editor.path.startsWith("/") ? editor.path : `/${editor.path}`;
   if (scheme === "idea") return `idea://open?file=${encodeURIComponent(editor.path)}&line=${editor.line}`;
   return `${scheme}://file${encodeURI(path)}:${editor.line}`;

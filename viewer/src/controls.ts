@@ -332,6 +332,7 @@ export function bindControls(app: App, list: NodeList, search: Search): void {
         selectTab(tabs[0]);
         list.focus();
         break;
+      case "?": $<HTMLDialogElement>("help-dialog").showModal(); break;
       case "1": app.setLevel("package"); break;
       case "2": app.setLevel("file"); break;
       case "3": app.setLevel("symbol"); break;
