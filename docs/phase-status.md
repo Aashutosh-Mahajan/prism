@@ -35,6 +35,18 @@ Windows, Python 3.14, 442 files, 5,630 symbols, 124,087 generated module lines, 
 
 These are one local benchmark run, not cross-machine guarantees. The query measurement excludes CLI startup and initial SQLite cache construction. Full scan and update run once each; repeated samples, Git history, dense graphs, memory, and UI timing are still needed.
 
+## Since this review
+
+Later on 2026-09-27 (see [CHANGELOG](../CHANGELOG.md) for the full list):
+
+- Viewer: saved-view validation, stale overlay guards, keyboard node navigation with
+  announcements, an accessible node list, and project-scoped export storage are done (item 3
+  below); the viewer loads a 4,020-node symbol graph in about 0.2 s.
+- Update latency: about 0.4 s in-process for a one-file edit on a 50k-line repository and about
+  1 s through the post-edit hook; item 1 remains open for 100k-line repositories.
+- An orientation-token harness exists (`tests/benchmarks/tokens.py`, item 6): 92% fewer tokens
+  on a 50k-line Django + React app and 73% on PRISM itself. See [benchmarks](benchmarks.md).
+
 ## Next work in dependency order
 
 1. Profile the changed-file update; reduce derived-stage work while preserving exact scan/update equivalence. Do not mark Phase 3 performance complete until the benchmark passes reliably.
