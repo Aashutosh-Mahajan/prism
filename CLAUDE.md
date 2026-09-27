@@ -8,6 +8,10 @@ This file is the source of truth for any coding agent building PRISM. Read it fu
 - Package: `prism-ctx` (PyPI) · CLI: `prism` · Python 3.10+
 - Repo: `github.com/algosmiths/prism` · Built by AlgoSmiths
 
+Implementation tracking: [docs/phase-status.md](docs/phase-status.md) records verified coverage,
+test results, and remaining phase acceptance work. The roadmap below describes the target,
+not a declaration that every phase is complete.
+
 **Contents:** 1 Problem · 2 Five pillars · 3 Core principle · 4 Design principles · 5 Session walkthrough · 6 Architecture · 7 `.aicontext/` · 8 Navigator & MCP server · 9 Freshness & Narrator · 10 Auditor · 11 Visualizer · 12 Integrations, opt-in & discovery · 13 Shipped skills (skill plans) · 14 CLI · 15 Tech stack & layout · 16 Conventions · 17 Testing · 18 Metrics · 19 Roadmap · 20 Checklist
 
 ---

@@ -1,0 +1,49 @@
+# Implementation status against CLAUDE.md
+
+Reviewed 2026-09-27. “Implemented” means code and relevant tests exist; it does not mean every acceptance target has been certified. CLAUDE.md remains the target specification.
+
+| Phase | Status | Evidence and remaining work |
+|---|---|---|
+| 0 — Foundations | Implemented; release validation remains | Packaging, schemas, config, CLI, fixtures, strict checks and cross-platform Python CI exist. Added frontend CI and Python 3.14 coverage. Clean-wheel smoke tests and actual hosted CI results still need verification. |
+| 1 — Index | Implemented | Discovery, Python parsing, graphs/ranking, extractors, manifests and artifact writers exist. Corrected the stale community-field golden; full suite now passes. |
+| 2 — Navigator | Implemented; accuracy metrics pending | CLI/MCP retrieval, budgeted context, SQLite/BM25 search, brief and skills exist. Measured context p95 is 11.99ms on a synthetic 124k-line repo. Labeled locate accuracy and token-savings harness are still missing. |
+| 3 — Freshness/Narrator | Partial relative to performance/architecture requirements | Cached parsing, lazy ranking, hooks, drift, refresh, health and Git intelligence exist with equivalence tests. Changed-file updates still rebuild derived graphs/extractors through build_index, rather than fully patching only affected graph regions. Measured one-file update is 0.7715s, exceeding 0.5s. |
+| 4 — Auditor | Implemented; outcome metric pending | Plans, findings lifecycle, reports, seeded fixtures and skills exist. The specification's >=80% confirmed seeded-bug discovery metric is not yet demonstrated by an agent evaluation harness. |
+| 4.5 — Visualizer | Implemented broadly; acceptance gaps remain | Live viewer, layers, drill-down, local focus, search, overlays, persistence, SSE and exporters exist. Fixed responsive collapse, path edges, search races, static filtering, legend and input validation issues. Browser CI, full keyboard graph navigation, exact low-confidence dashed edges, richer diff semantics and large-graph frame-rate/paint/SSE measurements remain. |
+| 5 — Breadth | Partial | JS/TS/Go/Java tree-sitter support, Cursor/Codex adapters, local semantic search, communities, decisions, watch and doctor exist. Optional 3D graph and VS Code webview are absent. A real local embedding-model smoke test and broader parser accuracy validation remain. |
+
+## Verified in this work
+
+- Python: **192 tests passed** after fixing the stale golden and adding five boundary cases. Ruff and strict mypy passed.
+- Frontend: **7 tests passed**, covering adjacency, exact path edges, response invalidation, findings legend, static package filters, unsupported layers/roots, and filtered degree values. Typecheck/build passed.
+- Browser: at 390px viewport width the graph now measures 390px (previously 0px). Search results appear and Enter opens the matching package's details; related files are exposed as keyboard-operable buttons. Narrow layout defaults to collapsed filters and legend.
+- Production bundle regenerated from source. CI now runs frontend tests/build and checks generated-asset drift; optional parser tests run in a dedicated job. Hosted CI has not been run from this workspace.
+- Offline wheel build passed. Inspected the wheel for viewer backend/assets, schema and skill files, and verified the packaged JavaScript exactly matches the rebuilt source bundle. A fresh-environment installation smoke test remains pending.
+- Performance harness added at `tests/benchmarks/run.py`; it uses temporary repositories and an isolated registry, without enabling PRISM in this checkout.
+
+### Performance sample
+
+Windows, Python 3.14, 442 files, 5,630 symbols, 124,087 generated module lines, no Git history:
+
+| Operation | Observed | Target |
+|---|---:|---:|
+| Full scan including artifact writes | 12.156s | No hard scan limit specified |
+| No-change update | 0.0533s | — |
+| One-file comment edit update | **0.7715s**, exactly one file reparsed | <=0.5s |
+| Context median, 25 calls over an open cache | 8.61ms | — |
+| Context p95 | 11.99ms | <200ms |
+
+These are one local benchmark run, not cross-machine guarantees. The query measurement excludes CLI startup and initial SQLite cache construction. Full scan and update run once each; repeated samples, Git history, dense graphs, memory, and UI timing are still needed.
+
+## Next work in dependency order
+
+1. Profile the changed-file update; reduce derived-stage work while preserving exact scan/update equivalence. Do not mark Phase 3 performance complete until the benchmark passes reliably.
+2. Add browser smoke tests in CI for responsive geometry, keyboard search/panels, and a real update-to-SSE-to-render flow.
+3. Finish viewer state contracts: saved-view validation, stale overlay response guards, accessible graph node navigation, and project-scoped export storage.
+4. Measure graph paint, frame rate, export size, and live-update latency on the 100k-line fixture; improve based on profiles.
+5. Complete structured module extraction in the viewer and split CLI command groups once behavioral tests cover the boundaries.
+6. Add retrieval accuracy, per-language call precision, orientation-token and seeded-audit effectiveness evaluation datasets.
+7. Smoke-test built wheels, optional parsers, and an already-installed local embedding model; verify hosted CI across supported platforms.
+8. Only then implement the remaining optional Phase 5 3D and editor-webview features. They must retain offline operation and optional installation.
+
+The detailed initial task rationale is in [the project audit](project-audit-2026-09-27.md). Its original findings are preserved as a baseline; this file records subsequent progress.

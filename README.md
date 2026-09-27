@@ -10,9 +10,11 @@ touches, instead of re-reading the repository at the start of every session.
 - Deterministic: the same code always produces the same `.aicontext/` bytes.
 - Opt-in per project and per user: installing PRISM changes nothing until you run `prism init`.
 
-> Status: **Phase 1 (Index)**. `init`, `scan`, `status`, `enable`/`disable`, and `pause`/`resume`
-> work today. Navigation (`search`, `context`, `impact`, MCP server) is next. See
-> [CLAUDE.md](CLAUDE.md) for the full design and roadmap.
+> Status: **Index, navigation, freshness, auditing, and the graph viewer are implemented;
+> Phase 5 is partial.** Optional parsers, agent adapters, local semantic search, communities,
+> decisions, watch, and doctor exist. Optional 3D and VS Code webview support remain pending.
+> See [phase status](docs/phase-status.md) for verified coverage and remaining work, and
+> [CLAUDE.md](CLAUDE.md) for the product specification.
 
 ## Quick start
 
@@ -58,3 +60,22 @@ mypy
 pytest                                  # sockets are blocked for the whole suite
 PRISM_UPDATE_GOLDEN=1 pytest -k golden  # refresh golden files after an intended output change
 ```
+
+The graph viewer ships prebuilt; end users do not need Node. Frontend development uses Node 24:
+
+```bash
+cd viewer
+npm ci
+npm test
+npm run build  # regenerates prism/viewer_dist; do not edit generated assets manually
+```
+
+After initializing and scanning your chosen repository, use `prism search "query"`,
+`prism context <target>`, `prism impact <target>`, or `prism view` to explore it.
+`prism graph export --html graph.html` creates an offline viewer; add `--symbols` for
+symbol-level data (see `prism graph export --help` for all export options).
+
+For repeatable performance measurements, run `python -m tests.benchmarks.run` from
+the project root. It creates a temporary synthetic repository and isolated consent
+registry, reports scan/update/query timings, and removes its temporary data. Use
+`--enforce` on a dedicated benchmark runner to enforce the specification's latency targets.
