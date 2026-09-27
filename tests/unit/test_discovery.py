@@ -87,6 +87,26 @@ def test_known_hashes_are_reused_for_unchanged_files(tmp_path: Path) -> None:
     assert discover(tmp_path, PrismConfig(), known)[0].sha256 == "f" * 64
 
 
+def test_minified_and_generated_bundles_are_skipped(tmp_path: Path) -> None:
+    bundle = "var a=function(b){return b+1};" * 700  # one very long ~22 KB line
+    _write(tmp_path, "dist2/app.js", bundle)
+    _write(tmp_path, "static/lib.min.js", "function f() {}\n")
+    _write(tmp_path, "static/app.js.map", "{}\n")
+    _write(tmp_path, "src/app.js", "function f(x) {\n  return x + 1;\n}\n" * 200)
+    assert _paths(tmp_path) == ["src/app.js"]
+    # A bundle indexed by an older version drops out even on the unchanged-file fast path.
+    stat = (tmp_path / "dist2/app.js").stat()
+    known = {
+        "dist2/app.js": {
+            "sha256": "f" * 64,
+            "mtime": stat.st_mtime,
+            "size": stat.st_size,
+            "language": "javascript",
+        }
+    }
+    assert [f.path for f in discover(tmp_path, PrismConfig(), known)] == ["src/app.js"]
+
+
 def test_network_guard_blocks_external_hosts() -> None:
     import socket
 

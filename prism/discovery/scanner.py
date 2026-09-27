@@ -53,6 +53,29 @@ BUILTIN_IGNORED_DIRS = frozenset(
     }
 )
 BINARY_SNIFF_BYTES = 8192
+# Machine-generated bundles (minified JS/CSS, source maps) produce meaningless one-letter
+# symbols and huge fake call graphs, so they are never indexed.
+GENERATED_SUFFIXES = (".min.js", ".min.mjs", ".min.cjs", ".min.css", ".bundle.js", ".map")
+MINIFIED_LANGUAGES = frozenset({"javascript", "typescript", "tsx", "jsx"})
+MINIFIED_AVG_LINE = 300
+# Unchanged files are only re-sniffed when big enough to be a bundle, so updates stay cheap.
+MINIFIED_MIN_SIZE = 16 * 1024
+
+
+def looks_minified(head: bytes) -> bool:
+    """True when the first bytes read like a minified bundle (very long average line)."""
+    if len(head) < 2048:
+        return False
+    lines = head.count(b"\n") + 1
+    return len(head) / lines > MINIFIED_AVG_LINE
+
+
+def _minified_on_disk(path: Path) -> bool:
+    try:
+        with path.open("rb") as fh:
+            return looks_minified(fh.read(BINARY_SNIFF_BYTES))
+    except OSError:
+        return False
 
 
 @dataclass
@@ -154,6 +177,8 @@ def discover(
                 continue
             if stat.st_size > config.max_file_size:
                 continue
+            if rel.lower().endswith(GENERATED_SUFFIXES):
+                continue
             prev = known.get(rel)
             if (
                 prev
@@ -162,7 +187,14 @@ def discover(
                 and prev.get("sha256")
                 and prev.get("language")
             ):
-                # Unchanged since the last run: skip the binary sniff and the hash.
+                # Unchanged since the last run: skip the binary sniff and the hash. Script files
+                # still get the cheap minified check so bundles indexed by older versions drop out.
+                if (
+                    prev["language"] in MINIFIED_LANGUAGES
+                    and stat.st_size >= MINIFIED_MIN_SIZE
+                    and _minified_on_disk(full)
+                ):
+                    continue
                 found.append(
                     SourceFile(
                         rel, str(prev["language"]), stat.st_size, str(prev["sha256"]), stat.st_mtime
@@ -183,6 +215,8 @@ def discover(
                 language = detect_language(rel, _first_line(head))
                 if language is None:
                     continue
+            if language in MINIFIED_LANGUAGES and looks_minified(head):
+                continue
             found.append(
                 SourceFile(
                     path=rel,
