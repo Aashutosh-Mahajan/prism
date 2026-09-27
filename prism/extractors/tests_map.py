@@ -23,6 +23,8 @@ def is_test_file(path: str, test_dirs: Sequence[str]) -> bool:
     stem = name.rsplit(".", 1)[0]
     if stem.startswith("test_") or stem.endswith("_test"):
         return True
+    if name in ("tests.py", "test.py"):  # Django's per-app convention
+        return True
     if name.endswith(".java") and (
         stem.endswith(("Test", "Tests", "IT")) or "/src/test/" in f"/{path}"
     ):

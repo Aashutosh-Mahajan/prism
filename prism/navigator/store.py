@@ -10,9 +10,13 @@ from typing import Any
 
 from prism.core.errors import IndexMissingError
 from prism.core.paths import AICONTEXT
+from prism.extractors.tests_map import is_test_file
 from prism.navigator.cache_db import fingerprint, open_cache
 from prism.navigator.text import bm25, tokenize
 from prism.writers.manifest import load_manifest
+
+TEST_DEMOTION = 0.5
+MIGRATION_DEMOTION = 0.35
 
 
 @dataclass(frozen=True)
@@ -69,6 +73,7 @@ def _escape_like(text: str) -> str:
 class IndexStore:
     def __init__(self, root: Path, manifest: dict[str, Any], conn: sqlite3.Connection) -> None:
         self.root = root
+        self._test_dirs: tuple[str, ...] | None = None
         self.manifest = manifest
         self.conn = conn
         self._fingerprint = fingerprint(manifest)
@@ -326,6 +331,13 @@ class IndexStore:
 
     # --- search --------------------------------------------------------------
 
+    def _is_test(self, path: str) -> bool:
+        if self._test_dirs is None:
+            from prism.config import load_config
+
+            self._test_dirs = load_config(self.root).test_dirs
+        return is_test_file(path, self._test_dirs)
+
     def search(self, query: str, limit: int = 10) -> list[SearchHit]:
         terms = sorted(set(tokenize(query)))
         if not terms:
@@ -355,15 +367,29 @@ class IndexStore:
         }
         hits: list[SearchHit] = []
         max_rank = self.conn.execute("SELECT MAX(rank) FROM symbols").fetchone()[0] or 1.0
+        # Most searches look for code to read or change: tests and generated migrations rank
+        # below application code unless the query is about them.
+        wants_tests = any(t.startswith("test") or t == "spec" for t in terms)
+        wants_migrations = any(t.startswith("migrat") for t in terms)
         for doc_id in ids:
             kind, ref = docs[doc_id]
             score = scores[doc_id]
+            file: str | None = ref if kind == "file" else None
             if kind == "symbol":
                 sym = self.symbol(ref)
                 if sym is not None:
+                    file = sym.file
                     score *= 1.0 + 0.5 * (sym.rank / max_rank)
                     if sym.name.lower() in terms or sym.name.lower() == query.strip().lower():
                         score *= 1.5
+            elif kind == "module":
+                mod = self.module(ref)
+                file = mod.file if mod else None
+            if file:
+                if not wants_tests and self._is_test(file):
+                    score *= TEST_DEMOTION
+                elif not wants_migrations and "/migrations/" in f"/{file}":
+                    score *= MIGRATION_DEMOTION
             hits.append(SearchHit(kind, ref, round(score, 4)))
         hits.sort(key=lambda h: (-h.score, h.kind, h.ref))
         return hits[:limit]
