@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PRISM dependency_graph.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "modules",
+    "edges",
+    "external",
+    "entry_points",
+    "declared_dependencies"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+[.][0-9]+$"
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "file",
+          "is_package",
+          "imports",
+          "imported_by",
+          "external",
+          "rank",
+          "entry_point",
+          "doc",
+          "loc",
+          "community"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "is_package": {
+            "type": "boolean"
+          },
+          "imports": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "imported_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "external": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rank": {
+            "type": "number",
+            "minimum": 0
+          },
+          "entry_point": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "doc": {
+            "type": "string"
+          },
+          "loc": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "community": {
+            "type": "integer",
+            "minimum": -1
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "to"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "external": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "entry_points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "module",
+          "file",
+          "symbol",
+          "name"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "main_guard",
+              "dunder_main",
+              "console_script",
+              "main_function"
+            ]
+          },
+          "module": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "declared_dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

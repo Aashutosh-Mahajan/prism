@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PRISM audit finding (input to `prism audit record`)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "severity",
+    "category",
+    "confidence",
+    "file",
+    "lines",
+    "description",
+    "evidence",
+    "suggested_fix"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 200
+    },
+    "severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info"
+      ]
+    },
+    "category": {
+      "enum": [
+        "correctness",
+        "security",
+        "error_handling",
+        "concurrency",
+        "resource",
+        "performance",
+        "api_contract",
+        "test_gap",
+        "dead_code",
+        "maintainability",
+        "config"
+      ]
+    },
+    "confidence": {
+      "enum": [
+        "confirmed",
+        "likely",
+        "suspected"
+      ]
+    },
+    "file": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lines": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "symbol": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "failing_test",
+            "repro_script",
+            "tool_output",
+            "code_reasoning"
+          ]
+        },
+        "command": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_excerpt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "suggested_fix": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    }
+  }
+}

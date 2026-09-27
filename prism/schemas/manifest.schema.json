@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PRISM manifest.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "prism_version",
+    "repo_id",
+    "created",
+    "last_scan",
+    "files",
+    "artifacts",
+    "stats",
+    "drift"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+[.][0-9]+$"
+    },
+    "prism_version": {
+      "type": "string"
+    },
+    "repo_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "created": {
+      "type": "string"
+    },
+    "last_scan": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sha256",
+          "mtime",
+          "size",
+          "language"
+        ],
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "mtime": {
+            "type": "number"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "language": {
+            "type": "string"
+          },
+          "parse_error": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "stats": {
+      "type": "object"
+    },
+    "drift": {
+      "type": "object",
+      "required": [
+        "sections"
+      ],
+      "properties": {
+        "threshold": {
+          "type": "integer"
+        },
+        "sections": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "score",
+              "stale"
+            ],
+            "properties": {
+              "score": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "stale": {
+                "type": "boolean"
+              },
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "last_refresh": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "rank_approx": {
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PRISM git_intelligence.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "available",
+    "head",
+    "commits_analyzed",
+    "churn",
+    "owners",
+    "last_changed",
+    "co_change"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+[.][0-9]+$"
+    },
+    "available": {
+      "type": "boolean"
+    },
+    "head": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "commits_analyzed": {
+      "type": "integer"
+    },
+    "churn": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "owners": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "author",
+            "commits"
+          ],
+          "properties": {
+            "author": {
+              "type": "string"
+            },
+            "commits": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "last_changed": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "co_change": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "a",
+          "b",
+          "count",
+          "strength"
+        ],
+        "properties": {
+          "a": {
+            "type": "string"
+          },
+          "b": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "strength": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}

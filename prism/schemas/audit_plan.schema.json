@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PRISM audit/audit_plan.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "audit_id",
+    "scope",
+    "depth",
+    "toolchain",
+    "targets",
+    "smells",
+    "smells_omitted",
+    "dead_code",
+    "untested",
+    "reverify",
+    "record_with"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "audit_id": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "object",
+      "required": [
+        "mode",
+        "path",
+        "since",
+        "files"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "all",
+            "changed",
+            "path"
+          ]
+        }
+      }
+    },
+    "depth": {
+      "enum": [
+        "quick",
+        "standard",
+        "deep"
+      ]
+    },
+    "toolchain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "command",
+          "detected_from"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "test",
+              "typecheck",
+              "lint",
+              "coverage"
+            ]
+          },
+          "command": {
+            "type": "string"
+          },
+          "detected_from": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "target",
+          "kind",
+          "file",
+          "lines",
+          "score",
+          "reasons",
+          "context"
+        ],
+        "properties": {
+          "target": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "score": {
+            "type": "number"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "context": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "smells": {
+      "type": "array"
+    },
+    "smells_omitted": {
+      "type": "integer"
+    },
+    "dead_code": {
+      "type": "array"
+    },
+    "untested": {
+      "type": "array"
+    },
+    "reverify": {
+      "type": "array"
+    },
+    "record_with": {
+      "type": "string"
+    }
+  }
+}
