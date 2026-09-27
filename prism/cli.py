@@ -497,7 +497,7 @@ def search(
     limit: Annotated[int, typer.Option("--limit", min=1, max=100)] = 10,
     semantic: Annotated[
         bool,
-        typer.Option("--semantic", help="Blend in local embeddings (needs prism-ctx[semantic])."),
+        typer.Option("--semantic", help="Blend in local embeddings (needs prism-ctx\\[semantic])."),
     ] = False,
     as_json: JsonOption = False,
 ) -> None:
