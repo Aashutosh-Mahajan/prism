@@ -193,6 +193,11 @@ def make_handler(
             )
 
         def _error(self, exc: Exception) -> None:
+            if isinstance(exc, ValueError):
+                self._json(
+                    400, {"error": "invalid_parameter", "message": "invalid request parameter"}
+                )
+                return
             if isinstance(exc, PrismError):
                 status = (
                     404
@@ -256,7 +261,14 @@ def make_handler(
             if gated is None:
                 return
             path, _ = gated
-            length = int(self.headers.get("Content-Length") or 0)
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                self._json(400, {"error": "bad_length"})
+                return
+            if length < 0:
+                self._json(400, {"error": "bad_length"})
+                return
             if length > MAX_BODY:
                 self._json(413, {"error": "too_large"})
                 return

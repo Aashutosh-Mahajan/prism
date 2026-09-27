@@ -10,6 +10,7 @@ from __future__ import annotations
 import fnmatch
 import itertools
 import json
+import math
 import subprocess
 from collections import deque
 from dataclasses import dataclass, field
@@ -38,13 +39,20 @@ class GraphFilters:
     @classmethod
     def from_query(cls, q: dict[str, str]) -> GraphFilters:
         kinds = {k for k in q.get("kinds", "").split(",") if k} or None
+        try:
+            rank = float(q.get("min_rank", 0) or 0)
+            risk = float(q.get("min_risk", 0) or 0)
+        except ValueError as exc:
+            raise UserError("min_rank and min_risk must be numbers between 0 and 1") from exc
+        if not all(math.isfinite(v) and 0 <= v <= 1 for v in (rank, risk)):
+            raise UserError("min_rank and min_risk must be numbers between 0 and 1")
         return cls(
             path=q.get("path") or None,
             kinds=kinds,
             hide_tests=q.get("hide_tests") in ("1", "true"),
             orphans_only=q.get("orphans_only") in ("1", "true"),
-            min_rank=float(q.get("min_rank", 0) or 0),
-            min_risk=float(q.get("min_risk", 0) or 0),
+            min_rank=rank,
+            min_risk=risk,
             changed_since=q.get("changed_since") or None,
         )
 
@@ -434,6 +442,8 @@ class GraphModel:
     def nodes_at(self, level: str) -> list[dict[str, Any]]:
         if level not in LEVELS:
             raise UserError(f"level must be one of {', '.join(LEVELS)}")
+        if level == "symbol":
+            return [self._symbol_node(s) for _, s in sorted(self.symbols.items())]
         file_nodes = [
             self._file_node(m) for m in sorted(self.modules.values(), key=lambda m: m["file"])
         ]
@@ -441,7 +451,7 @@ class GraphModel:
             return file_nodes
         if level == "package":
             return self._package_nodes(file_nodes)
-        return [self._symbol_node(s) for _, s in sorted(self.symbols.items())]
+        raise AssertionError("unreachable graph level")
 
     def graph(
         self,

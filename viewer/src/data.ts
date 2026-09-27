@@ -137,8 +137,8 @@ function neighbourhood(edges: GEdge[], root: string, depth: number, directed = f
   }
   const dist = new Map([[root, 0]]);
   const queue = [root];
-  while (queue.length) {
-    const cur = queue.shift()!;
+  for (let head = 0; head < queue.length; head++) {
+    const cur = queue[head];
     const d = dist.get(cur)!;
     if (d >= depth) continue;
     for (const n of adj.get(cur) ?? []) {
@@ -165,7 +165,7 @@ export class StaticSource implements DataSource {
   }
 
   private base(level: string, layer: string): GraphPayload {
-    const g = this.bundle.graphs[`${level}|${layer}`] ?? this.bundle.graphs[`${level}|import`];
+    const g = this.bundle.graphs[`${level}|${layer}`];
     if (!g) throw new ApiError(`no ${level}-level ${layer} graph in this export`, {});
     return g;
   }
@@ -175,18 +175,29 @@ export class StaticSource implements DataSource {
     const f = q.filters;
     const maxRank = Math.max(1e-12, ...g.nodes.map((n) => n.rank));
     const re = f.path ? globToRegExp(f.path) : null;
+    const matchingGroups = new Set(
+      (this.bundle.graphs[`file|${q.layer}`]?.nodes ?? [])
+        .filter((n) => n.file && re?.test(n.file)).map((n) => n.group),
+    );
     let nodes: GNode[] = g.nodes.filter(
       (n) =>
         !(f.hide_tests && n.test) &&
         !(f.kinds.length && !f.kinds.includes(n.kind)) &&
-        !(re && !(n.file && re.test(n.file))) &&
+        !(re && !(n.kind === "cluster" ? matchingGroups.has(n.group) : n.file && re.test(n.file))) &&
         n.rank / maxRank >= f.min_rank &&
         n.risk >= f.min_risk,
     );
     let ids = new Set(nodes.map((n) => n.id));
     let edges = g.edges.filter((e) => ids.has(e.source) && ids.has(e.target));
-    if (q.root && ids.has(q.root)) {
-      const near = neighbourhood(edges, q.root, q.depth);
+    let root = q.root;
+    if (root && !ids.has(root)) {
+      const detail = this.bundle.details[root];
+      const file = detail?.pack?.target?.file;
+      root = nodes.find((n) => n.file === file)?.id ?? null;
+      if (!root) throw new ApiError(`'${q.root}' is not in this graph`, {});
+    }
+    if (root) {
+      const near = neighbourhood(edges, root, q.depth);
       nodes = nodes.filter((n) => near.has(n.id)).map((n) => ({ ...n, distance: near.get(n.id) }));
       ids = new Set(nodes.map((n) => n.id));
       edges = edges.filter((e) => ids.has(e.source) && ids.has(e.target));
@@ -196,7 +207,14 @@ export class StaticSource implements DataSource {
       nodes = nodes.filter((n) => !linked.has(n.id));
       edges = [];
     }
-    return { ...g, root: q.root, nodes, edges, counts: { nodes: nodes.length, edges: edges.length } };
+    const degreeIn = new Map<string, number>();
+    const degreeOut = new Map<string, number>();
+    for (const e of edges) {
+      degreeIn.set(e.target, (degreeIn.get(e.target) ?? 0) + 1);
+      degreeOut.set(e.source, (degreeOut.get(e.source) ?? 0) + 1);
+    }
+    nodes = nodes.map((n) => ({ ...n, fan_in: degreeIn.get(n.id) ?? 0, fan_out: degreeOut.get(n.id) ?? 0 }));
+    return { ...g, root, nodes, edges, counts: { nodes: nodes.length, edges: edges.length } };
   }
 
   async node(id: string) {
@@ -231,8 +249,8 @@ export class StaticSource implements DataSource {
       }
       const prev = new Map<string, string | null>([[from, null]]);
       const queue = [from];
-      while (queue.length) {
-        const cur = queue.shift()!;
+      for (let head = 0; head < queue.length; head++) {
+        const cur = queue[head];
         if (cur === to) break;
         for (const n of adj.get(cur) ?? []) if (!prev.has(n)) (prev.set(n, cur), queue.push(n));
       }

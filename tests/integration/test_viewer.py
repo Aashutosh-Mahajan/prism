@@ -204,6 +204,44 @@ def test_api_endpoints(server: ViewerServer, repo: Path) -> None:
     assert running_viewer(repo)["port"] == server.port  # type: ignore[index]
 
 
+@pytest.mark.parametrize("length", ["-1", "invalid"])
+def test_post_rejects_invalid_content_length(server: ViewerServer, length: str) -> None:
+    conn = http.client.HTTPConnection("127.0.0.1", server.port, timeout=3)
+    conn.request(
+        "POST",
+        "/api/layout",
+        headers={
+            "X-Prism-Token": server.token,
+            "Content-Length": length,
+            "Content-Type": "application/json",
+        },
+    )
+    response = conn.getresponse()
+    assert response.status == 400
+    assert json.loads(response.read())["error"] == "bad_length"
+    conn.close()
+
+
+def test_invalid_graph_parameters_return_client_errors(server: ViewerServer) -> None:
+    client = Client(server)
+    for query in ("depth=oops", "cap=oops", "min_rank=nan", "min_risk=inf", "min_risk=2"):
+        assert client.request(f"/api/graph?{query}")[0] == 400
+
+
+def test_layout_rejects_nonfinite_coordinates_and_recovers_corrupt_cache(repo: Path) -> None:
+    from prism.viewer.api import ViewerBackend
+
+    backend = ViewerBackend(repo)
+    for point in ([float("nan"), 0], [0, float("inf")], [True, 1], [10**1000, 0]):
+        with pytest.raises(UserError, match="finite"):
+            backend.save_layout({"positions": {"a": point}})
+    cache = repo / ".aicontext" / "cache" / "layout.json"
+    cache.write_text("broken", encoding="utf-8")
+    assert backend.get_layout() == {}
+    backend.save_layout({"positions": {"a": [1, 2]}})
+    assert backend.get_layout() == {"positions": {"a": [1, 2]}}
+
+
 def test_sse_pushes_index_deltas(server: ViewerServer, repo: Path) -> None:
     events: list[str] = []
     ready = threading.Event()

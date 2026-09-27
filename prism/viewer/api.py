@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import threading
 from pathlib import Path
@@ -18,6 +19,15 @@ from prism.writers.manifest import load_manifest
 
 MAX_LAYOUT_NODES = 50_000
 _VIEW_NAME = re.compile(r"^[A-Za-z0-9 _.-]{1,64}$")
+
+
+def _position(value: Any) -> bool:
+    if not isinstance(value, list) or len(value) != 2:
+        return False
+    try:
+        return all(type(v) in (int, float) and math.isfinite(v) for v in value)
+    except OverflowError:
+        return False
 
 
 class ViewerBackend:
@@ -186,24 +196,26 @@ class ViewerBackend:
 
     def get_layout(self) -> dict[str, Any]:
         path = self._cache() / "layout.json"
-        data = read_json(path) if path.is_file() else {}
-        return data if isinstance(data, dict) else {}
+        try:
+            data = read_json(path) if path.is_file() else {}
+        except (ValueError, OSError):
+            return {}
+        if not isinstance(data, dict) or not isinstance(data.get("positions"), dict):
+            return {}
+        return {"positions": {k: v for k, v in data["positions"].items() if _position(v)}}
 
     def save_layout(self, body: Any) -> dict[str, Any]:
         if not isinstance(body, dict) or not isinstance(body.get("positions"), dict):
             raise UserError('layout body must be {"positions": {id: [x, y]}}')
-        current = self.get_layout().get("positions", {})
-        for key, value in body["positions"].items():
-            if (
-                isinstance(key, str)
-                and isinstance(value, list)
-                and len(value) == 2
-                and all(isinstance(v, (int, float)) for v in value)
-            ):
+        if not all(isinstance(k, str) and _position(v) for k, v in body["positions"].items()):
+            raise UserError("layout coordinates must be pairs of finite numbers")
+        with self._lock:
+            current = self.get_layout().get("positions", {})
+            for key, value in body["positions"].items():
                 current[key] = [round(float(value[0]), 2), round(float(value[1]), 2)]
-        if len(current) > MAX_LAYOUT_NODES:
-            current = dict(list(current.items())[-MAX_LAYOUT_NODES:])
-        write_json(self._cache() / "layout.json", {"positions": current})
+            if len(current) > MAX_LAYOUT_NODES:
+                current = dict(list(current.items())[-MAX_LAYOUT_NODES:])
+            write_json(self._cache() / "layout.json", {"positions": current})
         return {"saved": len(current)}
 
     def list_views(self) -> dict[str, Any]:

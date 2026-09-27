@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "outDir": ".test-build", "noEmit": false },
+  "include": ["src/types.ts", "src/graph-utils.ts", "src/encode.ts", "src/data.ts"]
+}

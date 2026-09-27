@@ -41,6 +41,7 @@
   "external": {},
   "modules": [
     {
+      "community": -1,
       "doc": "",
       "entry_point": null,
       "external": [],
@@ -56,6 +57,7 @@
       "rank": 0.105444
     },
     {
+      "community": 0,
       "doc": "A tiny shop used as a PRISM test fixture.",
       "entry_point": null,
       "external": [],
@@ -70,6 +72,7 @@
       "rank": 0.105444
     },
     {
+      "community": 1,
       "doc": "Shopping cart.",
       "entry_point": null,
       "external": [],
@@ -87,6 +90,7 @@
       "rank": 0.239884
     },
     {
+      "community": 1,
       "doc": "Command-line entry point.",
       "entry_point": "console_script",
       "external": [],
@@ -101,6 +105,7 @@
       "rank": 0.105444
     },
     {
+      "community": 0,
       "doc": "Discount rules and application.",
       "entry_point": null,
       "external": [],
