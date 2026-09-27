@@ -1,0 +1,13 @@
+{
+  "bugs": [
+    {"file": "ledger/pricing.py", "symbol": "ledger.pricing.apply_discount", "category": "correctness", "note": "coupon applied to original price"},
+    {"file": "ledger/storage.py", "symbol": "ledger.storage.find_entries", "category": "security", "note": "SQL built with an f-string"},
+    {"file": "ledger/utils.py", "symbol": "ledger.utils.tag", "category": "correctness", "note": "mutable default argument"},
+    {"file": "ledger/sync.py", "symbol": "ledger.sync.import_feed", "category": "error_handling", "note": "bare except swallows errors"},
+    {"file": "ledger/config.py", "symbol": null, "category": "security", "note": "hardcoded API token"},
+    {"file": "ledger/report.py", "symbol": "ledger.report.page", "category": "correctness", "note": "off-by-one: 1-based page treated as 0-based"},
+    {"file": "ledger/worker.py", "symbol": "ledger.worker.run_once", "category": "concurrency", "note": "coroutine not awaited"},
+    {"file": "ledger/loader.py", "symbol": "ledger.loader.load_export", "category": "security", "note": "pickle.loads on untrusted data"},
+    {"file": "ledger/legacy_export.py", "symbol": "ledger.legacy_export._old_format", "category": "dead_code", "note": "never used"}
+  ]
+}

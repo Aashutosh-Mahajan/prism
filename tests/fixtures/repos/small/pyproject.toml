@@ -1,0 +1,13 @@
+[project]
+name = "smallshop"
+version = "0.1.0"
+dependencies = ["requests>=2", "sqlalchemy>=2"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+shop-api = "shop.api.app:run"
+
+[tool.ruff]
+line-length = 100

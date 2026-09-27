@@ -1,0 +1,28 @@
+{
+  "by_file": {
+    "tinyshop/cart.py": [
+      "tests/test_pricing.py"
+    ],
+    "tinyshop/pricing.py": [
+      "tests/test_pricing.py"
+    ]
+  },
+  "by_symbol": {
+    "tinyshop.cart.Cart": [
+      "tests/test_pricing.py"
+    ],
+    "tinyshop.cart.Cart.add": [
+      "tests/test_pricing.py"
+    ],
+    "tinyshop.cart.Cart.total": [
+      "tests/test_pricing.py"
+    ],
+    "tinyshop.pricing.apply_discount": [
+      "tests/test_pricing.py"
+    ]
+  },
+  "schema_version": "1.0",
+  "test_files": [
+    "tests/test_pricing.py"
+  ]
+}

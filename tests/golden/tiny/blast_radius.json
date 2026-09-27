@@ -1,0 +1,67 @@
+{
+  "files": {
+    "tinyshop/cart.py": {
+      "count": 2,
+      "top": [
+        "tests/test_pricing.py",
+        "tinyshop/cli.py"
+      ]
+    },
+    "tinyshop/pricing.py": {
+      "count": 4,
+      "top": [
+        "tests/test_pricing.py",
+        "tinyshop/__init__.py",
+        "tinyshop/cart.py",
+        "tinyshop/cli.py"
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "symbols": {
+    "tinyshop.cart.Cart": {
+      "count": 2,
+      "top": [
+        "tests/test_pricing.py",
+        "tinyshop/cli.py"
+      ]
+    },
+    "tinyshop.cart.Cart.add": {
+      "count": 2,
+      "top": [
+        "tests/test_pricing.py",
+        "tinyshop/cli.py"
+      ]
+    },
+    "tinyshop.cart.Cart.subtotal": {
+      "count": 2,
+      "top": [
+        "tests/test_pricing.py",
+        "tinyshop/cli.py"
+      ]
+    },
+    "tinyshop.cart.Cart.total": {
+      "count": 2,
+      "top": [
+        "tests/test_pricing.py",
+        "tinyshop/cli.py"
+      ]
+    },
+    "tinyshop.pricing.apply_discount": {
+      "count": 3,
+      "top": [
+        "tests/test_pricing.py",
+        "tinyshop/cart.py",
+        "tinyshop/cli.py"
+      ]
+    },
+    "tinyshop.pricing.eligible_rules": {
+      "count": 3,
+      "top": [
+        "tests/test_pricing.py",
+        "tinyshop/cart.py",
+        "tinyshop/cli.py"
+      ]
+    }
+  }
+}

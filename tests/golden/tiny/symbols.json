@@ -1,0 +1,248 @@
+{
+  "schema_version": "1.0",
+  "symbols": [
+    {
+      "called_by": [],
+      "calls": [
+        "tinyshop.cart.Cart",
+        "tinyshop.cart.Cart.add",
+        "tinyshop.cart.Cart.total"
+      ],
+      "decorators": [],
+      "doc": "",
+      "file": "tests/test_pricing.py",
+      "id": "tests.test_pricing.test_cart_total",
+      "kind": "function",
+      "lines": [
+        9,
+        12
+      ],
+      "module": "tests.test_pricing",
+      "parent": null,
+      "rank": 0.055959,
+      "signature": "test_cart_total() -> None",
+      "tokens_est": 25,
+      "visibility": "public"
+    },
+    {
+      "called_by": [],
+      "calls": [
+        "tinyshop.pricing.apply_discount"
+      ],
+      "decorators": [],
+      "doc": "",
+      "file": "tests/test_pricing.py",
+      "id": "tests.test_pricing.test_coupon",
+      "kind": "function",
+      "lines": [
+        5,
+        6
+      ],
+      "module": "tests.test_pricing",
+      "parent": null,
+      "rank": 0.055959,
+      "signature": "test_coupon() -> None",
+      "tokens_est": 19,
+      "visibility": "public"
+    },
+    {
+      "called_by": [
+        "tests.test_pricing.test_cart_total",
+        "tinyshop.cli.main"
+      ],
+      "calls": [],
+      "decorators": [],
+      "doc": "A list of priced items.",
+      "file": "tinyshop/cart.py",
+      "id": "tinyshop.cart.Cart",
+      "kind": "class",
+      "lines": [
+        6,
+        20
+      ],
+      "module": "tinyshop.cart",
+      "parent": null,
+      "rank": 0.08767,
+      "signature": "class Cart",
+      "tokens_est": 106,
+      "visibility": "public"
+    },
+    {
+      "called_by": [],
+      "calls": [],
+      "decorators": [],
+      "doc": "",
+      "file": "tinyshop/cart.py",
+      "id": "tinyshop.cart.Cart.__init__",
+      "kind": "method",
+      "lines": [
+        9,
+        10
+      ],
+      "module": "tinyshop.cart",
+      "parent": "tinyshop.cart.Cart",
+      "rank": 0.055959,
+      "signature": "__init__(self) -> None",
+      "tokens_est": 17,
+      "visibility": "public"
+    },
+    {
+      "called_by": [
+        "tests.test_pricing.test_cart_total",
+        "tinyshop.cli.main"
+      ],
+      "calls": [],
+      "decorators": [],
+      "doc": "",
+      "file": "tinyshop/cart.py",
+      "id": "tinyshop.cart.Cart.add",
+      "kind": "method",
+      "lines": [
+        12,
+        13
+      ],
+      "module": "tinyshop.cart",
+      "parent": "tinyshop.cart.Cart",
+      "rank": 0.08767,
+      "signature": "add(self, price: float) -> None",
+      "tokens_est": 19,
+      "visibility": "public"
+    },
+    {
+      "called_by": [
+        "tinyshop.cart.Cart.total"
+      ],
+      "calls": [],
+      "decorators": [],
+      "doc": "",
+      "file": "tinyshop/cart.py",
+      "id": "tinyshop.cart.Cart.subtotal",
+      "kind": "method",
+      "lines": [
+        15,
+        16
+      ],
+      "module": "tinyshop.cart",
+      "parent": "tinyshop.cart.Cart",
+      "rank": 0.093219,
+      "signature": "subtotal(self) -> float",
+      "tokens_est": 16,
+      "visibility": "public"
+    },
+    {
+      "called_by": [
+        "tests.test_pricing.test_cart_total",
+        "tinyshop.cli.main"
+      ],
+      "calls": [
+        "tinyshop.cart.Cart.subtotal",
+        "tinyshop.pricing.apply_discount"
+      ],
+      "decorators": [],
+      "doc": "Subtotal with discounts applied.",
+      "file": "tinyshop/cart.py",
+      "id": "tinyshop.cart.Cart.total",
+      "kind": "method",
+      "lines": [
+        18,
+        20
+      ],
+      "module": "tinyshop.cart",
+      "parent": "tinyshop.cart.Cart",
+      "rank": 0.08767,
+      "signature": "total(self, coupon: str | None = None) -> float",
+      "tokens_est": 42,
+      "visibility": "public"
+    },
+    {
+      "called_by": [],
+      "calls": [
+        "tinyshop.cart.Cart",
+        "tinyshop.cart.Cart.add",
+        "tinyshop.cart.Cart.total"
+      ],
+      "decorators": [],
+      "doc": "",
+      "file": "tinyshop/cli.py",
+      "id": "tinyshop.cli.main",
+      "kind": "function",
+      "lines": [
+        8,
+        13
+      ],
+      "module": "tinyshop.cli",
+      "parent": null,
+      "rank": 0.055959,
+      "signature": "main(argv: list[str] | None = None) -> int",
+      "tokens_est": 48,
+      "visibility": "public"
+    },
+    {
+      "called_by": [],
+      "calls": [
+        "tinyshop.pricing.eligible_rules"
+      ],
+      "decorators": [],
+      "doc": "",
+      "file": "tinyshop/pricing.py",
+      "id": "tinyshop.pricing._debug_rates",
+      "kind": "function",
+      "lines": [
+        22,
+        23
+      ],
+      "module": "tinyshop.pricing",
+      "parent": null,
+      "rank": 0.055959,
+      "signature": "_debug_rates() -> None",
+      "tokens_est": 18,
+      "visibility": "private"
+    },
+    {
+      "called_by": [
+        "tests.test_pricing.test_coupon",
+        "tinyshop.cart.Cart.total"
+      ],
+      "calls": [
+        "tinyshop.pricing.eligible_rules"
+      ],
+      "decorators": [],
+      "doc": "Apply the best eligible discount to a total.",
+      "file": "tinyshop/pricing.py",
+      "id": "tinyshop.pricing.apply_discount",
+      "kind": "function",
+      "lines": [
+        14,
+        19
+      ],
+      "module": "tinyshop.pricing",
+      "parent": null,
+      "rank": 0.140784,
+      "signature": "apply_discount(total: float, coupon: str | None = None) -> float",
+      "tokens_est": 63,
+      "visibility": "public"
+    },
+    {
+      "called_by": [
+        "tinyshop.pricing._debug_rates",
+        "tinyshop.pricing.apply_discount"
+      ],
+      "calls": [],
+      "decorators": [],
+      "doc": "Return the discount rates that apply to this total.",
+      "file": "tinyshop/pricing.py",
+      "id": "tinyshop.pricing.eligible_rules",
+      "kind": "function",
+      "lines": [
+        4,
+        11
+      ],
+      "module": "tinyshop.pricing",
+      "parent": null,
+      "rank": 0.223191,
+      "signature": "eligible_rules(total: float, coupon: str | None) -> list[float]",
+      "tokens_est": 66,
+      "visibility": "public"
+    }
+  ]
+}

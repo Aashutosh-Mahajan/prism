@@ -1,0 +1,121 @@
+{
+  "declared_dependencies": [],
+  "edges": [
+    {
+      "from": "tests.test_pricing",
+      "to": "tinyshop.cart"
+    },
+    {
+      "from": "tests.test_pricing",
+      "to": "tinyshop.pricing"
+    },
+    {
+      "from": "tinyshop",
+      "to": "tinyshop.pricing"
+    },
+    {
+      "from": "tinyshop.cart",
+      "to": "tinyshop.pricing"
+    },
+    {
+      "from": "tinyshop.cli",
+      "to": "tinyshop.cart"
+    }
+  ],
+  "entry_points": [
+    {
+      "file": "tinyshop/cli.py",
+      "kind": "console_script",
+      "module": "tinyshop.cli",
+      "name": "tinyshop",
+      "symbol": "tinyshop.cli.main"
+    },
+    {
+      "file": "tinyshop/cli.py",
+      "kind": "main_guard",
+      "module": "tinyshop.cli",
+      "name": null,
+      "symbol": "tinyshop.cli.main"
+    }
+  ],
+  "external": {},
+  "modules": [
+    {
+      "doc": "",
+      "entry_point": null,
+      "external": [],
+      "file": "tests/test_pricing.py",
+      "id": "tests.test_pricing",
+      "imported_by": [],
+      "imports": [
+        "tinyshop.cart",
+        "tinyshop.pricing"
+      ],
+      "is_package": false,
+      "loc": 12,
+      "rank": 0.105444
+    },
+    {
+      "doc": "A tiny shop used as a PRISM test fixture.",
+      "entry_point": null,
+      "external": [],
+      "file": "tinyshop/__init__.py",
+      "id": "tinyshop",
+      "imported_by": [],
+      "imports": [
+        "tinyshop.pricing"
+      ],
+      "is_package": true,
+      "loc": 5,
+      "rank": 0.105444
+    },
+    {
+      "doc": "Shopping cart.",
+      "entry_point": null,
+      "external": [],
+      "file": "tinyshop/cart.py",
+      "id": "tinyshop.cart",
+      "imported_by": [
+        "tests.test_pricing",
+        "tinyshop.cli"
+      ],
+      "imports": [
+        "tinyshop.pricing"
+      ],
+      "is_package": false,
+      "loc": 20,
+      "rank": 0.239884
+    },
+    {
+      "doc": "Command-line entry point.",
+      "entry_point": "console_script",
+      "external": [],
+      "file": "tinyshop/cli.py",
+      "id": "tinyshop.cli",
+      "imported_by": [],
+      "imports": [
+        "tinyshop.cart"
+      ],
+      "is_package": false,
+      "loc": 17,
+      "rank": 0.105444
+    },
+    {
+      "doc": "Discount rules and application.",
+      "entry_point": null,
+      "external": [],
+      "file": "tinyshop/pricing.py",
+      "id": "tinyshop.pricing",
+      "imported_by": [
+        "tests.test_pricing",
+        "tinyshop",
+        "tinyshop.cart"
+      ],
+      "imports": [],
+      "is_package": false,
+      "loc": 23,
+      "rank": 0.443785
+    }
+  ],
+  "schema_version": "1.0"
+}

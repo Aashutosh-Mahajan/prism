@@ -1,0 +1,130 @@
+{
+  "dead_code": [
+    {
+      "confidence": "likely",
+      "file": "tinyshop/pricing.py",
+      "id": "tinyshop.pricing._debug_rates",
+      "kind": "function",
+      "lines": [
+        22,
+        23
+      ],
+      "reason": "never called, referenced, or imported"
+    }
+  ],
+  "files": {
+    "tests/test_pricing.py": {
+      "centrality": 0.238,
+      "churn": 0,
+      "complexity": {
+        "max": 1,
+        "total": 2
+      },
+      "coverage": null,
+      "reasons": [],
+      "risk": 0.048,
+      "smells": []
+    },
+    "tinyshop/__init__.py": {
+      "centrality": 0.238,
+      "churn": 0,
+      "complexity": {
+        "max": 1,
+        "total": 0
+      },
+      "coverage": null,
+      "reasons": [],
+      "risk": 0.198,
+      "smells": []
+    },
+    "tinyshop/cart.py": {
+      "centrality": 0.541,
+      "churn": 0,
+      "complexity": {
+        "max": 1,
+        "total": 4
+      },
+      "coverage": null,
+      "reasons": [],
+      "risk": 0.158,
+      "smells": []
+    },
+    "tinyshop/cli.py": {
+      "centrality": 0.238,
+      "churn": 0,
+      "complexity": {
+        "max": 3,
+        "total": 3
+      },
+      "coverage": null,
+      "reasons": [
+        "no mapped tests"
+      ],
+      "risk": 0.228,
+      "smells": []
+    },
+    "tinyshop/pricing.py": {
+      "centrality": 1.0,
+      "churn": 0,
+      "complexity": {
+        "max": 3,
+        "total": 6
+      },
+      "coverage": null,
+      "reasons": [],
+      "risk": 0.28,
+      "smells": []
+    }
+  },
+  "schema_version": "1.0",
+  "smell_counts": {},
+  "symbols": {
+    "tinyshop.cart.Cart.__init__": {
+      "complexity": 1,
+      "reasons": [],
+      "risk": 0.2
+    },
+    "tinyshop.cart.Cart.add": {
+      "complexity": 1,
+      "reasons": [],
+      "risk": 0.129
+    },
+    "tinyshop.cart.Cart.subtotal": {
+      "complexity": 1,
+      "reasons": [
+        "no direct test coverage"
+      ],
+      "risk": 0.234
+    },
+    "tinyshop.cart.Cart.total": {
+      "complexity": 1,
+      "reasons": [],
+      "risk": 0.129
+    },
+    "tinyshop.cli.main": {
+      "complexity": 3,
+      "reasons": [],
+      "risk": 0.23
+    },
+    "tinyshop.pricing._debug_rates": {
+      "complexity": 1,
+      "reasons": [],
+      "risk": 0.2
+    },
+    "tinyshop.pricing.apply_discount": {
+      "complexity": 2,
+      "reasons": [
+        "widely used"
+      ],
+      "risk": 0.191
+    },
+    "tinyshop.pricing.eligible_rules": {
+      "complexity": 3,
+      "reasons": [
+        "no direct test coverage",
+        "widely used"
+      ],
+      "risk": 0.38
+    }
+  }
+}
