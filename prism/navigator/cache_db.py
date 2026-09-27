@@ -13,6 +13,8 @@ import hashlib
 import json
 import os
 import sqlite3
+import threading
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -86,33 +88,49 @@ def cache_dir(root: Path) -> Path:
     return root / AICONTEXT / "cache"
 
 
+_BUILD_LOCK = threading.Lock()
+
+
 def open_cache(root: Path, manifest: dict[str, Any]) -> sqlite3.Connection:
-    """Open (building if needed) the cache for the current artifacts."""
+    """Open (building if needed) the cache for the current artifacts.
+
+    Safe under concurrency: builds are serialised within a process, every builder writes
+    its own uniquely named temp file, and a builder that loses the race to another
+    process simply uses the winner's file.
+    """
     fp = fingerprint(manifest)
     directory = cache_dir(root)
     path = directory / f"index-{fp}.sqlite"
     if not path.is_file():
-        directory.mkdir(parents=True, exist_ok=True)
-        tmp = directory / f".index-{fp}.{os.getpid()}.tmp"
-        tmp.unlink(missing_ok=True)
-        conn = sqlite3.connect(tmp)
-        try:
-            _build(conn, root / AICONTEXT, manifest)
-            conn.execute("INSERT INTO meta VALUES ('fingerprint', ?)", (fp,))
-            conn.commit()
-        finally:
-            conn.close()
-        try:
-            os.replace(tmp, path)
-        except OSError:  # another process won the race
-            tmp.unlink(missing_ok=True)
-        for old in directory.glob("index-*.sqlite"):
-            if old != path:
-                with contextlib.suppress(OSError):  # still open elsewhere (Windows)
-                    old.unlink()
+        with _BUILD_LOCK:
+            if not path.is_file():  # another thread may have built it while we waited
+                _build_file(root, manifest, fp, directory, path)
     conn = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def _build_file(root: Path, manifest: dict[str, Any], fp: str, directory: Path, path: Path) -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    tmp = (
+        directory / f".index-{fp}.{os.getpid()}.{threading.get_ident()}.{uuid.uuid4().hex[:8]}.tmp"
+    )
+    conn = sqlite3.connect(tmp)
+    try:
+        _build(conn, root / AICONTEXT, manifest)
+        conn.execute("INSERT INTO meta VALUES ('fingerprint', ?)", (fp,))
+        conn.commit()
+    finally:
+        conn.close()
+    try:
+        os.replace(tmp, path)
+    except OSError:  # another process won the race (or the target is open on Windows)
+        with contextlib.suppress(OSError):
+            tmp.unlink()
+    for old in directory.glob("index-*.sqlite"):
+        if old != path:
+            with contextlib.suppress(OSError):  # still open elsewhere (Windows)
+                old.unlink()
 
 
 def _build(conn: sqlite3.Connection, out: Path, manifest: dict[str, Any]) -> None:

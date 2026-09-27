@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import time
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +24,23 @@ from prism.writers.manifest import (
 )
 from prism.writers.modules_md import module_filename, module_groups, render_module_md
 
+STALE_TEMP_SECONDS = 120
+
+
+def _remove_stale_temp_files(out_dir: Path) -> None:
+    """Remove temp files left by an interrupted, time-boxed hook.
+
+    Only artifact temp files (never the cache, where other processes may be building)
+    and only old ones, so a concurrent writer's in-flight file is never touched.
+    """
+    cutoff = time.time() - STALE_TEMP_SECONDS
+    for stray in out_dir.rglob(".*.tmp"):
+        if "cache" in stray.relative_to(out_dir).parts:
+            continue
+        with contextlib.suppress(OSError):
+            if stray.stat().st_mtime < cutoff:
+                stray.unlink()
+
 
 def write_index(
     root: Path,
@@ -38,8 +57,7 @@ def write_index(
     rewritten, so mtimes stay stable for unchanged artifacts.
     """
     out_dir = root / AICONTEXT
-    for stray in out_dir.rglob(".*.tmp"):  # left behind by an interrupted, time-boxed hook
-        stray.unlink(missing_ok=True)
+    _remove_stale_temp_files(out_dir)
     docs = docs if docs is not None else build_docs(index)
     known = known_hashes or {}
     artifacts: dict[str, str] = {}
