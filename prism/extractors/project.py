@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from prism.extractors.base import Extractor, ExtractorContext
+from prism.extractors.toolchain import brief_commands
 
 
 @dataclass(frozen=True)
@@ -16,16 +17,6 @@ class ProjectFacts:
     name: str
     commands: dict[str, str]
     dependencies: list[str]
-
-
-def _declares(pyproject: dict[str, Any], package: str) -> bool:
-    project = pyproject.get("project", {})
-    deps: list[str] = list(project.get("dependencies", []))
-    for group in project.get("optional-dependencies", {}).values():
-        deps.extend(group)
-    for group in pyproject.get("dependency-groups", {}).values():
-        deps.extend(d for d in group if isinstance(d, str))
-    return any(str(d).lower().startswith(package) for d in deps)
 
 
 _REQ_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)")
@@ -60,23 +51,12 @@ def declared_dependencies(root: Path, pyproject: dict[str, Any]) -> list[str]:
     return sorted(names)
 
 
-def detect_commands(root: Path, pyproject: dict[str, Any], has_tests: bool) -> dict[str, str]:
-    tool = pyproject.get("tool", {})
-    commands: dict[str, str] = {}
-    if (
-        "pytest" in tool
-        or (root / "pytest.ini").is_file()
-        or (root / "conftest.py").is_file()
-        or _declares(pyproject, "pytest")
-        or has_tests
-    ):
-        commands["test"] = "pytest"
-    if "ruff" in tool or (root / "ruff.toml").is_file() or (root / ".ruff.toml").is_file():
-        commands["lint"] = "ruff check ."
-    elif (root / ".flake8").is_file():
-        commands["lint"] = "flake8"
-    if "mypy" in tool or (root / "mypy.ini").is_file():
-        commands["typecheck"] = "mypy"
+def detect_commands(root: Path, has_tests: bool) -> dict[str, str]:
+    """The brief's commands: the shared toolchain detector, plus pytest as a fallback when
+    Python tests exist but nothing declares how to run them."""
+    commands = brief_commands(root)
+    if has_tests and not any(k == "test" or k.startswith("test (") for k in commands):
+        commands["test"] = "python -m pytest -q"
     return commands
 
 
@@ -86,11 +66,12 @@ class ProjectExtractor(Extractor[ProjectFacts]):
     def run(self, ctx: ExtractorContext) -> ProjectFacts:
         name = ctx.pyproject.get("project", {}).get("name") or ctx.root.name
         has_tests = any(
-            "tests" in pf.path.split("/") or pf.path.rsplit("/", 1)[-1].startswith("test_")
+            pf.path.endswith(".py")
+            and ("tests" in pf.path.split("/") or pf.path.rsplit("/", 1)[-1].startswith("test_"))
             for pf in ctx.table.files.values()
         )
         return ProjectFacts(
             name=str(name),
-            commands=detect_commands(ctx.root, ctx.pyproject, has_tests),
+            commands=detect_commands(ctx.root, has_tests),
             dependencies=declared_dependencies(ctx.root, ctx.pyproject),
         )

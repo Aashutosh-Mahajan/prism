@@ -61,10 +61,32 @@ def test_tests_map_on_small(small_repo: Path) -> None:
 
 
 def test_detect_commands(tmp_path: Path) -> None:
-    assert detect_commands(tmp_path, {}, has_tests=False) == {}
-    cfg = {"tool": {"ruff": {}, "mypy": {}, "pytest": {}}}
-    assert detect_commands(tmp_path, cfg, has_tests=False) == {
+    assert detect_commands(tmp_path, has_tests=False) == {}
+    assert detect_commands(tmp_path, has_tests=True) == {"test": "python -m pytest -q"}
+    (tmp_path / "pyproject.toml").write_text(
+        "[tool.ruff]\n[tool.mypy]\n[tool.pytest.ini_options]\n"
+    )
+    assert detect_commands(tmp_path, has_tests=False) == {
         "lint": "ruff check .",
-        "test": "pytest",
-        "typecheck": "mypy",
+        "test": "python -m pytest -q",
+        "typecheck": "python -m mypy .",
+    }
+
+
+def test_detect_commands_in_a_django_and_react_monorepo(tmp_path: Path) -> None:
+    backend = tmp_path / "backend"
+    frontend = tmp_path / "frontend" / "app"
+    backend.mkdir()
+    frontend.mkdir(parents=True)
+    (backend / "manage.py").write_text("import django\n")
+    (backend / "requirements.txt").write_text("django\n")
+    (frontend / "package.json").write_text(
+        '{"scripts": {"lint": "eslint ."}, "devDependencies": {"vitest": "^1"}}'
+    )
+    (tmp_path / "frontend" / "app" / "node_modules").mkdir()
+    (tmp_path / "frontend" / "app" / "node_modules" / "package.json").write_text("{}")
+    assert detect_commands(tmp_path, has_tests=True) == {
+        "test (backend)": "cd backend && python manage.py test",
+        "test (frontend/app)": "cd frontend/app && npx vitest run",
+        "lint (frontend/app)": "cd frontend/app && npm run lint",
     }

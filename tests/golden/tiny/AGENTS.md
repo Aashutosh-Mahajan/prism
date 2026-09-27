@@ -4,7 +4,7 @@
 <!-- prism:generated:facts -->
 - Languages: python (5)
 - Entry points: `tinyshop` (tinyshop/cli.py)
-- Commands: test: `pytest`
+- Commands: test: `python -m pytest -q`
 - Top modules by importance: `tinyshop.pricing`, `tinyshop.cart`, `tinyshop`, `tinyshop.cli`
 - Size: 5 files, 11 symbols, 1 test files
 <!-- /prism:generated:facts -->

@@ -53,11 +53,13 @@ def test_toolchain_detection(seeded: Path, tmp_path: Path) -> None:
     assert detect_toolchain(seeded) == [
         {"kind": "test", "command": "python -m pytest -q", "detected_from": "pytest configuration"}
     ]
-    (tmp_path / "pyproject.toml").write_text(
+    project = tmp_path / "fresh"  # tmp_path also holds the seeded copy, a nested subproject
+    project.mkdir()
+    (project / "pyproject.toml").write_text(
         '[project]\nname="x"\n[project.optional-dependencies]\ndev=["pytest","pytest-cov"]\n'
         "[tool.mypy]\nstrict=true\n[tool.ruff]\n"
     )
-    kinds = [t["kind"] for t in detect_toolchain(tmp_path)]
+    kinds = [t["kind"] for t in detect_toolchain(project)]
     assert kinds == ["test", "typecheck", "lint", "coverage"]
 
 
