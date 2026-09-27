@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PRISM Graph</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 27H3z' fill='none' stroke='%236c8cff' stroke-width='3'/%3E%3C/svg%3E" />
+    <script type="module" crossorigin src="./assets/viewer.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/viewer.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand" title="PRISM code graph">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 29 27H3z" /></svg>
+        <span class="brand-name">PRISM</span>
+        <span class="project" id="project"></span>
+      </div>
+      <div class="search">
+        <input id="search" type="search" placeholder="Search symbols, files, routes…  ( / )" autocomplete="off" spellcheck="false" />
+        <ul id="search-results" class="dropdown" hidden></ul>
+      </div>
+      <div class="segmented" id="level" role="tablist" aria-label="Level of detail">
+        <button data-level="package" role="tab">Packages</button>
+        <button data-level="file" role="tab">Files</button>
+        <button data-level="symbol" role="tab">Symbols</button>
+      </div>
+      <label class="select">
+        <span>Layer</span>
+        <select id="layer">
+          <option value="import">Imports</option>
+          <option value="call">Calls</option>
+          <option value="tests">Tests</option>
+          <option value="cochange">Co-change</option>
+          <option value="routes">Routes</option>
+        </select>
+      </label>
+      <label class="select">
+        <span>Color</span>
+        <select id="color-by">
+          <option value="group">Module</option>
+          <option value="community">Community</option>
+          <option value="risk">Risk</option>
+          <option value="findings">Audit findings</option>
+          <option value="owner">Owner</option>
+          <option value="recency">Recency</option>
+          <option value="kind">Kind</option>
+          <option value="language">Language</option>
+        </select>
+      </label>
+      <label class="select">
+        <span>Size</span>
+        <select id="size-by">
+          <option value="rank">Importance</option>
+          <option value="loc">Lines of code</option>
+          <option value="fan_in">Fan-in</option>
+          <option value="blast">Blast radius</option>
+        </select>
+      </label>
+      <div class="topbar-actions">
+        <button id="toggle-sidebar" class="icon" title="Filters and tools">☰</button>
+        <button id="theme" class="icon" title="Toggle light/dark theme">◐</button>
+        <button id="help" class="icon" title="Keyboard shortcuts">?</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar" id="sidebar">
+        <details open>
+          <summary>Filters</summary>
+          <label class="field"><span>Path glob</span><input id="f-path" placeholder="src/pricing/*" spellcheck="false" /></label>
+          <div class="field">
+            <span>Kinds</span>
+            <div class="chips" id="f-kinds"></div>
+          </div>
+          <label class="check"><input type="checkbox" id="f-hide-tests" /> Hide tests</label>
+          <label class="check"><input type="checkbox" id="f-orphans" /> Orphans only</label>
+          <label class="field"><span>Min importance <output id="f-rank-out">0</output></span><input type="range" id="f-rank" min="0" max="1" step="0.01" value="0" /></label>
+          <label class="field"><span>Risk ≥ <output id="f-risk-out">0</output></span><input type="range" id="f-risk" min="0" max="1" step="0.05" value="0" /></label>
+          <label class="field"><span>Changed since (git ref)</span><input id="f-changed" placeholder="main, HEAD~5…" spellcheck="false" /></label>
+          <div class="row"><button id="f-apply" class="primary">Apply</button><button id="f-reset">Reset</button></div>
+        </details>
+
+        <details open>
+          <summary>Local graph</summary>
+          <p class="muted" id="local-info">Select a node and press <kbd>L</kbd>.</p>
+          <label class="field"><span>Depth <output id="depth-out">2</output></span><input type="range" id="depth" min="1" max="4" step="1" value="2" /></label>
+          <button id="local-clear">Show whole graph</button>
+        </details>
+
+        <details>
+          <summary>Overlays</summary>
+          <label class="check"><input type="checkbox" id="o-cycles" checked /> Import cycles (red)</label>
+          <label class="check"><input type="checkbox" id="o-dead" /> Dead-code candidates</label>
+          <label class="check"><input type="checkbox" id="o-activity" checked /> Agent activity trail</label>
+          <label class="check"><input type="checkbox" id="o-labels" checked /> Labels</label>
+          <label class="field"><span>Diff since (git ref or <code>drift</code>)</span><input id="o-diff" placeholder="HEAD~10" spellcheck="false" /></label>
+          <div class="row"><button id="o-diff-go">Show diff</button><button id="o-clear">Clear overlays</button></div>
+        </details>
+
+        <details>
+          <summary>Path finder</summary>
+          <label class="field"><span>From</span><input id="p-from" placeholder="api/orders.py" spellcheck="false" /></label>
+          <label class="field"><span>To</span><input id="p-to" placeholder="db/session.py" spellcheck="false" /></label>
+          <button id="p-go">Find shortest path</button>
+          <p class="muted" id="p-info"></p>
+        </details>
+
+        <details>
+          <summary>Physics</summary>
+          <label class="check"><input type="checkbox" id="ph-run" /> Layout running</label>
+          <label class="field"><span>Center force <output id="ph-gravity-out">1</output></span><input type="range" id="ph-gravity" min="0.05" max="10" step="0.05" value="1" /></label>
+          <label class="field"><span>Repel <output id="ph-scaling-out">20</output></span><input type="range" id="ph-scaling" min="1" max="80" step="1" value="20" /></label>
+          <label class="field"><span>Link force <output id="ph-weight-out">1</output></span><input type="range" id="ph-weight" min="0" max="2" step="0.1" value="1" /></label>
+          <label class="field"><span>Damping <output id="ph-slow-out">5</output></span><input type="range" id="ph-slow" min="1" max="30" step="1" value="5" /></label>
+          <label class="check"><input type="checkbox" id="ph-linlog" /> LinLog (tighter clusters)</label>
+          <label class="check"><input type="checkbox" id="ph-strong" checked /> Strong gravity (keep orphans close)</label>
+          <div class="row"><button id="ph-reset">Re-layout</button><button id="ph-unpin">Unpin all</button></div>
+        </details>
+
+        <details>
+          <summary>Saved views</summary>
+          <div class="row"><input id="v-name" placeholder="view name" spellcheck="false" /><button id="v-save">Save</button></div>
+          <ul id="v-list" class="list"></ul>
+        </details>
+      </aside>
+
+      <section class="stage">
+        <nav class="breadcrumb" id="breadcrumb"></nav>
+        <div id="graph" class="graph" tabindex="0" aria-label="Code graph"></div>
+        <div class="legend" id="legend"></div>
+        <div class="toast" id="toast" role="status" hidden></div>
+        <div class="empty" id="empty" hidden></div>
+      </section>
+
+      <aside class="panel" id="panel" hidden>
+        <button class="icon close" id="panel-close" title="Close (Esc)">×</button>
+        <div id="panel-body"></div>
+      </aside>
+    </main>
+
+    <footer class="statusbar">
+      <span class="live" id="live" title="Live updates"><i></i><b id="live-text">connecting…</b></span>
+      <span id="counts"></span>
+      <span id="layout-state"></span>
+      <span class="spacer"></span>
+      <span id="scan-info" class="muted"></span>
+    </footer>
+
+    <dialog id="help-dialog">
+      <h2>Keyboard shortcuts</h2>
+      <dl>
+        <dt><kbd>/</kbd></dt><dd>Search</dd>
+        <dt><kbd>Esc</kbd></dt><dd>Clear selection and overlays</dd>
+        <dt><kbd>L</kbd></dt><dd>Local graph around the selected node</dd>
+        <dt><kbd>B</kbd></dt><dd>Blast radius of the selected node</dd>
+        <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Packages / Files / Symbols</dd>
+        <dt><kbd>Space</kbd></dt><dd>Start / stop the layout</dd>
+        <dt>Double-click</dt><dd>Drill into a package</dd>
+        <dt>Drag</dt><dd>Move and pin a node</dd>
+      </dl>
+      <form method="dialog"><button class="primary">Close</button></form>
+    </dialog>
+
+  </body>
+</html>
