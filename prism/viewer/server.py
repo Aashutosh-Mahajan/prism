@@ -39,7 +39,7 @@ HEARTBEAT_SECONDS = 15.0
 COOKIE = "prism_token"
 CSP = (
     "default-src 'self'; script-src 'self' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; "
-    "img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'none'"
+    "img-src 'self' data:; connect-src 'self'; font-src 'self' data:; frame-ancestors 'none'; base-uri 'none'"
 )
 
 
