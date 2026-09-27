@@ -6,6 +6,7 @@ import json
 import math
 import re
 import threading
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +20,21 @@ from prism.writers.manifest import load_manifest
 
 MAX_LAYOUT_NODES = 50_000
 _VIEW_NAME = re.compile(r"^[A-Za-z0-9 _.-]{1,64}$")
+
+
+PAYLOAD_CACHE_SIZE = 24
+
+
+def _int(q: dict[str, str], key: str, default: int, low: int, high: int) -> int:
+    """A bounded integer query parameter; malformed input is a client error, not a crash."""
+    raw = q.get(key)
+    if raw in (None, ""):
+        return default
+    try:
+        value = int(str(raw))
+    except ValueError as exc:
+        raise UserError(f"`{key}` must be a whole number") from exc
+    return max(low, min(high, value))
 
 
 def _position(value: Any) -> bool:
@@ -37,7 +53,10 @@ class ViewerBackend:
         self.root = root.resolve()
         self._lock = threading.Lock()
         self._model: GraphModel | None = None
-        self._store: IndexStore | None = None
+        # One SQLite store per request thread: a connection is never shared across threads,
+        # and a refresh in one request can't close a connection another request is using.
+        self._local = threading.local()
+        self._payloads: OrderedDict[tuple[str, ...], dict[str, Any]] = OrderedDict()
 
     def model(self) -> GraphModel:
         with self._lock:
@@ -45,15 +64,17 @@ class ViewerBackend:
             fp = json.dumps(manifest.get("artifacts", {}), sort_keys=True)
             if self._model is None or self._model.fingerprint != fp:
                 self._model = GraphModel(self.root)
+                self._payloads.clear()
             return self._model
 
     def store(self) -> IndexStore:
-        with self._lock:
-            if self._store is None or not self._store.is_current():
-                if self._store is not None:
-                    self._store.close()
-                self._store = IndexStore.open(self.root)
-            return self._store
+        current: IndexStore | None = getattr(self._local, "store", None)
+        if current is None or not current.is_current():
+            if current is not None:
+                current.close()  # owned by this thread only
+            current = IndexStore.open(self.root)
+            self._local.store = current
+        return current
 
     # --- endpoints ----------------------------------------------------------------
 
@@ -61,17 +82,35 @@ class ViewerBackend:
         level = q.get("level", "file")
         if level not in LEVELS:
             raise UserError(f"level must be one of {', '.join(LEVELS)}")
-        depth = max(1, min(4, int(q.get("depth", 2) or 2)))
-        cap = max(10, min(20_000, int(q.get("cap", 5000) or 5000)))
-        payload = self.model().graph(
+        depth = _int(q, "depth", 2, 1, 4)
+        cap = _int(q, "cap", 5000, 10, 20_000)
+        model = self.model()
+        # Git-relative filters depend on the working tree, not the index: never cache those.
+        key = (
+            None
+            if q.get("changed_since")
+            else (model.fingerprint, *(f"{k}={v}" for k, v in sorted(q.items())))
+        )
+        if key is not None:
+            with self._lock:
+                hit = self._payloads.get(key)
+                if hit is not None:
+                    self._payloads.move_to_end(key)
+                    return hit
+        payload = model.graph(
             layer=q.get("layer", "import"),
             level=level,
             root=q.get("root") or None,
             depth=depth,
             filters=GraphFilters.from_query(q),
             node_cap=cap,
-        )
-        return payload.to_dict()
+        ).to_dict()
+        if key is not None:
+            with self._lock:
+                self._payloads[key] = payload
+                while len(self._payloads) > PAYLOAD_CACHE_SIZE:
+                    self._payloads.popitem(last=False)
+        return payload
 
     def node(self, node_id: str) -> dict[str, Any]:
         model = self.model()
@@ -138,7 +177,7 @@ class ViewerBackend:
 
     def search(self, q: dict[str, str]) -> dict[str, Any]:
         query = q.get("q", "")
-        data = nav.op_search(self.store(), query, int(q.get("limit", 15) or 15))
+        data = nav.op_search(self.store(), query, _int(q, "limit", 15, 1, 100))
         level = q.get("level", "file")
         model = self.model()
         for hit in data["hits"]:
@@ -157,7 +196,7 @@ class ViewerBackend:
         )
 
     def impact(self, target: str, q: dict[str, str]) -> dict[str, Any]:
-        data = nav.op_impact(self.store(), target, int(q.get("depth", 3) or 3))
+        data = nav.op_impact(self.store(), target, _int(q, "depth", 3, 1, 6))
         level = q.get("level", "file")
         model = self.model()
         rings: dict[str, int] = {}

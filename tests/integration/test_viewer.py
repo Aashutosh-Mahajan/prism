@@ -360,3 +360,63 @@ def test_viewer_bundle_has_no_external_requests() -> None:
     )
     html = (dist / "index.html").read_text(encoding="utf-8")
     assert "cdn" not in html.lower() and "googleapis" not in html
+
+
+def test_cached_payloads_are_isolated_between_requests(repo: Path) -> None:
+    """Node dicts are cached per model; one request's view must never leak into another's."""
+    from prism.viewer.api import ViewerBackend
+
+    backend = ViewerBackend(repo)
+    whole = backend.graph({"level": "file", "layer": "import"})
+    money_whole = next(n for n in whole["nodes"] if n["id"] == "src/shop/money.py")
+    local = backend.graph(
+        {"level": "file", "layer": "import", "root": "src/shop/config.py", "depth": "1"}
+    )
+    assert "src/shop/money.py" not in {n["id"] for n in local["nodes"]}
+    again = backend.graph({"level": "file", "layer": "import"})
+    assert again is whole  # served from the payload cache
+    money_again = next(n for n in again["nodes"] if n["id"] == "src/shop/money.py")
+    assert money_again["fan_in"] == money_whole["fan_in"] > 0
+    assert "distance" not in money_again
+    cached_model_nodes = backend.model().nodes_at("file")
+    assert not any("fan_in" in n or "distance" in n for n in cached_model_nodes)
+
+
+def test_non_numeric_parameters_are_client_errors(server: ViewerServer) -> None:
+    c = Client(server)
+    for path in (
+        "/api/graph?level=file&depth=abc",
+        "/api/graph?level=file&cap=1e9x",
+        "/api/search?q=x&limit=lots",
+    ):
+        status, _, body = c.request(path)
+        assert status == 400, path
+        assert json.loads(body)["error"] == "user_error"
+
+
+def test_concurrent_requests_survive_an_index_refresh(server: ViewerServer, repo: Path) -> None:
+    """Each request thread owns its SQLite store, so a refresh can't close a connection in use."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    c = Client(server)
+    errors: list[str] = []
+
+    def hammer(i: int) -> None:
+        for _ in range(6):
+            for path in (
+                "/api/node/shop.money.Money",
+                "/api/search?q=cart",
+                "/api/graph?level=symbol&layer=call",
+            ):
+                status, _, body = c.request(path)
+                if status != 200:
+                    errors.append(f"{path} -> {status}: {body[:120]!r}")
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        futures = [pool.submit(hammer, i) for i in range(6)]
+        for i in range(3):
+            (repo / "src" / "shop" / f"burst_{i}.py").write_text(f"def burst_{i}():\n    pass\n")
+            update(repo)
+        for f in futures:
+            f.result()
+    assert errors == []

@@ -176,6 +176,8 @@ class GraphModel:
                 for key in (f.get("file"), f.get("symbol")):
                     if key:
                         self.findings_by_key[key] = self.findings_by_key.get(key, 0) + 1
+        self._node_cache: dict[str, list[dict[str, Any]]] = {}
+        self._edge_cache: dict[tuple[str, str], list[dict[str, Any]]] = {}
         self.language_of = {
             path: e.get("language") for path, e in manifest.get("files", {}).items()
         }
@@ -323,6 +325,18 @@ class GraphModel:
     # --- edges ------------------------------------------------------------------
 
     def _raw_edges(self, layer: str, level: str) -> list[dict[str, Any]]:
+        """Edges at a level, cached per model, with import cycles already flagged."""
+        key = (layer, level)
+        cached = self._edge_cache.get(key)
+        if cached is None:
+            cached = self._build_edges(layer, level)
+            if layer == "import":
+                cyclic = self.cycle_edges(cached)
+                cached = [{**e, "cycle": True} if e["id"] in cyclic else e for e in cached]
+            self._edge_cache[key] = cached
+        return cached
+
+    def _build_edges(self, layer: str, level: str) -> list[dict[str, Any]]:
         """Edges at the requested level (aggregated for coarser levels)."""
         file_of_module = {mid: m["file"] for mid, m in self.modules.items()}
         base: list[tuple[str, str, float, str]] = []  # file-level (or symbol-level) edges
@@ -440,8 +454,16 @@ class GraphModel:
     # --- public API -----------------------------------------------------------------
 
     def nodes_at(self, level: str) -> list[dict[str, Any]]:
+        """Nodes at a level. Cached per model (the model is immutable per index version);
+        callers must copy a node before changing it."""
         if level not in LEVELS:
             raise UserError(f"level must be one of {', '.join(LEVELS)}")
+        cached = self._node_cache.get(level)
+        if cached is None:
+            cached = self._node_cache[level] = self._build_nodes(level)
+        return cached
+
+    def _build_nodes(self, level: str) -> list[dict[str, Any]]:
         if level == "symbol":
             return [self._symbol_node(s) for _, s in sorted(self.symbols.items())]
         file_nodes = [
@@ -471,11 +493,6 @@ class GraphModel:
                 raise UserError(f"level must be one of {', '.join(LEVELS)}")
             nodes = self.nodes_at(level)
             edges = self._raw_edges(layer, level)
-        if layer == "import":
-            cyc = self.cycle_edges(edges)
-            for e in edges:
-                if e["id"] in cyc:
-                    e["cycle"] = True
 
         changed: dict[str, str] | None = (
             git_changes(self.root, filters.changed_since) if filters.changed_since else None
@@ -540,9 +557,11 @@ class GraphModel:
             ordered = ordered[:node_cap]
             ids = {n["id"] for n in ordered}
             edges = [e for e in edges if e["source"] in ids and e["target"] in ids]
-        for n in ordered:
-            n["fan_in"] = degree_in.get(n["id"], 0)
-            n["fan_out"] = degree_out.get(n["id"], 0)
+        # Copies: cached nodes are shared between requests and must not change.
+        ordered = [
+            {**n, "fan_in": degree_in.get(n["id"], 0), "fan_out": degree_out.get(n["id"], 0)}
+            for n in ordered
+        ]
         ordered.sort(key=lambda n: n["id"])
         return GraphPayload(level, layer, ordered, edges, truncated, root_id)
 
