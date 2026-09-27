@@ -9,6 +9,7 @@ import Sigma from "sigma";
 import { EdgeArrowProgram } from "sigma/rendering";
 
 import { ApiError, createSource } from "./data";
+import { adjacency, pathEdges, RequestGeneration } from "./graph-utils";
 import type { ColorBy, SizeBy } from "./encode";
 import { buildContext, legend, nodeColor, nodeSize, nodeType } from "./encode";
 import type { ActivityEvent, Details, Filters, GNode, GraphPayload, IndexEvent, Layer, Level } from "./types";
@@ -40,6 +41,7 @@ const state = {
   drill: null as string | null, // package being viewed at file level
   rings: null as Map<string, number> | null,
   path: null as Set<string> | null,
+  pathEdges: new Set<string>(),
   diff: null as Map<string, string> | null,
   showCycles: true,
   showDead: false,
@@ -56,6 +58,9 @@ const graph = new Graph({ type: "directed", multi: false, allowSelfLoops: false 
 let layout: FA2Layout | null = null;
 let layoutTimer: number | undefined;
 let loadSeq = 0;
+const searchRequests = new RequestGeneration();
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+let neighbors = new Map<string, Set<string>>();
 
 // ---------------------------------------------------------------------------------------------
 // Theme-aware colours
@@ -97,11 +102,38 @@ const renderer = new Sigma(graph, $("graph"), {
   defaultEdgeType: "arrow",
   renderEdgeLabels: false,
   labelRenderedSizeThreshold: 7,
-  labelDensity: 0.6,
-  labelGridCellSize: 90,
+  labelDensity: 0.8,
+  labelGridCellSize: 110,
   labelFont: "Inter, Segoe UI, system-ui, sans-serif",
   labelSize: 12,
   labelColor: { attribute: "labelColor" },
+  defaultDrawNodeLabel: (ctx, data) => {
+    if (!data.label) return;
+    ctx.font = "500 12px Segoe UI, sans-serif";
+    ctx.lineWidth = 4;
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = palette.canvas;
+    ctx.fillStyle = palette.label;
+    const x = data.x + data.size + 7;
+    ctx.strokeText(data.label, x, data.y + 4);
+    ctx.fillText(data.label, x, data.y + 4);
+  },
+  defaultDrawNodeHover: (ctx, data) => {
+    ctx.beginPath();
+    ctx.arc(data.x, data.y, data.size + 5, 0, Math.PI * 2);
+    ctx.strokeStyle = data.color;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    if (!data.label) return;
+    ctx.font = "600 12px Segoe UI, sans-serif";
+    const width = ctx.measureText(data.label).width;
+    ctx.fillStyle = palette.canvas;
+    ctx.beginPath();
+    ctx.roundRect(data.x + data.size + 8, data.y - 15, width + 20, 30, 7);
+    ctx.fill();
+    ctx.fillStyle = palette.label;
+    ctx.fillText(data.label, data.x + data.size + 18, data.y + 4);
+  },
   zIndex: true,
   allowInvalidContainer: true,
   minCameraRatio: 0.02,
@@ -137,7 +169,9 @@ const renderer = new Sigma(graph, $("graph"), {
     const p = state.pulses.get(node);
     if (p !== undefined && now - p < PULSE_MS) {
       const k = 1 - (now - p) / PULSE_MS;
-      res.size = (data.size as number) * (1 + 0.9 * k * Math.abs(Math.sin((now - p) / 140)));
+      if (!reducedMotion.matches) {
+        res.size = (data.size as number) * (1 + 0.9 * k * Math.abs(Math.sin((now - p) / 140)));
+      }
       res.highlighted = true;
     }
     if (node === state.selected) {
@@ -163,7 +197,7 @@ const renderer = new Sigma(graph, $("graph"), {
       else res.color = palette.accent;
     }
     if (state.path) {
-      if (state.path.has(s) && state.path.has(t)) {
+      if (state.pathEdges.has(JSON.stringify([s, t]))) {
         res.color = palette.accent;
         res.size = 2.5;
       } else res.hidden = true;
@@ -177,15 +211,28 @@ const renderer = new Sigma(graph, $("graph"), {
 });
 
 let animating = false;
+let animationTimer: number | undefined;
 function animate(): void {
-  if (animating) return;
+  if (animating && animationTimer === undefined) return;
+  window.clearTimeout(animationTimer);
+  animationTimer = undefined;
   animating = true;
   const tick = () => {
     const now = performance.now();
     for (const [id, t] of state.pulses) if (now - t > PULSE_MS) state.pulses.delete(id);
     for (const [id, t] of state.trail) if (now - t > TRAIL_MS) state.trail.delete(id);
     renderer.refresh({ skipIndexation: true });
-    if (state.pulses.size || state.trail.size) requestAnimationFrame(tick);
+    if (state.pulses.size && !reducedMotion.matches && !document.hidden) requestAnimationFrame(tick);
+    else if (state.pulses.size || state.trail.size) {
+      const boundaries = [
+        ...[...state.pulses.values()].map((t) => t + PULSE_MS + 1),
+        ...[...state.trail.values()].flatMap((t) => [t + 4001, t + TRAIL_MS + 1]),
+      ].filter((t) => t > now);
+      animationTimer = window.setTimeout(() => {
+        animationTimer = undefined;
+        tick();
+      }, Math.max(16, Math.min(...boundaries) - now));
+    }
     else animating = false;
   };
   requestAnimationFrame(tick);
@@ -202,7 +249,7 @@ function encode(): void {
     const color = nodeColor(n, state.colorBy, ctx);
     graph.mergeNodeAttributes(id, {
       color,
-      innerColor: n.kind === "test" || n.kind === "route" ? palette.canvas : color,
+      innerColor: ["cluster", "package", "test", "route"].includes(n.kind) ? palette.canvas : color,
       size: nodeSize(n, state.sizeBy, ctx),
       type: nodeType(n),
       dead: Boolean(n.dead),
@@ -227,10 +274,12 @@ function renderLegend(nodes: GNode[], ctx: ReturnType<typeof buildContext>): voi
   box.append(title);
   for (const it of items) box.append(el("div", {}, [el("span", { class: "sw", style: `background:${it.color}` }), it.label]));
   box.append(el("hr"));
-  box.append(el("div", {}, [el("span", { class: "sw sq", style: "background:var(--muted)" }), "module / package"]));
+  box.append(el("div", {}, [el("span", { class: "sw sq", style: "background:var(--muted)" }), "module"]));
   box.append(el("div", {}, [el("span", { class: "sw" , style: "background:var(--muted)"}), "function / method"]));
-  box.append(el("div", {}, [el("span", { class: "sw ring" }), "class / test / route"]));
-  box.append(el("div", { class: "muted" }, ["→ dependency · faint = low-confidence call · red = import cycle"]));
+  box.append(el("div", {}, [el("span", { class: "sw ring" }), "package / class / test / route"]));
+  const relation = { import: "imports", call: "calls", tests: "test relation", cochange: "changes together", routes: "route relationship" }[state.layer];
+  box.append(el("div", { class: "muted" }, [`Edges: ${relation} · faint = low confidence${state.layer === "import" && state.showCycles ? " · red = import cycle" : ""}`]));
+  box.append(el("div", { class: "muted" }, [`Size: ${state.sizeBy} · larger = higher value`]));
 }
 
 function placeNode(id: string, n: GNode, previous: Map<string, { x: number; y: number }>): { x: number; y: number } {
@@ -240,9 +289,8 @@ function placeNode(id: string, n: GNode, previous: Map<string, { x: number; y: n
   if (prev) return prev;
   // Near already-placed neighbours, so new nodes don't reshuffle the map.
   const pts: { x: number; y: number }[] = [];
-  for (const e of state.payload?.edges ?? []) {
-    const other = e.source === id ? e.target : e.target === id ? e.source : null;
-    const pos = other ? previous.get(other) ?? (state.saved[other] && { x: state.saved[other][0], y: state.saved[other][1] }) : null;
+  for (const other of neighbors.get(id) ?? []) {
+    const pos = previous.get(other) ?? (state.saved[other] && { x: state.saved[other][0], y: state.saved[other][1] });
     if (pos) pts.push(pos);
   }
   const r = Math.sqrt(graph.order + 10) * 8;
@@ -266,6 +314,7 @@ async function load(opts: { keepCamera?: boolean; pulse?: Set<string> } = {}): P
       level: state.level, layer: state.layer, root: state.root, depth: state.depth, filters: state.filters,
     });
   } catch (err) {
+    if (seq !== loadSeq) return;
     showError(err);
     if (err instanceof ApiError && state.root) {
       state.root = null;
@@ -275,6 +324,8 @@ async function load(opts: { keepCamera?: boolean; pulse?: Set<string> } = {}): P
   }
   if (seq !== loadSeq) return;
   state.payload = payload;
+  state.hovered = null;
+  neighbors = adjacency(payload.edges);
   const previous = new Map<string, { x: number; y: number }>();
   graph.forEachNode((id, a) => previous.set(id, { x: a.x, y: a.y }));
   const pinned = new Set(graph.filterNodes((_, a) => Boolean(a.fixed)));
@@ -287,12 +338,12 @@ async function load(opts: { keepCamera?: boolean; pulse?: Set<string> } = {}): P
   for (const e of payload.edges) {
     if (graph.hasNode(e.source) && graph.hasNode(e.target) && !graph.hasEdge(e.source, e.target)) {
       graph.addEdgeWithKey(e.id, e.source, e.target, {
-        weight: e.weight, confidence: e.confidence, cycle: Boolean(e.cycle), size: Math.min(4, 0.6 + Math.log1p(e.weight) * 0.6),
+        weight: e.weight, confidence: e.confidence, cycle: Boolean(e.cycle), size: Math.min(2.5, 0.45 + Math.log1p(e.weight) * 0.35),
       });
     }
   }
   state.community = new Map();
-  if (graph.size > 0) {
+  if (state.colorBy === "community" && graph.size > 0 && payload.nodes.some((n) => n.community === undefined)) {
     try {
       const communities = louvain(graph, { getEdgeWeight: "weight" }) as Record<string, number>;
       state.community = new Map(Object.entries(communities));
@@ -309,7 +360,7 @@ async function load(opts: { keepCamera?: boolean; pulse?: Set<string> } = {}): P
   if (fresh > 0 && !$<HTMLInputElement>("ph-run").dataset.frozen) {
     startLayout(Math.min(12_000, 3000 + payload.nodes.length * 6));
   }
-  if (!opts.keepCamera) renderer.getCamera().animatedReset({ duration: 300 });
+  if (!opts.keepCamera) renderer.getCamera().animatedReset({ duration: reducedMotion.matches ? 0 : 300 });
   if (state.root && graph.hasNode(state.root)) select(state.root, false);
 }
 
@@ -476,6 +527,7 @@ async function select(node: string, moveCamera = true): Promise<void> {
     const details = await source.node(node);
     if (state.selected === node) renderPanel(node, details);
   } catch (err) {
+    if (state.selected !== node) return;
     const n = graph.hasNode(node) ? (graph.getNodeAttribute(node, "data") as GNode) : null;
     body.innerHTML = "";
     body.append(el("h2", {}, [node]));
@@ -493,8 +545,9 @@ function closePanel(): void {
 function linkList(items: { id: string; meta?: string }[]): HTMLElement {
   const ul = el("ul", { class: "links" });
   for (const it of items) {
-    const li = el("li", { title: it.id }, [it.id, it.meta ? el("span", { class: "muted" }, [`  ${it.meta}`]) : ""]);
-    li.addEventListener("click", () => jumpTo(it.id));
+    const button = el("button", { type: "button", title: it.id }, [it.id, it.meta ? el("span", { class: "muted" }, [`  ${it.meta}`]) : ""]);
+    const li = el("li", {}, [button]);
+    button.addEventListener("click", () => jumpTo(it.id));
     ul.append(li);
   }
   return ul;
@@ -632,8 +685,11 @@ const results = $("search-results");
 function renderHits(): void {
   results.innerHTML = "";
   results.hidden = hits.length === 0;
+  searchInput.setAttribute("aria-expanded", String(hits.length > 0));
+  if (hits[active]) searchInput.setAttribute("aria-activedescendant", `search-hit-${active}`);
+  else searchInput.removeAttribute("aria-activedescendant");
   hits.forEach((h, i) => {
-    const li = el("li", { "aria-selected": String(i === active) }, [
+    const li = el("li", { id: `search-hit-${i}`, role: "option", "aria-selected": String(i === active) }, [
       el("span", { class: "hit-id" }, [h.id]),
       el("span", { class: "hit-meta" }, [`${h.kind}${h.file ? ` · ${h.file}` : ""}${h.snippet ? ` — ${h.snippet}` : ""}`]),
     ]);
@@ -646,9 +702,10 @@ function renderHits(): void {
 }
 
 function choose(h: (typeof hits)[number]): void {
+  searchRequests.next();
   window.clearTimeout(searchTimer);
   hits = [];
-  results.hidden = true;
+  renderHits();
   searchInput.blur();
   const target = h.node ?? h.id;
   if (graph.hasNode(target)) void select(target);
@@ -660,6 +717,9 @@ function choose(h: (typeof hits)[number]): void {
 
 searchInput.addEventListener("input", () => {
   window.clearTimeout(searchTimer);
+  const request = searchRequests.next();
+  hits = [];
+  renderHits();
   searchTimer = window.setTimeout(async () => {
     const q = searchInput.value.trim();
     if (!q) {
@@ -668,10 +728,13 @@ searchInput.addEventListener("input", () => {
       return;
     }
     try {
-      hits = await source.search(q, state.level);
+      const found = await source.search(q, state.level);
+      if (!searchRequests.current(request)) return;
+      hits = found;
       active = 0;
       renderHits();
     } catch (err) {
+      if (!searchRequests.current(request)) return;
       showError(err);
     }
   }, 150);
@@ -681,14 +744,21 @@ searchInput.addEventListener("keydown", (e) => {
   else if (e.key === "ArrowUp") active = Math.max(0, active - 1);
   else if (e.key === "Enter" && hits[active]) choose(hits[active]);
   else if (e.key === "Escape") {
-    results.hidden = true;
+    searchRequests.next();
+    hits = [];
+    renderHits();
     searchInput.blur();
     return;
   } else return;
   e.preventDefault();
   renderHits();
 });
-searchInput.addEventListener("blur", () => window.setTimeout(() => (results.hidden = true), 120));
+searchInput.addEventListener("blur", () => window.setTimeout(() => {
+  if (document.activeElement === searchInput) return;
+  searchRequests.next();
+  hits = [];
+  renderHits();
+}, 120));
 
 // ---------------------------------------------------------------------------------------------
 // Controls
@@ -719,6 +789,9 @@ function readFilters(): void {
 }
 
 function bindControls(): void {
+  $("zoom-in").addEventListener("click", () => renderer.getCamera().animatedZoom({ duration: reducedMotion.matches ? 0 : 220 }));
+  $("zoom-out").addEventListener("click", () => renderer.getCamera().animatedUnzoom({ duration: reducedMotion.matches ? 0 : 220 }));
+  $("zoom-fit").addEventListener("click", () => renderer.getCamera().animatedReset({ duration: reducedMotion.matches ? 0 : 300 }));
   const kinds = $("f-kinds");
   for (const k of KINDS) kinds.append(el("label", {}, [el("input", { type: "checkbox", value: k }), k]));
   document.querySelectorAll<HTMLButtonElement>("#level button").forEach((b) =>
@@ -735,6 +808,9 @@ function bindControls(): void {
   });
   $<HTMLSelectElement>("color-by").addEventListener("change", (e) => {
     state.colorBy = (e.target as HTMLSelectElement).value as ColorBy;
+    if (state.colorBy === "community" && !state.community.size && graph.size > 0 && state.payload?.nodes.some((n) => n.community === undefined)) {
+      state.community = new Map(Object.entries(louvain(graph, { getEdgeWeight: "weight" }) as Record<string, number>));
+    }
     encode();
     renderer.refresh();
   });
@@ -886,10 +962,14 @@ async function findPath(): Promise<void> {
   try {
     const r = await source.path(from, to, state.layer === "routes" ? "import" : state.layer, state.level);
     if (!r.nodes.length) {
+      state.path = null;
+      state.pathEdges.clear();
+      renderer.refresh({ skipIndexation: true });
       $("p-info").textContent = "No path between these nodes in this layer.";
       return;
     }
     state.path = new Set(r.nodes);
+    state.pathEdges = pathEdges(r.nodes, r.directed);
     state.rings = null;
     state.diff = null;
     $("p-info").textContent = `${r.nodes.length - 1} hops${r.directed ? "" : " (ignoring direction)"}: ${r.nodes.join(" → ")}`;
@@ -996,6 +1076,10 @@ async function boot(): Promise<void> {
     /* ignore */
   }
   bindControls();
+  if (matchMedia("(max-width: 900px)").matches) {
+    $("sidebar").classList.add("collapsed");
+    $("legend").classList.add("collapsed");
+  }
   syncFilterInputs();
   $<HTMLInputElement>("depth").value = String(state.depth);
   $("depth-out").textContent = String(state.depth);

@@ -6,8 +6,8 @@ export type SizeBy = "rank" | "loc" | "fan_in" | "blast";
 
 // Categorical palette tuned to stay distinct on both the dark and the light canvas.
 const CATEGORICAL = [
-  "#6c8cff", "#f2a33a", "#3fbf9f", "#e0607e", "#a67cf0", "#8fc24a",
-  "#f06f3a", "#3aa7d9", "#d4b13a", "#c86fc4", "#5fb86a", "#e88a8a",
+  "#8aa8ff", "#dfb579", "#69cbb3", "#dd8f9e", "#b1a0e8", "#a2be89",
+  "#dca188", "#80bfd7", "#c5bc8b", "#bb9dcb", "#83bba2", "#d7a5ad",
 ];
 export const NEUTRAL = "#8a93a6";
 
@@ -97,11 +97,12 @@ export function nodeSize(n: GNode, by: SizeBy, ctx: EncodeContext): number {
     : by === "loc" ? n.loc / ctx.maxLoc
     : by === "fan_in" ? (n.fan_in ?? 0) / ctx.maxFanIn
     : n.blast / ctx.maxBlast;
-  return 3 + Math.sqrt(Math.max(0, t)) * 14;
+  return 3 + Math.sqrt(Math.max(0, t)) * 12;
 }
 
 export function nodeType(n: GNode): string {
-  if (n.kind === "cluster" || n.kind === "package" || n.kind === "module") return "square";
+  if (n.kind === "cluster" || n.kind === "package") return "border";
+  if (n.kind === "module") return "square";
   if (n.kind === "test" || n.kind === "route" || n.kind === "class") return "border";
   return "circle";
 }
@@ -114,7 +115,7 @@ export interface LegendItem {
 export function legend(by: ColorBy, nodes: GNode[], ctx: EncodeContext): LegendItem[] {
   if (by === "risk" || by === "findings") {
     return [
-      { color: ramp(HEAT, 0), label: by === "risk" ? "low risk" : "no findings" },
+      { color: by === "risk" ? ramp(HEAT, 0) : NEUTRAL, label: by === "risk" ? "low risk" : "no findings" },
       { color: ramp(HEAT, 0.5), label: "medium" },
       { color: ramp(HEAT, 1), label: by === "risk" ? "high risk" : "many findings" },
     ];
