@@ -12,6 +12,17 @@ scanned or modified.
 
 ## Token savings
 
+The [real Codex agent benchmark](agent-benchmark-results-2026-10-03.md) compares six fresh
+agents across 12 reports. PRISM reduced average tool output by 34.8% and total input processed
+by 1.5%, while taking 42.3% longer. Primary-function scores averaged 9.67/12 with PRISM and
+9/12 without. These measured results are separate from the scripted estimates below.
+
+The [MCP rerun](agent-benchmark-results-mcp-2026-10-03.md) uses six new Codex agents and
+persistent PRISM MCP sessions through a stdio adapter. Tool output fell 8.6%, but total input
+processed rose 17.2% and runs took 18.8% longer versus its fresh baseline. Scores averaged
+9.33/12 with PRISM and 8.67/12 without. The report includes protocol logs and a comparison
+with the earlier CLI run; this was an adapter-based MCP run, not native registered tools.
+
 `python -m tests.benchmarks.tokens` replays realistic bug-fix requests, each paired with the
 symbol a correct fix must touch, and counts the tokens an agent reads to orient itself under two
 strategies. Tokens are estimated as characters ÷ 4, the same approximation PRISM uses for its
