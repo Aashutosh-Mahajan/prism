@@ -14,3 +14,4 @@ viewer/.test-build/
 # PRISM (local caches and audit scratch files)
 .aicontext/cache/
 .aicontext/audit/scratch/
+.benchmark-runs/
