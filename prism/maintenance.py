@@ -109,25 +109,11 @@ def doctor(root: Path) -> list[Check]:
         warn_only=True,
     )
 
-    settings = root / ".claude" / "settings.json"
-    if settings.is_file():
-        text = settings.read_text(encoding="utf-8")
-        add(
-            "claude hooks",
-            "prism hook session-start" in text and "prism hook post-edit" in text,
-            "session-start and post-edit installed"
-            if "prism hook" in text
-            else "not installed (optional)",
-            warn_only=True,
-        )
-    mcp_json = root / ".mcp.json"
-    if mcp_json.is_file():
-        add(
-            "mcp entry",
-            '"prism"' in mcp_json.read_text(encoding="utf-8"),
-            ".mcp.json registers `prism mcp`",
-            warn_only=True,
-        )
+    from prism.integrations import all_integrations
+
+    for integration in all_integrations():
+        for name, ok, detail in integration.status(root):
+            add(name, ok, detail, warn_only=True)
     try:
         import mcp  # noqa: F401
 
