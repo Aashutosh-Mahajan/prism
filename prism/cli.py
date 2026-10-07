@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import contextlib
 import json
-import os
 import sys
 from collections.abc import Callable
 from functools import wraps
@@ -115,7 +114,11 @@ def _main(
 def init(
     root: RootOption = None,
     agent: Annotated[
-        str, typer.Option("--agent", help="claude-code | cursor | codex | generic | auto | none")
+        str,
+        typer.Option(
+            "--agent",
+            help="claude-code | cursor | codex | gemini | antigravity | generic | auto | none",
+        ),
     ] = "auto",
     hooks: Annotated[bool | None, typer.Option("--hooks/--no-hooks", help="Agent hooks.")] = None,
     mcp: Annotated[
@@ -132,7 +135,13 @@ def init(
     ] = None,
 ) -> None:
     """Enable PRISM in this repo. Shows every change first and asks before making it."""
-    from prism.integrations import IntegrationOptions, detect_agents
+    from prism.integrations import (
+        HAS_HOOKS,
+        HAS_MCP,
+        IntegrationOptions,
+        detect_agents,
+        get_integration,
+    )
     from prism.integrations.git_hooks import hooks_dir
     from prism.lifecycle import apply_init, plan_init, scan
 
@@ -153,14 +162,15 @@ def init(
 
     options = IntegrationOptions(
         hooks=ask(
-            "Install agent hooks (session brief + index update after edits)?",
+            "Install agent hooks (brief at session start, the code a request needs added to "
+            "the prompt, index update after edits)?",
             hooks,
-            "claude-code" in agents,
+            bool(HAS_HOOKS & set(agents)),
         ),
         mcp=ask(
             "Register the PRISM MCP server for your agent?",
             mcp,
-            bool({"claude-code", "cursor"} & set(agents)),
+            bool(HAS_MCP & set(agents)),
         ),
     )
     use_git_hooks = ask(
@@ -180,6 +190,9 @@ def init(
             raise typer.Exit(0)
         apply_init(plan)
         out.print("[green]PRISM initialized.[/green]")
+        for name in agents:
+            for note in get_integration(name).notes(repo, options):
+                out.print(f"[yellow]note ({name}):[/yellow] {note}", markup=True, highlight=False)
 
     do_scan = (
         run_scan
@@ -340,17 +353,31 @@ def scan_cmd(
 @app.command("update")
 @handle_errors
 def update_cmd(
+    paths: Annotated[
+        list[str] | None,
+        typer.Argument(help="Files known to have changed (same as --files; any number)."),
+    ] = None,
     files: Annotated[
-        list[str] | None, typer.Option("--files", help="Files known to have changed.")
+        list[str] | None,
+        typer.Option("--files", help="A file known to have changed. Repeatable; extra paths work."),
     ] = None,
     root: RootOption = None,
     quiet: QuietOption = False,
     as_json: JsonOption = False,
 ) -> None:
-    """Incrementally update the index: re-parse only changed files."""
-    from prism.lifecycle import update
+    """Incrementally update the index: re-parse only changed files.
 
-    result = update(_root(root), files=files)
+    `prism update a.py b.py`, `prism update --files a.py b.py` and
+    `prism update --files a.py --files b.py` are all accepted.
+    """
+    from prism.lifecycle import update
+    from prism.navigator.freshness import warm_caches
+
+    named = [*(files or []), *(paths or [])]
+    repo = _root(root)
+    result = update(repo, files=named or None)
+    if not result.skipped:
+        warm_caches(repo)
     data = {
         "skipped": result.skipped,
         "changed": list(result.changed),
@@ -424,19 +451,28 @@ BudgetOption = Annotated[int, typer.Option("--budget", min=100, help="Token budg
 
 
 def _store(root: Path | None) -> Any:
+    from prism.navigator.freshness import refresh_if_stale
     from prism.navigator.store import IndexStore
 
-    return IndexStore.open(_root(root))
+    repo = _root(root)
+    refresh_if_stale(repo)  # answer from the working tree, whether or not hooks ran
+    return IndexStore.open(repo)
 
 
 @app.command()
 @handle_errors
-def brief(root: RootOption = None, as_json: JsonOption = False) -> None:
-    """Print .aicontext/AGENTS.md plus a one-line freshness status."""
+def brief(
+    root: RootOption = None,
+    full: Annotated[
+        bool, typer.Option("--full", help="The whole AGENTS.md, not the compact session brief.")
+    ] = False,
+    as_json: JsonOption = False,
+) -> None:
+    """Print the compact session brief (or the full AGENTS.md) plus a one-line freshness status."""
     from prism.navigator import api as nav
     from prism.navigator import render
 
-    _output(nav.op_brief(_root(root)), as_json, render.render_brief)
+    _output(nav.op_brief(_root(root), full=full), as_json, render.render_brief)
 
 
 @app.command("locate")
@@ -487,6 +523,35 @@ def impact_cmd(
     from prism.navigator import render
 
     _output(nav.op_impact(_store(root), target, depth), as_json, render.render_impact)
+
+
+@app.command()
+@handle_errors
+def task(
+    query: Annotated[str, typer.Argument(help="The request, a symbol name, or a file path.")],
+    root: RootOption = None,
+    budget: Annotated[int, typer.Option("--budget", min=128, max=32000)] = 2000,
+    session: Annotated[
+        str | None,
+        typer.Option(
+            "--session",
+            help="Remember returned code in this session; repeats become one-line references.",
+        ),
+    ] = None,
+    as_json: JsonOption = False,
+) -> None:
+    """One call: the matching code, every exact string match, call sites, tests and impact."""
+    from prism.navigator import api as nav
+    from prism.navigator.session import load_seen, save_seen, session_id
+    from prism.navigator.task_pack import render_task
+
+    store = _store(root)
+    sid = session_id(session)
+    seen = load_seen(store.root, sid) if sid else None
+    pack = nav.op_task(store, query, budget, seen)
+    if sid and seen is not None:
+        save_seen(store.root, sid, seen)
+    _output(pack, as_json, render_task)
 
 
 @app.command()
@@ -888,55 +953,59 @@ def migrate(root: RootOption = None, as_json: JsonOption = False) -> None:
 # --- hooks and MCP -----------------------------------------------------------------
 
 
-def _read_stdin() -> str:
-    try:
-        if sys.stdin is None or sys.stdin.isatty():
-            return ""
-        return sys.stdin.read()
-    except (OSError, ValueError):
-        return ""
+FormatOption = Annotated[
+    str, typer.Option("--format", help="How to print context: text | json | cursor.")
+]
+EventOption = Annotated[
+    str | None, typer.Option("--event", help="Event name for --format json (default: the hook's).")
+]
 
 
-def _hard_exit() -> None:
-    """Hooks must never linger: flush and exit 0 even if a bounded update is still running."""
-    with contextlib.suppress(Exception):
-        sys.stdout.flush()
-        sys.stderr.flush()
-    if os.environ.get("PRISM_HOOK_NO_EXIT") != "1":
-        os._exit(0)
+def _run_hook(name: str, fmt: str, event: str | None) -> None:
+    from prism.hooks.entry import run_hook
+
+    args = ["--format", fmt]
+    if event:
+        args += ["--event", event]
+    run_hook(name, args)
 
 
 @hook_app.command("session-start")
-def hook_session_start() -> None:
-    """Catch up on outside changes, then print the brief into the agent's context."""
-    from prism.hooks import session_start
+def hook_session_start(fmt: FormatOption = "text", event: EventOption = None) -> None:
+    """Catch up on outside changes, then print the compact brief into the agent's context."""
+    _run_hook("session-start", fmt, event)
 
-    try:
-        text = session_start(_read_stdin())
-        if text:
-            typer.echo(text)
-    finally:
-        _hard_exit()
+
+@hook_app.command("user-prompt")
+def hook_user_prompt(fmt: FormatOption = "text", event: EventOption = None) -> None:
+    """Look up the user's request in the index and add the matching code to the prompt."""
+    _run_hook("user-prompt", fmt, event)
 
 
 @hook_app.command("post-edit")
 def hook_post_edit() -> None:
     """Update the index for the file the agent just edited. Silent; always exits 0."""
-    from prism.hooks import post_edit
-
-    try:
-        post_edit(_read_stdin())
-    finally:
-        _hard_exit()
+    _run_hook("post-edit", "text", None)
 
 
 @app.command("mcp")
 @handle_errors
-def mcp_cmd(root: RootOption = None) -> None:
+def mcp_cmd(
+    root: RootOption = None,
+    profile: Annotated[
+        str | None,
+        typer.Option(
+            "--profile",
+            help="lean (default: task, context, impact, status) or full (adds search, audit, ...).",
+        ),
+    ] = None,
+) -> None:
     """Run the MCP server over stdio (started by your agent from .mcp.json)."""
-    from prism.mcp.server import run
+    from prism.mcp.server import PROFILES, run
 
-    run(_root(root))
+    if profile is not None and profile.lower() not in PROFILES:
+        raise UserError(f"--profile must be one of: {', '.join(PROFILES)}")
+    run(_root(root), profile)
 
 
 def main() -> None:
