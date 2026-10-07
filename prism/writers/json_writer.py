@@ -5,8 +5,26 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import time
 from pathlib import Path
 from typing import Any
+
+REPLACE_ATTEMPTS = 12
+REPLACE_PAUSE_SECONDS = 0.01
+
+
+def _replace(tmp: str, path: Path) -> None:
+    """`os.replace`, retried briefly. On Windows the target cannot be replaced while another
+    thread or process (a reader, an antivirus scan, the search indexer) has it open; that is
+    over in milliseconds, so wait it out instead of failing the whole update."""
+    for attempt in range(REPLACE_ATTEMPTS):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            if attempt == REPLACE_ATTEMPTS - 1:
+                raise
+            time.sleep(REPLACE_PAUSE_SECONDS * (attempt + 1))
 
 
 def dumps(data: Any) -> str:
@@ -26,7 +44,7 @@ def write_text(path: Path, text: str) -> bool:
     try:
         with os.fdopen(fd, "wb") as fh:
             fh.write(data)
-        os.replace(tmp, path)
+        _replace(tmp, path)
     except BaseException:
         Path(tmp).unlink(missing_ok=True)
         raise
