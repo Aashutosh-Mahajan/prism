@@ -125,6 +125,35 @@ def test_the_budget_is_configurable_and_respected(repo: Path) -> None:
     assert text and estimate_tokens(text) <= 560  # the budget plus the one-line header
 
 
+def test_adaptive_packet_remembers_only_delivered_attempt(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from prism.hooks.prompt import _retrieve
+    from prism.navigator import api
+    from prism.navigator.session import load_seen
+    from prism.writers.manifest import load_manifest
+
+    original = api.op_task
+    budgets: list[int] = []
+    discarded = ("not-delivered.py", 1, 2)
+
+    def retrieve(store, query, budget, seen=None):
+        assert discarded not in (seen or set())
+        budgets.append(budget)
+        pack = original(store, query, budget, seen)
+        if len(budgets) == 1:
+            pack["sufficient"] = False
+            if seen is not None:
+                seen.add(discarded)
+        return pack
+
+    monkeypatch.setattr(api, "op_task", retrieve)
+    text = _retrieve(str(repo), T1, "adaptive", 2000)
+    assert text and len(budgets) == 2 and budgets[0] < budgets[1]
+    assert estimate_tokens(text) <= 2000
+    assert discarded not in load_seen(repo, "adaptive", load_manifest(repo))
+
+
 def test_output_formats_match_each_agents_contract() -> None:
     assert render_context("hello", "text", "UserPromptSubmit") == "hello"
     codex = json.loads(render_context("hello", "json", "UserPromptSubmit"))

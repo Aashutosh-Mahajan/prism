@@ -13,7 +13,7 @@ import importlib
 import os
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlencode
 
 from prism import __version__
@@ -73,6 +73,10 @@ class PrismTools:
         """Enable state, index freshness, changed files, drift, stale sections, audit summary."""
         return self.call(lambda: compute_status(self.root).to_dict())
 
+    def prism_knowledge(self, budget: int = 600) -> dict[str, Any]:
+        """Inspect the bounded local project inventory, without loading source."""
+        return self.call(lambda: nav.op_knowledge(self.store(), budget))
+
     def prism_brief(self, full: bool = False) -> dict[str, Any]:
         """The compact session brief (commands and notes) plus freshness; full=true for AGENTS.md."""
         return self.call(lambda: nav.op_brief(self.root, full=full))
@@ -89,16 +93,31 @@ class PrismTools:
         return self.call(lambda: nav.op_locate(self.store(), name))
 
     def prism_task(
-        self, query: str, budget: int = 2000, repeat: bool = False, mode: str = "auto"
+        self,
+        query: str,
+        budget: int = 2000,
+        repeat: bool = False,
+        mode: str = "auto",
+        session: str | None = None,
     ) -> dict[str, Any]:
         """Start here. For a request, symbol or file: the matching code with line numbers, every
         exact occurrence of the strings/names/quantities it mentions (exhaustive, so no grep),
         call sites, tests and impact. Code returned earlier in this session is referenced, not
         repeated, unless repeat=true. mode: auto, overview (map/signatures), code (edit source).
         budget is chars/4, 128-32000."""
-        return self.call(
-            lambda: nav.op_task(self.store(), query, budget, None if repeat else self._seen, mode)
-        )
+
+        def retrieve() -> dict[str, Any]:
+            from prism.navigator.session import load_seen, save_seen, session_id
+
+            store = self.store()
+            sid = session_id(session)
+            seen = load_seen(self.root, sid, store.manifest) if sid else self._seen
+            pack = nav.op_task(store, query, budget, None if repeat else seen, mode)
+            if sid and not repeat:
+                save_seen(self.root, sid, seen, store.manifest)
+            return pack
+
+        return self.call(retrieve)
 
     def prism_context(
         self, target: str, budget: int = 2000, depth: int = 1, with_source: bool = False
@@ -222,6 +241,7 @@ NAVIGATION_TOOLS = (
     "prism_module",
 )
 EXTRA_TOOLS: list[str] = [
+    "prism_knowledge",
     "prism_refresh_prepare",
     "prism_refresh_commit",
     "prism_audit_plan",
@@ -266,8 +286,44 @@ def build_server(root: Path, profile: str | None = None) -> Any:
         server = server_cls("prism", instructions=INSTRUCTIONS, version=__version__)
     except TypeError:  # pragma: no cover - SDK without a version argument
         server = server_cls("prism", instructions=INSTRUCTIONS)
+
+    def task(
+        query: str,
+        budget: int = 2000,
+        repeat: bool = False,
+        mode: str = "auto",
+        session: str | None = None,
+        format: Literal["compact", "json"] = "compact",
+    ) -> Any:
+        """Get edit source, contracts, literals, callers and tests in one call.
+
+        Compact text matches CLI output; json returns the full packet. Use a
+        shared session id to reuse evidence from CLI/hooks or across reconnects.
+        Read only missing ranges for partial packets. No separate orientation.
+        """
+        from prism.navigator.task_pack import render_task
+
+        pack = tools.prism_task(query, budget, repeat, mode, session)
+        if format == "json" or pack.get("error"):
+            import json
+
+            from mcp.types import CallToolResult, TextContent
+
+            # Validate wire aliases for both SDK 1.x and 2.x; SDK 2's typed
+            # constructor uses snake_case although the protocol uses camelCase.
+            return CallToolResult.model_validate(
+                {
+                    "content": [
+                        TextContent(type="text", text=json.dumps(pack, ensure_ascii=False))
+                    ],
+                    "structuredContent": pack,
+                    "isError": bool(pack.get("error")),
+                }
+            )
+        return render_task(pack)
+
     for name in enabled_tools(tools.root, profile):
-        server.tool(name=name)(getattr(tools, name))
+        server.tool(name=name)(task if name == "prism_task" else getattr(tools, name))
     return server
 
 

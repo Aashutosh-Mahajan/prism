@@ -549,6 +549,24 @@ def impact_cmd(
 
 @app.command()
 @handle_errors
+def knowledge(
+    root: RootOption = None,
+    budget: Annotated[int, typer.Option("--budget", min=128, max=32000)] = 600,
+    as_json: JsonOption = False,
+) -> None:
+    """Inspect persistent project knowledge; retrieve source only for a task."""
+    from prism.navigator.api import op_knowledge
+    from prism.navigator.knowledge import render_knowledge
+
+    store = _store(root)
+    try:
+        _output(op_knowledge(store, budget), as_json, render_knowledge)
+    finally:
+        store.close()
+
+
+@app.command()
+@handle_errors
 def task(
     query: Annotated[str, typer.Argument(help="The request, a symbol name, or a file path.")],
     root: RootOption = None,

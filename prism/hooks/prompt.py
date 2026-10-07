@@ -17,7 +17,8 @@ from typing import Any
 from prism.consent import RepoState
 from prism.hooks.runner import _log, _root_from, _spawn_update, _state, parse_payload
 
-PROMPT_BUDGET = 1200  # tokens (chars/4); Codex sets aside long hook output past ~2,500
+PROMPT_BUDGET = 2000  # hard cap; ordinary complete requests still start at 1,200
+INITIAL_PACKET_BUDGET = 1200
 MAX_PROMPT_CHARS = 2000
 MIN_WORDS = 4
 TIME_BUDGET_SECONDS = 4.0
@@ -104,7 +105,22 @@ def _retrieve(
     store = IndexStore.open(root)
     try:
         seen = load_seen(root, session, store.manifest) if session else None
-        pack = op_task(store, prompt, packet_budget, seen)
+        # A slightly larger complete packet can avoid another model turn. Try the small
+        # working set first, expanding only when the hard cap permits it. Do not remember
+        # ranges from an attempt that was never delivered to the host.
+        trial_seen = set(seen) if seen is not None else None
+        first_budget = min(packet_budget, INITIAL_PACKET_BUDGET - estimate_tokens(HEADER + "\n"))
+        pack = op_task(store, prompt, first_budget, trial_seen)
+        if (
+            not pack.get("sufficient")
+            and pack["confidence"] != "low"
+            and packet_budget > first_budget
+            and not (abandoned and abandoned.is_set())
+        ):
+            expanded_seen = set(seen) if seen is not None else None
+            expanded = op_task(store, prompt, packet_budget, expanded_seen)
+            if expanded.get("sufficient"):
+                pack, trial_seen = expanded, expanded_seen
         if pack["confidence"] == "low" or not (pack["blocks"] or pack.get("literals")):
             return ""
         result = f"{HEADER}\n{render_task(pack)}"
@@ -112,8 +128,8 @@ def _retrieve(
             return ""
         # Remember what was returned only if the hook is still waiting for it: a result nobody
         # received must not make a later answer skip code the agent has never seen.
-        if seen is not None and session and not (abandoned and abandoned.is_set()):
-            save_seen(root, session, seen, store.manifest)
+        if trial_seen is not None and session and not (abandoned and abandoned.is_set()):
+            save_seen(root, session, trial_seen, store.manifest)
         return result
     finally:
         store.close()
