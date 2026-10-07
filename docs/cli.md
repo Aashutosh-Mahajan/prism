@@ -21,8 +21,8 @@ Enable PRISM in this repository. Shows every change first and asks before making
 
 | Option | Default | Description |
 |---|---|---|
-| `--agent` | `auto` | `claude-code`, `cursor`, `codex`, `generic`, `auto` or `none` |
-| `--hooks / --no-hooks` | ask | Install agent hooks (session brief, update after edits) |
+| `--agent` | `auto` | `claude-code`, `cursor`, `codex`, `gemini`, `antigravity`, `generic`, `auto` or `none` |
+| `--hooks / --no-hooks` | ask | Install agent hooks (brief at session start, the code a request needs added to the prompt, update after edits) |
 | `--mcp / --no-mcp` | ask | Register the MCP server |
 | `--git-hooks / --no-git-hooks` | ask | Install git `post-commit`, `post-merge`, `post-checkout` hooks |
 | `--scan / --no-scan` | ask | Run the initial scan |
@@ -76,10 +76,16 @@ consent, freshness, artifact integrity, MCP SDK, git, parsers and the viewer bun
 Build the full index into `.aicontext/`. Unchanged files reuse cached hashes and parses unless
 `--full` is given.
 
-### `prism update [--files FILE ...] [--quiet] [--json]`
+### `prism update [FILE ...] [--files FILE ...] [--quiet] [--json]`
 
-Incremental update: re-parse only changed, added or deleted files. `--files` names files known
-to have changed (they are always re-hashed). Exits early without writing when nothing changed.
+Incremental update: re-parse only changed, added or deleted files. Files known to have changed
+may be named as arguments, after `--files`, or with several `--files`; `prism update a.py b.py`,
+`prism update --files a.py b.py` and `prism update --files a.py --files b.py` all work. Named
+files are always re-hashed. Exits early without writing when nothing changed.
+
+Updates take a lock (`.aicontext/cache/update.lock`), so a hook, a query and a manual update
+never write the index at the same time. You rarely need this command: every query checks the
+working tree first and brings changed files up to date itself.
 
 ### `prism status [--json]`
 
@@ -104,14 +110,53 @@ Upgrade `.aicontext/` to the installed PRISM version's schema and rebuild the in
 
 ## Navigation
 
-Targets can be a symbol id (`shop.pricing.discounts.apply_discount`), a file path, `file:line`,
-a module, or a route (`"GET /orders"`). An ambiguous target returns ranked candidates instead of
-guessing.
+### `prism task "<request>" [--budget N] [--session ID] [--json]`
 
-### `prism brief`
+Start a coding task with one local call. Pass the request in the user's own words, a symbol
+name, or a file path. The answer contains:
 
-Print `.aicontext/AGENTS.md` and a one-line freshness status. This is what the session-start
-hook injects.
+- **Literals**: every exact occurrence of the strings, names and quantities the request
+  mentions, with `file:line` and the line. Quoted strings (`'Something went wrong'`), code names
+  (`LIFETIME_MINUTES`, `EmailCode.verify`), numbers with units ("10 minutes", found even as
+  `LIFETIME_MINUTES = 10`) and multi-word phrases are searched across the whole indexed source
+  through the postings, without scanning the repository. A list marked *exhaustive* covers every
+  occurrence, so the agent does not grep for those strings. Names the request uses that do not
+  exist in the source are listed as new.
+- **Blocks**: the code that best matches the request, with line numbers: a whole function when
+  it is small, windows around the matching lines otherwise. Whole files and module headers are
+  never returned.
+- **Callers** of the symbols the answer is about, with the calling line, plus **tests** that
+  mention them and the **impact** (how many symbols and files depend on them).
+- **Confidence** (`high`, `medium`, `low`), `sufficient`, and a `Next:` line saying how far to
+  trust the answer. `low` says to grep.
+
+The default budget is 2000 (range 128-32000), using `ceil(characters/4)` across the entire
+returned packet, including serialization and metadata. It is an estimate, not the model's token
+count; host and tool envelopes are outside it.
+
+Before answering it checks the working tree and brings any changed files up to date (only for a
+user PRISM is enabled for), so an edit made without running `prism update` is still seen.
+Source is returned only if it matches the indexed hash.
+
+`--session ID` (or `PRISM_SESSION`) remembers which code ranges this session already received;
+repeats come back as one-line references instead of the code again. The MCP server does this
+for its own lifetime (`repeat=true` forces the full answer).
+
+The query caches (`.aicontext/cache/index-*.sqlite`, `source-v2.sqlite`) are built by `prism scan`
+and kept current by updates; they are local and disposable. No model API, embeddings download or
+API key is involved.
+
+Targets for the follow-up commands can be a symbol id (`shop.pricing.discounts.apply_discount`),
+a file path, `file:line`, a module, or a route (`"GET /orders"`). An ambiguous target returns
+ranked candidates instead of guessing.
+
+### `prism brief [--full]`
+
+Print the compact session brief and a one-line freshness status. This is what the session-start
+hook injects: the project's languages and run/test/lint commands, any narrative a human or agent
+has written, and the one-line way to use PRISM. Generated overviews, placeholders and module
+rankings are left out (a repository overview does not help an agent find files faster and costs
+tokens every turn). `--full` prints the whole `.aicontext/AGENTS.md`.
 
 ### `prism search QUERY [--limit N] [--semantic] [--json]`
 
@@ -205,9 +250,16 @@ Mermaid and DOT exports without `--around` are capped at 150 nodes to stay reada
 
 | Command | Used by |
 |---|---|
-| `prism mcp` | The agent, from `.mcp.json`: runs the MCP server over stdio |
-| `prism hook session-start` | Agent session-start hook: consent check, catch-up update, prints the brief |
-| `prism hook post-edit` | Agent post-edit hook: updates the index for the edited file; silent, always exits 0 |
+| `prism mcp [--profile lean\|full]` | The agent, from `.mcp.json`: runs the MCP server over stdio. `lean` (default) exposes `prism_status`, `prism_task`, `prism_context`, `prism_impact`; `full` adds search, locate, brief, module and the refresh/audit/decision tools. Also `PRISM_MCP_PROFILE`. |
+| `prism hook session-start [--format text\|json\|cursor] [--event NAME]` | Session-start hook: consent check, catch-up update, prints the compact brief |
+| `prism hook user-prompt [--format ...] [--event NAME]` | Prompt hook: looks up the user's request and adds the matching code to the prompt; silent when there is nothing worth adding |
+| `prism hook post-edit` | Post-edit hook: starts an index update for the edited files in a detached process and returns at once; silent, always exits 0 |
+
+`--format text` prints plain context (Claude Code); `json` prints
+`{"hookSpecificOutput": {"hookEventName": ..., "additionalContext": ...}}` (Codex, Gemini CLI);
+`cursor` prints `{"additional_context": ...}`. Hooks start without importing the full command
+line, always speak UTF-8, and always exit 0. `PRISM_HOOK_SYNC=1` makes `post-edit` wait for the
+update instead of detaching.
 
 ## Exit codes
 
