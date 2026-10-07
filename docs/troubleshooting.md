@@ -43,10 +43,26 @@ hooks with `prism init --git-hooks`. After upgrading PRISM, run `prism migrate` 
 
 Hook problems are never shown to the agent; look in `.aicontext/cache/hook.log`.
 
-### The brief says "Not written yet"
+### The brief has no Purpose or Architecture
 
-The narrative sections (purpose, architecture, conventions) are written by your agent. Ask it to
-"refresh the PRISM brief"; the `prism-refresh` skill fills them in.
+That is the default, and it is on purpose. The session brief carries only what an agent cannot
+discover for itself (languages, how to run tests and lint, how to use PRISM) because a generated
+repository overview costs tokens every turn without helping the agent find code. If you want
+written Purpose, Architecture or Conventions sections, ask your agent to "refresh the PRISM
+brief" (the `prism-refresh` skill) or write them between the markers in `.aicontext/AGENTS.md`;
+anything written is then included in the brief. `prism brief --full` shows the whole file.
+
+### The first request after a clone or a scan is slow, or the prompt hook added nothing
+
+The query caches (`.aicontext/cache/`) are not committed. `prism scan` builds them; after a
+fresh clone the first prompt starts building them in the background and answers nothing, the
+next one is ready. Run `prism scan` once to have them straight away.
+
+### An edit was not picked up
+
+It should be: every `prism task`, `context`, `impact`, `locate`, `search` and MCP call checks
+the working tree first. If it was not, PRISM may not be enabled for you (`prism status`), may be
+paused, or more than 300 files changed at once (run `prism update`).
 
 ### Search doesn't find what I mean
 
