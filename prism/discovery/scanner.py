@@ -121,8 +121,13 @@ def discover(
     root: Path,
     config: PrismConfig,
     known: Mapping[str, Mapping[str, Any]] | None = None,
+    resniff: bool = True,
 ) -> list[SourceFile]:
-    """Select source files. `known` (manifest `files`) lets unchanged files skip hashing."""
+    """Select source files. `known` (manifest `files`) lets unchanged files skip hashing.
+
+    `resniff` also re-reads every unchanged script file big enough to be a bundle, so bundles
+    admitted by an older version drop out. That is a read of those files on every call, so only
+    a full scan asks for it; freshness checks and incremental updates do not."""
     root = root.resolve()
     known = known or {}
     # .gitignore files, root first then deeper ones: the last file with an opinion wins,
@@ -190,7 +195,8 @@ def discover(
                 # Unchanged since the last run: skip the binary sniff and the hash. Script files
                 # still get the cheap minified check so bundles indexed by older versions drop out.
                 if (
-                    prev["language"] in MINIFIED_LANGUAGES
+                    resniff
+                    and prev["language"] in MINIFIED_LANGUAGES
                     and stat.st_size >= MINIFIED_MIN_SIZE
                     and _minified_on_disk(full)
                 ):
