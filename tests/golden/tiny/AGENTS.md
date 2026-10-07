@@ -26,5 +26,5 @@ _Not written yet. Run the prism-refresh skill to fill this section._
 
 ## Navigation
 <!-- prism:generated:navigation -->
-Before reading files, use `prism search "<words>"` or `prism locate <name>`, then `prism context <target>` and read only its `read_list`. Run `prism impact <target>` before changing a public symbol. Check `prism status` if the index may be stale.
+Start with `prism task "<request>"`: it returns the matching code, every exact occurrence of the strings and names in the request, call sites and tests in one call. Use `prism context <symbol>` or `prism impact <symbol>` for follow-ups. If `prism status` says the index is stale, run `prism update`.
 <!-- /prism:generated:navigation -->

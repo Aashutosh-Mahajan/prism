@@ -26,9 +26,19 @@ _SECTION_TITLES = {
 }
 
 NAVIGATION = (
-    'Before reading files, use `prism search "<words>"` or `prism locate <name>`, then '
-    "`prism context <target>` and read only its `read_list`. Run `prism impact <target>` "
-    "before changing a public symbol. Check `prism status` if the index may be stale."
+    'Start with `prism task "<request>"`: it returns the matching code, every exact occurrence of '
+    "the strings and names in the request, call sites and tests in one call. Use "
+    "`prism context <symbol>` or `prism impact <symbol>` for follow-ups. If `prism status` says "
+    "the index is stale, run `prism update`."
+)
+
+# What an agent is actually shown at session start. A repository overview does not help an agent
+# find files faster (and the generated kind raises cost), so only what it cannot discover for
+# itself is injected: how to run things, anything a human wrote down, and how to use PRISM.
+COMPACT_FACTS = ("Languages", "Commands")
+COMPACT_NAVIGATION = (
+    'Start with `prism task "<request>"`: one call returns the code, every exact string match '
+    "(exhaustive), call sites and tests."
 )
 
 
@@ -91,3 +101,34 @@ def render_agents_md(index: Index, existing: str | None = None) -> str:
 
 def brief_tokens(text: str) -> int:
     return estimate_tokens(text)
+
+
+def written_narrative(text: str) -> dict[str, str]:
+    """Narrative sections a human or agent has actually written (placeholders do not count)."""
+    out: dict[str, str] = {}
+    for (kind, name), region in parse_regions(text).items():
+        body = region.body.strip()
+        if kind == "narrative" and body and body != NARRATIVE_PLACEHOLDER:
+            out[name] = body
+    return out
+
+
+def compact_brief(text: str) -> str:
+    """The brief as injected into an agent's context: no placeholders, no overview facts."""
+    if not text.strip():
+        return ""
+    title = text.lstrip().splitlines()[0].removeprefix("# ").split(" — ")[0].strip()
+    regions = parse_regions(text)
+    facts = regions.get(("generated", "facts"))
+    lines = [f"# {title}"] if title else []
+    if facts is not None:
+        for fact in facts.body.splitlines():
+            label = fact.removeprefix("- ").split(":", 1)[0]
+            if label in COMPACT_FACTS:
+                lines.append(fact.removeprefix("- "))
+    narrative = written_narrative(text)
+    for name in NARRATIVE_SECTIONS:
+        if name in narrative:
+            lines.append(f"{_SECTION_TITLES[name]}: {narrative[name]}")
+    lines.append(COMPACT_NAVIGATION)
+    return "\n".join(lines) + "\n"
