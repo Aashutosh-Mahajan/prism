@@ -42,6 +42,21 @@ def op_context(
     return pack
 
 
+def op_task(
+    store: IndexStore,
+    query: str,
+    budget: int = 2000,
+    seen: set[tuple[str, int, int]] | None = None,
+) -> dict[str, Any]:
+    """One-call retrieval for a request. `seen` (a session's already-returned code ranges)
+    makes repeats cost a reference line instead of the source again."""
+    from prism.navigator.task_pack import build_task
+
+    pack = build_task(store, query, budget, seen)
+    record_activity(store.root, "task", [b["symbol"] for b in pack["blocks"] if b["symbol"]])
+    return pack
+
+
 def op_impact(store: IndexStore, target: str, depth: int = DEFAULT_DEPTH) -> dict[str, Any]:
     resolved = resolve_target(store, target)
     result = impact(store, resolved, depth)
@@ -130,7 +145,7 @@ def freshness_line(root: Path) -> str:
         parts.append("index fresh")
     else:
         parts.append(f"{report.changed} files changed since last update — run `prism update`")
-    if report.stale_sections:
+    if report.stale_sections and _has_narrative(root):
         parts.append(
             "stale AGENTS.md sections: "
             + ", ".join(report.stale_sections)
@@ -141,7 +156,21 @@ def freshness_line(root: Path) -> str:
     return " · ".join(parts)
 
 
-def op_brief(root: Path) -> dict[str, Any]:
+def _has_narrative(root: Path) -> bool:
+    """Staleness only matters for narrative someone chose to write; placeholders cannot go stale."""
+    from prism.writers.agents_md import written_narrative
+
+    path = root / AICONTEXT / "AGENTS.md"
+    return path.is_file() and bool(written_narrative(path.read_text(encoding="utf-8")))
+
+
+def op_brief(root: Path, full: bool = False) -> dict[str, Any]:
+    from prism.writers.agents_md import compact_brief
+
     path = root / AICONTEXT / "AGENTS.md"
     text = path.read_text(encoding="utf-8") if path.is_file() else ""
-    return {"brief": text, "freshness": freshness_line(root)}
+    return {
+        "brief": text if full else compact_brief(text),
+        "freshness": freshness_line(root),
+        "compact": not full,
+    }
