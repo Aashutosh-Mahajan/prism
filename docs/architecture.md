@@ -120,7 +120,8 @@ sequenceDiagram
 
     Agent->>Hook: Edit tool finished (hook JSON on stdin)
     Hook->>Hook: consent check (enabled and not paused?)
-    Hook->>Life: update(files=[edited file]), time-boxed
+    Hook-->>Agent: exit 0 at once (about 0.2 s); the update continues in a detached process
+    Hook->>Life: update(files=[edited files]) under the update lock
     Life->>Disc: walk the repo, reuse hashes of unchanged files
     Disc-->>Life: added / changed / deleted
     Life->>Cache: cached parses for unchanged files
@@ -129,7 +130,7 @@ sequenceDiagram
     Pipe->>W: artifacts + structural diff
     W->>W: write only files whose content changed
     W-->>Life: new manifest (hashes, drift, timestamps)
-    Hook-->>Agent: exit 0, silently, whatever happened
+    Note over Agent,W: a query that arrives first checks the working tree itself and waits on the lock
 ```
 
 Key points:
@@ -205,9 +206,36 @@ module summaries it affects:
 | New declared dependency | 3 |
 | Private, body-only, formatting or comment edits | 0 |
 
-When a section reaches the threshold (default 8), it is marked stale. `prism brief` and
-`prism status` then tell the agent to run the `prism-refresh` skill, which rewrites only the
-stale sections through `refresh prepare` and `refresh commit`.
+When a section reaches the threshold (default 8), it is marked stale. If someone has written
+that section (placeholders cannot go stale), `prism brief` and `prism status` then tell the
+agent to run the `prism-refresh` skill, which rewrites only the stale sections through
+`refresh prepare` and `refresh commit`.
+
+## Answering from the working tree
+
+Hooks keep the index fresh for agents that have them, and many do not. So freshness does not
+depend on any hook: every navigator query (CLI and MCP) first compares the working tree with the
+manifest (a stat walk; files whose size and mtime match are not re-read) and, for a user PRISM
+is enabled for, updates just the files that changed before answering. An update writes the index
+under a cross-process lock (`.aicontext/cache/update.lock`), so a hook, a query and a manual
+update take turns. More than 300 changed files is left for an explicit `prism update`.
+
+## How a request becomes an answer
+
+`prism task` is one retrieval call built from three kinds of evidence:
+
+1. **Literals.** Quoted strings, code names, numbers with units and multi-word phrases in the
+   request are looked up in the source postings (a term to files index) and then verified by
+   exact match on the candidate files only. The result is every occurrence, not a ranking.
+2. **Lines.** Candidate files (by BM25 over bodies and paths) are scanned line by line for the
+   request's rarer words, with related words (a small code-domain synonym table) at half weight.
+   Imports, module headers and test/doc/migration files are down-weighted.
+3. **The graph.** Matching lines become blocks (a small symbol whole, or a window); blocks that
+   call each other reinforce one another; the best symbols get their callers (with the calling
+   line), tests that mention them and an impact count.
+
+Confidence comes from exact evidence, the margin between the best block and the next, and how
+much of the request's weight the best block covers.
 
 ## Consent
 
