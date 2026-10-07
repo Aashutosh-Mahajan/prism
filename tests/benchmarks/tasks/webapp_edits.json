@@ -1,0 +1,66 @@
+[
+  {
+    "id": "t1-lifetime",
+    "request": "Email verification codes should stay valid for 15 minutes instead of 10. Change the app so the real expiry and everything users are told about it say 15 minutes.",
+    "checks": [
+      {"type": "contains", "file": "backend/core/models.py", "text": "LIFETIME_MINUTES = 15"},
+      {"type": "contains", "file": "frontend/src/pages/auth/VerifyEmailPage.tsx", "text": "expires in 15 minutes"},
+      {"type": "not_contains", "file": "frontend/src/pages/auth/VerifyEmailPage.tsx", "text": "expires in 10 minutes"},
+      {"type": "contains", "file": "frontend/src/pages/auth/ForgotPasswordPage.tsx", "text": "expires in 15 minutes"},
+      {"type": "not_contains", "file": "frontend/src/pages/auth/ForgotPasswordPage.tsx", "text": "expires in 10 minutes"}
+    ]
+  },
+  {
+    "id": "t2-change-pct",
+    "request": "Every KPI object the analytics endpoints return (value / previous / kind) should also include a `change_pct` field: the percentage change of `value` versus `previous`, rounded to 1 decimal place. It should be null when there is no previous value, when previous is 0, or when value is missing. Metrics that are snapshots (no comparison) should get null.",
+    "checks": [
+      {
+        "type": "python_call",
+        "file": "backend/core/analytics.py",
+        "function": "build_kpis",
+        "cases": [
+          {
+            "args": [
+              {"a": 120, "b": 5, "c": null, "d": 50, "e": 7},
+              {"a": 100, "b": 0, "c": 3, "d": 80, "e": 7},
+              {"a": "count", "b": "count", "c": "count", "d": "count", "e": "count"}
+            ],
+            "kwargs": {"snapshot": ["e"]},
+            "expect": {
+              "a.change_pct": 20.0,
+              "b.change_pct": null,
+              "c.change_pct": null,
+              "d.change_pct": -37.5,
+              "e.change_pct": null,
+              "a.value": 120,
+              "a.kind": "count"
+            }
+          },
+          {
+            "args": [{"a": 1}, null, {"a": "count"}],
+            "expect": {"a.change_pct": null, "a.previous": null}
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "t3-server-message",
+    "request": "On the login page, if the server rejects a request with a body like {error: {message: 'Invalid credentials'}} (a message but no field details), the user sees a generic 'Something went wrong' message. Make the app show the server's message instead. Keep all existing error handling working.",
+    "checks": [
+      {
+        "type": "node_call",
+        "file": "frontend/src/api/auth.ts",
+        "function": "parseApiError",
+        "cases": [
+          {"args": [{"response": {"data": {"error": {"message": "Invalid credentials"}}}}], "expect": {"message": "Invalid credentials"}},
+          {"args": [{"response": {"data": {"error": {"details": [{"field": "email", "message": "bad email"}]}}}}], "expect": {"fields.email": "bad email"}},
+          {"args": [{"response": {"data": {"detail": "Not allowed"}}}], "expect": {"message": "Not allowed"}},
+          {"args": [{"response": {"data": {"password": ["too short"]}}}], "expect": {"fields.password": "too short"}},
+          {"args": [{"response": {"data": {}}}], "expect": {"message": "Something went wrong. Please try again."}},
+          {"args": [{"message": "timeout"}], "expect": {"message": "timeout"}}
+        ]
+      }
+    ]
+  }
+]
