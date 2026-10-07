@@ -208,7 +208,8 @@ Audit finding (see Section 10.4 for the full schema).
 
 | Command | MCP tool | Purpose |
 |---|---|---|
-| `prism brief` | `prism_brief` | Print `AGENTS.md` + freshness line. Used by SessionStart hook. |
+| `prism task "<request>" [--budget N] [--session ID]` | `prism_task` | **The primary retrieval call** (Section 8.5): for a request, symbol or file, the matching code, every exact occurrence of the strings/names/quantities it mentions, call sites, tests and impact, with a confidence. |
+| `prism brief [--full]` | `prism_brief` | Print the **compact** session brief + freshness line (Section 9.3); `--full` prints all of `AGENTS.md`. Used by the SessionStart hook. |
 | `prism locate <name>` | `prism_locate` | Resolve a symbol/file name (exact → qualified suffix → fuzzy). Returns candidates with file:lines. Ambiguity → ranked list, never a silent guess. |
 | `prism context <target> [--budget N] [--depth D] [--with-source]` | `prism_context` | Build a context pack for a symbol, file, `file:line`, or route (`GET /orders`). Default budget 2,000 tokens. |
 | `prism impact <target>` | `prism_impact` | Blast radius: what could break if this changes, plus tests to run. |
@@ -238,13 +239,15 @@ The MCP server lets the host agent call PRISM as native tools instead of shellin
 - **Implementation:** official MCP Python SDK in `prism/mcp/server.py`. Each tool is a thin wrapper over the same library function the CLI calls. No logic lives in the server.
 - **Why it exists alongside the CLI:** structured JSON results (fewer parsing mistakes), tools are visible in the agent's tool list (more reliable use than remembered commands), the index stays loaded in memory (fast, < 200 ms), and it works for agents that can use MCP but have no shell.
 - **Consent-aware:** on start it checks the per-user enable flag (Section 12.1). If PRISM is not enabled for this user or is paused, it exposes only `prism_status`, which reports that state.
+- **Lean by default:** most agents send every tool's schema to the model on every turn, so `prism mcp` exposes only `prism_status`, `prism_task`, `prism_context` and `prism_impact` unless `--profile full` (or `PRISM_MCP_PROFILE=full`) is chosen. `prism_task` also resolves names and free text, which is what `prism_search`/`prism_locate` are for.
 - **Read-mostly:** only `prism_audit_record`, `prism_audit_update`, and `prism_refresh_commit` write, and only inside `.aicontext/`, through the writer layer. No tool edits source code or runs shell commands.
 - **Errors:** return structured errors (`not_enabled`, `index_missing`, `ambiguous_target` with candidates, `not_found` with suggestions, `budget_exceeded`) instead of raising, so the agent can recover.
 
 | Tool | Input | Returns |
 |---|---|---|
 | `prism_status` | — | enable state, freshness, changed files, drift, stale sections, audit summary |
-| `prism_brief` | — | AGENTS.md text + freshness line |
+| `prism_task` | `query`, `budget?`, `repeat?` | request-level answer (Section 8.5) |
+| `prism_brief` | `full?` | compact brief (or AGENTS.md) + freshness line |
 | `prism_search` | `query`, `limit?` | ranked hits (id, kind, file, lines, score, snippet) |
 | `prism_locate` | `name` | candidates (id, kind, file, lines, signature) |
 | `prism_context` | `target`, `budget?`, `depth?`, `with_source?` | context pack (Section 7.1) |
@@ -258,16 +261,32 @@ The MCP server lets the host agent call PRISM as native tools instead of shellin
 | `prism_audit_report` | — | report path + summary counts |
 | `prism_graph_view_url` | `focus?`, `depth?` | local viewer URL (starts the viewer if the user allowed it) |
 
+### 8.5 Request retrieval (`prism task`)
+
+Benchmarks of real agents showed that retrieval the agent has to *remember to call* and then *double-check with grep* adds turns instead of removing them, and that every turn re-sends the whole context. `prism task` is therefore designed to be a complete answer to "where does this change belong", so an agent has no reason to search again:
+
+1. **Literals.** Quoted strings, code-like names, numbers with units and multi-word phrases in the request are found *exhaustively* in the indexed source (via the persistent postings, never a repository scan) and listed as `file:line` + line. A list marked exhaustive covers every occurrence. Names the request uses that do not exist are reported as new. When a request gives an old and a new value, only the old one is searched.
+2. **Blocks.** Candidate files are scored line by line; matches become a whole small symbol or a window, never a module header or a whole large class. Imports, headers, tests, docs and migrations are down-weighted; blocks connected in the call graph reinforce each other; related words (a small deterministic synonym table) count at half weight.
+3. **Graph.** Callers of the leading symbols with the calling line, tests that mention them, and an impact count.
+4. **Honesty.** `confidence` (exact evidence, margin over the next block, weighted coverage), `sufficient`, and a `Next:` line. Low confidence says to grep.
+5. **Budget.** The whole packet, JSON and text, stays within the budget (default 2,000; the prompt hook uses 1,200). Code already returned in a session is returned as a reference (`--session`, MCP server memory).
+
+Every navigator query first compares the working tree with the manifest and, for an enabled user, updates just the changed files (Section 9.1), so an unannounced edit is still seen.
+
 ## 9. Freshness & Narrator — Keeping the Context Alive
 
 ### 9.1 Update triggers (all optional; installed by `prism init` only if the user accepts them)
 
 | Trigger | Action |
 |---|---|
-| Host-agent hook after file edits (e.g. Claude Code `PostToolUse` on Edit/Write/MultiEdit) | `prism hook post-edit` → reads hook JSON from stdin, runs `prism update --files <path> --quiet`. Must never block or fail the agent: timeouts short, errors swallowed to a log. |
-| Session start hook | `prism hook session-start` → incremental update of anything changed outside the agent (e.g. `git pull`), then prints `prism brief` output into the agent's context. |
+| Every navigator query (CLI and MCP) | **Working-tree check**: compare the tree with the manifest (a stat walk; unchanged files are not re-read) and, if the user has enabled PRISM and not paused it, update just the changed files under the update lock before answering (up to 300 files). Freshness therefore never depends on a hook or on the agent remembering `prism update`. |
+| Host-agent hook after file edits (Claude Code/Codex `PostToolUse`, Gemini `AfterTool`, Cursor `afterFileEdit`) | `prism hook post-edit` → reads the hook JSON (any agent's shape, including Codex `apply_patch` text), starts `prism update` for those files in a **detached process** and returns at once (~0.2 s). Must never block or fail the agent. |
+| Session start hook | `prism hook session-start` → bounded catch-up of anything changed outside the agent (e.g. `git pull`), then prints the **compact brief** into the agent's context. |
+| Prompt hook (Claude Code/Codex `UserPromptSubmit`, Gemini `BeforeAgent`) | `prism hook user-prompt` → runs `prism task` for the user's own words and adds the answer to the prompt (≤ `prompt_budget`, default 1,200 tokens). Silent for greetings, confirmations, slash commands and weak matches; code is sent once per session; if the query caches are cold it warms them in the background and stays silent once. Opt-out: `prompt_context = false` or `PRISM_PROMPT_CONTEXT=0`. Agents whose prompt hook cannot inject context (Cursor) rely on the tool. |
 | Git `post-commit` / `post-merge` / `post-checkout` hooks | `prism update --quiet` |
-| Manual / file watcher | `prism update`, `prism watch` (Phase 5) |
+| Manual / file watcher | `prism update`, `prism watch` |
+
+Index writes are serialized by a cross-process lock; artifacts are written atomically (retrying a Windows sharing violation briefly); the manifest is written last.
 
 Verify exact hook config formats against the current docs of each host agent at implementation time; keep them in `prism/integrations/<agent>/` only.
 
@@ -300,6 +319,8 @@ Hybrid: PRISM writes facts, the agent writes prose, inside marked regions. PRISM
 <!-- prism:narrative:conventions -->  patterns to follow, gotchas
 <!-- prism:generated:navigation -->   "Before reading files, use prism search/context …"
 ```
+
+**What is injected is not the whole file.** Research on repository context files (Gloaguen et al., 2026, *Evaluating AGENTS.md*) found that generated overviews do not help agents find the relevant files faster and raise cost by about 20% with no gain in success, because agents follow them with extra exploration. So the session brief an agent receives (`prism brief`, the SessionStart hook) is **compact**: the title, the `Languages` and `Commands` facts, any narrative section someone has actually written, and one line on how to use PRISM (≈ 100-150 tokens). Placeholders, key dependencies, entry points and module rankings stay in the file but are not injected. The narrative sections are **optional**: they are written only if a human or agent chooses to (the `prism-refresh` skill), and staleness is reported only for sections that exist.
 
 `prism refresh prepare [--sections ...]` emits exactly what the agent needs to write each stale section (relevant context packs, structural diff since last narration, token budget per section). `prism refresh commit <section> --file <md>` validates length/markers and writes it, resetting that section's drift. This keeps the agent's work bounded and verifiable.
 
@@ -437,10 +458,14 @@ The viewer reads the same `.aicontext/` data the agent uses. It never parses cod
 
 | Agent | What `prism init` installs |
 |---|---|
-| **Claude Code** | `.claude/skills/prism-context/`, `prism-refresh/`, `prism-audit/` (SKILL.md each); hooks in `.claude/settings.json` (SessionStart → `prism hook session-start`; PostToolUse matcher `Edit\|Write\|MultiEdit` → `prism hook post-edit`); MCP server entry in `.mcp.json` (`prism mcp` over stdio); a short managed block in the root `CLAUDE.md` pointing to `.aicontext/AGENTS.md` and the skills. |
-| **Cursor** | `.cursor/rules/prism.mdc` (navigation rules + audit/refresh procedures), MCP config. |
-| **Codex / others reading `AGENTS.md`** | Managed block in root `AGENTS.md`; MCP config if supported. |
-| **Generic** | Managed block in root `AGENTS.md`/`CLAUDE.md` describing the CLI commands. |
+| **Claude Code** | `.claude/skills/prism-*/SKILL.md`; hooks in `.claude/settings.json` (SessionStart, UserPromptSubmit, PostToolUse `Edit\|Write\|MultiEdit`); MCP entry in `.mcp.json`; a ~100-token managed block in `CLAUDE.md`. |
+| **Codex** | Managed block in `AGENTS.md`; `[mcp_servers.prism]` in `.codex/config.toml` (a managed TOML block; a table the user wrote is left alone); `.codex/hooks.json` (SessionStart, UserPromptSubmit, PostToolUse `apply_patch\|Edit\|Write`). Project `.codex/` loads only for a trusted project; `init` says so. |
+| **Gemini CLI** | Managed block in `GEMINI.md`; `.gemini/settings.json` with `mcpServers.prism` and hooks (SessionStart, BeforeAgent, AfterTool `write_file\|replace`; `--format json`, timeouts in ms). |
+| **Cursor** | Short always-on `.cursor/rules/prism.mdc`; audit/refresh/decisions as on-request rules (`alwaysApply: false`); `.cursor/mcp.json`; `.cursor/hooks.json` (sessionStart → `additional_context`, afterFileEdit). Cursor's prompt hook cannot add context, so the agent calls the tool. |
+| **Antigravity** (experimental) | `.agent/rules/prism.md`, `.agents/skills/prism-context/`; its MCP config is user-level, so `init` prints the entry instead of editing it. |
+| **Generic** | Managed block in root `AGENTS.md` describing the CLI commands. |
+
+**Hook output formats:** plain stdout (Claude Code), `{"hookSpecificOutput": {"hookEventName", "additionalContext"}}` (Codex, Gemini CLI), `{"additional_context"}` (Cursor sessionStart); `prism hook <name> --format text|json|cursor [--event NAME]`. Hooks start without importing the full CLI, force UTF-8 on stdin/stdout, and exit 0.
 
 Rules: merge into existing config files, never clobber user content; back up before modifying (`.aicontext/cache/backups/`); idempotent (running `init` twice changes nothing).
 
@@ -477,12 +502,13 @@ An agent only knows what is in its context when the session starts, so PRISM has
 | Layer | Mechanism | Agents |
 |---|---|---|
 | 1. Instruction block | Managed block in the file the agent always reads at session start (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules/prism.mdc`): "This repo is indexed by PRISM. Read `.aicontext/AGENTS.md`, use `prism search`/`prism context` before exploring files, check `prism status`." | All |
-| 2. Session-start hook | `prism hook session-start`: consent check → incremental catch-up → prints the brief + freshness line into context. The agent gets the project map before the user types anything. | Claude Code (and others with hooks) |
-| 3. MCP tools | `prism_*` tools appear in the agent's tool list. | MCP-capable agents |
+| 2. Session-start hook | `prism hook session-start`: consent check → incremental catch-up → prints the compact brief + freshness line into context. | Claude Code (and others with hooks) |
+| 3. Prompt hook | `prism hook user-prompt`: the answer to the user's own request is added to the prompt, so the model's first turn already has the code. | Claude Code, Codex, Gemini CLI |
+| 3b. MCP tools | `prism_task` (+ context, impact, status in the lean profile) appear in the agent's tool list. | MCP-capable agents |
 | 4. Skill | `prism-context` skill description triggers at the start of coding tasks. | Claude Code |
 | 5. Plain files | `.aicontext/AGENTS.md` and JSON are readable with no PRISM install at all. | All, as fallback |
 
-**Hook robustness:** every hook must exit 0 quickly (hard timeout ~2 s for session-start, ~1 s for post-edit), never print errors into the agent's context, and do nothing if `prism` isn't installed, the repo isn't enabled for this user, or PRISM is paused. A broken or missing PRISM must never break or slow an agent session.
+**Hook robustness:** every hook must exit 0 quickly (post-edit returns in ~0.2 s because the update runs detached; user-prompt is bounded to 4 s and says nothing on timeout), never print errors into the agent's context, and do nothing if `prism` isn't installed, the repo isn't enabled for this user, or PRISM is paused. A broken or missing PRISM must never break or slow an agent session.
 
 | Situation | What the agent sees |
 |---|---|
@@ -491,7 +517,7 @@ An agent only knows what is in its context when the session starts, so PRISM has
 | Committed `.aicontext/` but PRISM not installed | Hook not found → silent. Instruction block still points to `.aicontext/AGENTS.md` as plain files; the agent may use it read-only. |
 | Never initialized | No PRISM files, so nothing happens. Only if the user turned on global `--suggest`, the agent may mention PRISM once. |
 | Enabled but paused | Hooks are no-ops; `prism status` shows `paused`. The instruction block tells the agent the index may be stale. |
-| Enabled, index stale (e.g. after `git pull`) | Session-start hook catches up incrementally; without hooks, the instruction block tells the agent to run `prism status` / `prism update` first. |
+| Enabled, index stale (e.g. after `git pull`, or edits made with no hook) | The next answer checks the working tree and updates the changed files first; the session-start hook also catches up. |
 
 ## 13. Shipped Skills — Skill Plans
 
@@ -505,8 +531,8 @@ Skills are the instruction files through which the host agent does PRISM's "thin
 |---|---|
 | **Purpose** | Make the agent load only the code a task needs, using the index instead of scanning. |
 | **Triggers** | Start of any coding task; any "where is / what calls / what breaks if" question. |
-| **Preconditions** | `prism_status` = enabled. If not enabled/paused/missing → work normally, optionally read `.aicontext/AGENTS.md` read-only, never enable. |
-| **Procedure** | brief (if not injected) → `search`/`locate` → `context` → read `read_list` only → `impact` before editing public symbols → edit → run listed tests → `update` if no hooks. |
+| **Preconditions** | None to check first (a status call is a wasted turn): call `prism task`; if it reports PRISM is not enabled/installed → work normally, never enable. |
+| **Procedure** | `prism task "<request>"` → edit from the answer (an exhaustive literal list is not re-grepped) → `context`/`impact` only as follow-ups → run the listed tests. The skill is deliberately short: its text is loaded whenever it triggers. |
 | **Outputs** | Edits made with minimal reads; tests run from `impact`; findings marked fixed only with passing evidence. |
 | **Guardrails** | Never run init/scan/enable/global install unasked; never load whole JSON artifacts; fall back to targeted grep (not full scan) when static analysis misses dynamic calls; never hand-edit `.aicontext/`. |
 
