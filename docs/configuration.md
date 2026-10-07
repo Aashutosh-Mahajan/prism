@@ -16,6 +16,8 @@ source_roots = ["src"]               # stripped when deriving module names
 test_dirs = ["tests", "test"]        # folders whose files count as tests
 drift_threshold = 8                  # drift points before a brief section is marked stale
 semantic_model = "/models/all-MiniLM-L6-v2"   # local model path for `search --semantic`
+prompt_context = true                # let the prompt hook add the code a request needs
+prompt_budget = 1200                 # tokens (chars/4) the prompt hook may add, 128-8000
 ```
 
 | Key | Type | Default | Effect |
@@ -26,6 +28,8 @@ semantic_model = "/models/all-MiniLM-L6-v2"   # local model path for `search --s
 | `test_dirs` | list of strings | `["tests", "test"]` | Directory names whose files are treated as tests |
 | `drift_threshold` | positive integer | `8` | Score at which an `AGENTS.md` section or module summary becomes stale |
 | `semantic_model` | string | `sentence-transformers/all-MiniLM-L6-v2` | Embedding model for `--semantic`; must already be on disk, PRISM never downloads |
+| `prompt_context` | boolean | `true` | `false` stops `prism hook user-prompt` from adding anything to prompts |
+| `prompt_budget` | integer | `1200` | Most the prompt hook adds to one prompt, as `ceil(characters/4)` (128-8000) |
 
 Invalid values stop the command with a clear error rather than being silently ignored.
 
@@ -65,6 +69,10 @@ automatically.
 | `PRISM_VIEWER_LOG=1` | Log every viewer HTTP request to the terminal. |
 | `PRISM_UPDATE_GOLDEN=1` | Development only: regenerate golden files when running the tests. |
 | `PRISM_HOOK_NO_EXIT=1` | Development only: let hook commands return normally instead of exiting the process, for in-process testing. |
+| `PRISM_HOOK_SYNC=1` | Make `prism hook post-edit` wait for the index update instead of starting it in a detached process. |
+| `PRISM_PROMPT_CONTEXT=0` | Switch off what `prism hook user-prompt` adds to prompts, for you, in every repository. |
+| `PRISM_MCP_PROFILE=full` | Expose every MCP tool (default `lean`: `prism_status`, `prism_task`, `prism_context`, `prism_impact`). |
+| `PRISM_SESSION` | A session id for `prism task`: code already returned in this session comes back as a reference. |
 
 ## Per-user state
 
