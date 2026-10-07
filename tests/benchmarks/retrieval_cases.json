@@ -1,0 +1,202 @@
+[
+ {
+  "repo": "webapp",
+  "tier": "core",
+  "kind": "quantity",
+  "query": "Email verification codes should stay valid for 15 minutes instead of 10. Change the app so the real expiry and everything users are told about it say 15 minutes.",
+  "expect": [
+   [
+    "backend/core/models.py",
+    19
+   ],
+   [
+    "frontend/src/pages/auth/VerifyEmailPage.tsx",
+    11
+   ],
+   [
+    "frontend/src/pages/auth/ForgotPasswordPage.tsx",
+    12
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "core",
+  "kind": "quantity",
+  "query": "email verification code expires in 10 minutes",
+  "expect": [
+   [
+    "backend/core/models.py",
+    19
+   ],
+   [
+    "frontend/src/pages/auth/VerifyEmailPage.tsx",
+    11
+   ],
+   [
+    "frontend/src/pages/auth/ForgotPasswordPage.tsx",
+    12
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "core",
+  "kind": "identifier",
+  "query": "Rename the EmailCode lifetime constant LIFETIME_MINUTES to CODE_LIFETIME_MINUTES everywhere it is used.",
+  "expect": [
+   [
+    "backend/core/models.py",
+    19
+   ],
+   [
+    "backend/core/models.py",
+    44
+   ],
+   [
+    "backend/core/views.py",
+    28
+   ],
+   [
+    "backend/core/views.py",
+    51
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "core",
+  "kind": "natural",
+  "query": "Every KPI object the analytics endpoints return (value / previous / kind) should also include a change_pct field.",
+  "expect": [
+   [
+    "backend/core/analytics.py",
+    49
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "core",
+  "kind": "quoted",
+  "query": "On the login page the user sees a generic 'Something went wrong' message instead of the server's message.",
+  "expect": [
+   [
+    "frontend/src/api/auth.ts",
+    44
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "core",
+  "kind": "identifier",
+  "query": "EmailCode.verify",
+  "expect": [
+   [
+    "backend/core/models.py",
+    60
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "core",
+  "kind": "structural",
+  "query": "who calls build_kpis",
+  "expect": [
+   [
+    "backend/core/analytics.py",
+    67
+   ],
+   [
+    "backend/core/analytics.py",
+    75
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "core",
+  "kind": "natural",
+  "query": "simulated payments should be able to fail",
+  "expect": [
+   [
+    "backend/core/models.py",
+    84
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "core",
+  "kind": "natural",
+  "query": "login returns 403 and sends a code when the user has not verified their email",
+  "expect": [
+   [
+    "backend/core/views.py",
+    61
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "core",
+  "kind": "natural",
+  "query": "where do we decide which dashboard a user lands on after signing in",
+  "expect": [
+   [
+    "frontend/src/utils/helpers.ts",
+    2
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "stretch",
+  "kind": "natural",
+  "query": "how long is a verification code good for",
+  "expect": [
+   [
+    "backend/core/models.py",
+    19
+   ]
+  ]
+ },
+ {
+  "repo": "webapp",
+  "tier": "stretch",
+  "kind": "natural",
+  "query": "the order status endpoint rejects statuses it does not know",
+  "expect": [
+   [
+    "backend/zesty/views.py",
+    11
+   ]
+  ]
+ },
+ {
+  "repo": "small",
+  "tier": "core",
+  "kind": "identifier",
+  "query": "apply_discount",
+  "expect": [
+   [
+    "src/shop/pricing/discounts.py",
+    10
+   ]
+  ]
+ },
+ {
+  "repo": "small",
+  "tier": "core",
+  "kind": "natural",
+  "query": "the discount is applied twice when a coupon and a sale overlap",
+  "expect": [
+   [
+    "src/shop/pricing/discounts.py",
+    10
+   ]
+  ]
+ }
+]
