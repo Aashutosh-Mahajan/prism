@@ -70,6 +70,7 @@ class Evidence:
     weight: float
     files: int = 0
     lines: set[tuple[str, int]] = field(default_factory=set, repr=False)
+    scan_complete: bool = True
 
     @property
     def line_weight(self) -> float:
@@ -79,17 +80,20 @@ class Evidence:
 
     @property
     def complete(self) -> bool:
-        return self.total == len(self.occurrences)
+        return self.scan_complete and self.total == len(self.occurrences)
 
     def to_dict(self, width: int = LINE_CHARS, limit: int | None = None) -> dict[str, Any]:
         shown = self.occurrences if limit is None else self.occurrences[:limit]
-        return {
+        result: dict[str, Any] = {
             "text": self.text,
             "kind": self.kind,
             "total": self.total,
-            "complete": self.total == len(shown),
+            "complete": self.scan_complete and self.total == len(shown),
             "occurrences": [o.to_dict(width) for o in shown],
         }
+        if not self.scan_complete:
+            result["scan_limited"] = True
+        return result
 
 
 @dataclass
@@ -97,6 +101,7 @@ class EvidenceResult:
     literals: list[Evidence] = field(default_factory=list)
     absent: list[str] = field(default_factory=list)  # code-like names the source never uses
     identifiers: list[str] = field(default_factory=list)  # every code-like name in the request
+    limited: bool = False
 
     def hit_lines(self) -> dict[tuple[str, int], float]:
         """Weight of every line that is literal evidence, for scoring code blocks."""
@@ -210,25 +215,36 @@ def _quantity_regex(number: str, unit: str) -> re.Pattern[str]:
     return re.compile(rf"{num}\s*-?\s*{word}|{word}[^\n]{{0,48}}?{num}", re.IGNORECASE)
 
 
+class _Matches(list[Occurrence]):
+    """Matching lines plus whether every candidate file was actually searched."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.complete = True
+
+
 def _scan(
     reader: SourceReader,
     files: set[str],
     pattern: re.Pattern[str],
     is_test: Any,
-) -> list[Occurrence]:
+) -> _Matches:
     # Application code first: a fix belongs in the code, tests and docs come after.
     ordered = sorted(files, key=lambda p: (bool(is_test(p)), p.endswith((".md", ".txt")), p))
-    found: list[Occurrence] = []
+    found = _Matches()
+    found.complete = len(ordered) <= MAX_FILES_PER_LITERAL
     for path in ordered[:MAX_FILES_PER_LITERAL]:
         lines = reader.lines(path)
         if lines is None:
+            found.complete = False
             continue
         for number, line in enumerate(lines, 1):
-            match = pattern.search(line) if len(line) <= 600 else None
+            match = pattern.search(line)
             if match:
                 col = len(" ".join(line[: match.start()].split()))
                 found.append(Occurrence(path, number, " ".join(line.split()), col))
                 if len(found) >= MAX_OCCURRENCES_SCANNED:
+                    found.complete = False
                     return found
     return found
 
@@ -247,6 +263,7 @@ def _literal(
         weight=weight,
         files=len({h.file for h in hits}),
         lines={(h.file, h.line) for h in hits},
+        scan_complete=hits.complete if isinstance(hits, _Matches) else True,
     )
 
 
@@ -258,6 +275,11 @@ def find_literals(
     is_test = index.store._is_test
     found: list[Evidence] = []
     quoted_words: set[str] = set()
+
+    def scan_matches(files: set[str], pattern: re.Pattern[str]) -> _Matches:
+        matches = _scan(reader, files, pattern, is_test)
+        result.limited |= not matches.complete
+        return matches
 
     for text in _quoted_spans(query):
         words = _QUERY_WORD.findall(text)
@@ -275,7 +297,7 @@ def find_literals(
             if len(words) == 1 and looks_like_code(text)
             else _phrase_regex(words)
         )
-        lit = _literal("quoted", text, _scan(reader, files, pattern, is_test), 9.0, per_literal)
+        lit = _literal("quoted", text, scan_matches(files, pattern), 9.0, per_literal)
         if lit and lit.total <= MAX_NAMED_LINES:
             found.append(lit)
 
@@ -285,11 +307,11 @@ def find_literals(
         files = (
             index.files_with_all(tokens) if tokens and all(index.df(t) for t in tokens) else set()
         )
-        hits = _scan(reader, files, _identifier_regex(name), is_test) if files else []
+        hits = scan_matches(files, _identifier_regex(name)) if files else _Matches()
         standalone = re.search(rf"(?<![\w.]){re.escape(name)}(?![\w.])", query) is not None
         lit = _literal("identifier", name, hits, 7.0 if standalone else 4.0, per_literal)
         if lit is None:
-            if "." not in name:
+            if "." not in name and hits.complete:
                 result.absent.append(name)
         elif lit.total <= MAX_NAMED_LINES:
             found.append(lit)
@@ -299,7 +321,7 @@ def find_literals(
         if any(index.df(t) == 0 for t in tokens):
             continue
         files = index.files_with_all(tokens)
-        hits = _scan(reader, files, _quantity_regex(number, unit), is_test) if files else []
+        hits = scan_matches(files, _quantity_regex(number, unit)) if files else _Matches()
         lit = _literal("quantity", f"{number} {unit}", hits, 8.0, per_literal)
         if lit and lit.total <= MAX_NAMED_LINES:
             found.append(lit)
@@ -320,7 +342,7 @@ def find_literals(
         files = index.files_with_all(tokens)
         if not files or len(files) > MAX_FILES_PER_LITERAL // 2:
             continue
-        hits = _scan(reader, files, _phrase_regex(words), is_test)
+        hits = scan_matches(files, _phrase_regex(words))
         lit = _literal("phrase", text, hits, 5.0 + len(words), per_literal)
         if lit and lit.total <= MAX_PHRASE_LINES:
             phrases.append(lit)

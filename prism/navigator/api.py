@@ -47,12 +47,13 @@ def op_task(
     query: str,
     budget: int = 2000,
     seen: set[tuple[str, int, int]] | None = None,
+    mode: str = "auto",
 ) -> dict[str, Any]:
     """One-call retrieval for a request. `seen` (a session's already-returned code ranges)
     makes repeats cost a reference line instead of the source again."""
     from prism.navigator.task_pack import build_task
 
-    pack = build_task(store, query, budget, seen)
+    pack = build_task(store, query, budget, seen, mode)
     record_activity(store.root, "task", [b["symbol"] for b in pack["blocks"] if b["symbol"]])
     return pack
 

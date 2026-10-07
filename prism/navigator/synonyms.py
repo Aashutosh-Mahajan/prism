@@ -44,6 +44,11 @@ GROUPS: tuple[tuple[str, ...], ...] = (
     ("log", "logging", "audit"),
     ("payment", "billing", "checkout"),
     ("order", "purchase", "booking"),
+    ("extract", "extraction", "parse", "parser", "parsing"),
+    ("sort", "sorting", "rank", "ranking", "ordering", "order"),
+    ("repo", "repository"),
+    ("detect", "detection", "contains"),
+    ("mask", "masking", "sanitize", "redact"),
 )
 
 EXPANSION_WEIGHT = 0.5

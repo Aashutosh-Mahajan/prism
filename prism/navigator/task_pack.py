@@ -17,24 +17,28 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
+from prism._vendor.graphify_retrieval import pick_seeds, walk_graph
 from prism.core.errors import UserError
 from prism.core.tokens import estimate_tokens
+from prism.navigator.fusion import fuse_files
 from prism.navigator.impact import dependents
 from prism.navigator.literals import EvidenceResult, find_literals
+from prism.navigator.overview import overview_items, render_overview, wants_overview
+from prism.navigator.request import request_focus, request_operations
 from prism.navigator.resolve import Target
 from prism.navigator.source_index import SourceIndex, SourceReader
 from prism.navigator.store import IndexStore, SymbolRow
+from prism.navigator.support import local_support
 from prism.navigator.synonyms import EXPANSION_WEIGHT, related_terms
 from prism.navigator.text import FILLER_WORDS, tokenize
 
 MIN_BUDGET, MAX_BUDGET = 128, 32000
-WHOLE_SYMBOL_MAX = 50  # lines; a larger symbol is shown as windows around the matching lines
+WHOLE_SYMBOL_MAX = 120  # complete local units when affordable; output budget remains the hard cap
 WINDOW_PAD = 2
 MERGE_GAP = 5
 MAX_BLOCKS = 6
 MAX_PER_FILE = 2
 MAX_FILE_CANDIDATES = 25
-MAX_HITS_PER_FILE = 8
 MAX_CALLERS = 6
 MAX_STRUCTURAL_CALLERS = 12
 MAX_TESTS = 3
@@ -50,10 +54,9 @@ MIGRATION_DEMOTION = 0.35
 DOC_DEMOTION = 0.4
 DOC_DIRS = frozenset(["docs", "doc", "documentation"])
 HEADER_PENALTY = 0.35  # imports and the module docstring match words without being the answer
-HIGH_MARGIN = 2.2  # best block this many times the next: a clear winner
 MEDIUM_MARGIN = 1.5
 PATH_BONUS = 0.7  # share of a path word's weight given to every block in that file
-NAME_BONUS = 1.5  # share of a symbol-name word's weight added to its blocks
+NAME_BONUS = 3.0  # operation/object words in a symbol's name outrank repeated body vocabulary
 NEW_NAME_WEIGHT = 0.5  # words that only occur in names the request says are new
 REINFORCE = 0.25  # share of a neighbouring block's score a caller/callee block earns
 MIN_RELATIVE_SCORE = 0.25  # blocks scoring below this share of the best are noise
@@ -72,6 +75,12 @@ _STRUCTURAL = re.compile(
     re.IGNORECASE,
 )
 _LOCATE = re.compile(r"^\s*(?:where\s+is|which\s+file|find|locate)\b", re.IGNORECASE)
+_SOURCE_RANGE = re.compile(r"^(.+):(\d+)(?:-(\d+))?$")
+_FLOW_REQUEST = re.compile(
+    r"\b(?:explain|trace|pipeline|data\s+flow|call\s+flow)\b"
+    r"|\bhow\b.*\b(?:works?|connects?|reaches?|flows?)\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -100,9 +109,16 @@ def render_task(pack: dict[str, Any]) -> str:
     ]
     if pack["stale_sources"]:
         parts.append("Source changed or unavailable; run prism update before relying on the index.")
+    if pack.get("search_limited"):
+        parts.append(
+            "Exact-match search reached a limit or unavailable source; do not assume repository-wide coverage."
+        )
+    if pack.get("overview"):
+        parts.extend(render_overview(pack["overview"]))
     for lit in pack.get("literals", []):
         shown = len(lit["occurrences"])
-        scope = "exhaustive" if lit["complete"] else f"{shown} of {lit['total']} shown"
+        total = f"at least {lit['total']}" if lit.get("scan_limited") else str(lit["total"])
+        scope = "exhaustive" if lit["complete"] else f"{shown} of {total} shown"
         parts.append(f'Literal "{lit["text"]}" ({lit["kind"]}, {lit["total"]} found, {scope}):')
         parts.extend(f"  {_loc(o['file'], o['line'])}: {o['text']}" for o in lit["occurrences"])
     if pack.get("absent"):
@@ -116,7 +132,11 @@ def render_task(pack: dict[str, Any]) -> str:
             parts.append(head + " [shown earlier in this session]")
             continue
         if block["truncated"]:
-            head += " [excerpt; inspect remaining code before editing]"
+            head += (
+                " [new excerpt; some lines shown earlier]"
+                if block.get("continued")
+                else " [excerpt; inspect remaining code before editing]"
+            )
         parts.append(head)
         parts.append("```\n" + block["source"] + "\n```")
     links = pack.get("links", [])
@@ -147,7 +167,10 @@ def render_task(pack: dict[str, Any]) -> str:
             )
             + (f" (e.g. {', '.join(impact['top'])})" if impact["top"] else "")
         )
-    if not pack["blocks"] and not pack.get("literals"):
+    if pack.get("read_next"):
+        parts.append("Missing source (read only these ranges if needed):")
+        parts.extend(f"  {_loc(item['file'], *item['lines'])}" for item in pack["read_next"])
+    if not pack["blocks"] and not pack.get("literals") and not pack.get("overview"):
         parts.append("No source fits or matches; refine the query or increase the budget.")
     parts.append(f"Next: {pack['next']}")
     return "\n".join(parts)
@@ -185,6 +208,17 @@ def _query_terms(query: str, index: SourceIndex) -> dict[str, float]:
             weight = EXPANSION_WEIGHT * index.idf(other)
             if weight > weights.get(other, 0.0):
                 weights[other] = weight
+    focus = request_focus(query)
+    if focus != query.strip():
+        for word in _WORDS.findall(focus):
+            if word.lower() in FILLER_WORDS:
+                continue
+            for term in tokenize(word):
+                weights[term] = max(weights.get(term, 0.0), 3.0 * index.idf(term))
+                for other in related_terms(term):
+                    weights[other] = max(
+                        weights.get(other, 0.0), 3.0 * EXPANSION_WEIGHT * index.idf(other)
+                    )
     return weights
 
 
@@ -226,6 +260,8 @@ def _group_blocks(
     terms: dict[str, float],
     prior: float,
     explained: set[tuple[str, int]],
+    line_terms: dict[int, set[str]],
+    operations: set[str],
 ) -> list[_Block]:
     """Turn scored lines of one file into blocks: whole small symbols, or windows.
 
@@ -241,18 +277,24 @@ def _group_blocks(
     blocks: list[_Block] = []
     for key, lines in by_symbol.items():
         sym = owner[key]
-        top = sorted((hits[line] for line in lines), reverse=True)[:5]
-        score = sum(top) + prior
+        # Repeated body words must not beat a short helper that covers the operation.
+        covered = set().union(*(line_terms[line] for line in lines))
+        score = sum(terms[t] for t in covered) + max(hits[line] for line in lines) + prior
+        name_score = 0.0
         if sym is not None:
             name_terms = set(tokenize(sym.name))
-            score += NAME_BONUS * sum(terms.get(t, 0.0) for t in name_terms)
+            name_score = NAME_BONUS * sum(terms.get(t, 0.0) for t in name_terms)
+            name_score += 4.0 * sum(terms.get(t, 0.0) for t in name_terms & operations)
+            score += name_score
         reported = all((file, line) in explained for line in lines)
         if sym is not None and sym.end - sym.start + 1 <= WHOLE_SYMBOL_MAX and not reported:
             blocks.append(_Block(file, sym.start, sym.end, sym, score, lines, whole=True))
             continue
         for lo, hi in _windows(lines, total):
             inside = [line for line in lines if lo <= line <= hi]
-            local = sum(sorted((hits[line] for line in inside), reverse=True)[:5]) + prior
+            covered = set().union(*(line_terms[line] for line in inside))
+            local = sum(terms[t] for t in covered) + max(hits[line] for line in inside)
+            local += prior + name_score
             blocks.append(_Block(file, lo, hi, sym, local, inside))
     return blocks
 
@@ -274,11 +316,14 @@ def build_task(
     query: str,
     budget: int = 2000,
     seen: set[tuple[str, int, int]] | None = None,
+    mode: str = "auto",
 ) -> dict[str, Any]:
     if not MIN_BUDGET <= budget <= MAX_BUDGET:
         raise UserError(
             f"task budget must be between {MIN_BUDGET} and {MAX_BUDGET} (chars/4 estimate)"
         )
+    if mode not in {"auto", "overview", "code"}:
+        raise UserError("task mode must be auto, overview, or code")
     query = query.strip()
     # Optional keys (literals, absent, links, callers_omitted, impact) exist only when they have
     # content. `confidence` and `next` start at their longest values so every size check made
@@ -297,9 +342,93 @@ def build_task(
         pack["next"] = "Give a request, a symbol name, or a file path."
         pack["budget"]["used_est"] = _size(pack)
         return pack
+    staged_seen = set(seen) if seen is not None else None
+    if mode == "overview" or (mode == "auto" and wants_overview(query)):
+        _overview(store, query, budget, pack)
+        return pack
     with SourceIndex(store) as index:
-        _fill(store, index, query, budget, seen, pack)
+        _fill(store, index, query, budget, staged_seen, pack)
+    if seen is not None and staged_seen is not None:
+        seen.update(staged_seen)
     return pack
+
+
+def _overview(store: IndexStore, query: str, budget: int, pack: dict[str, Any]) -> None:
+    reader = SourceReader(store)
+    candidates = overview_items(store, reader, query)
+    pack["intent"] = "overview"
+    pack["confidence"] = "medium"
+    pack["next"] = (
+        "Map only: use the shown file or symbol for code; do not read whole files just to discover structure."
+    )
+    view: dict[str, Any] = {
+        "files_total": candidates["files_total"],
+        "symbols_total": candidates["symbols_total"],
+        "files": [],
+        "links": [],
+        "tests": [],
+        "omitted": True,
+    }
+    pack["overview"] = view
+    if _size(pack) > budget:
+        del pack["overview"]
+        pack["next"] = "Overview cannot fit: increase the budget."
+        pack["confidence"] = "low"
+        pack["budget"]["used_est"] = _size(pack)
+        return
+    for key in ("languages", "dependencies"):
+        view[key] = candidates[key]
+        if _size(pack) > budget:
+            del view[key]
+    selected: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for candidate in candidates["files"]:
+        row = {
+            **candidate,
+            "symbols": [],
+            "symbols_omitted": len(candidate["symbols"]) + candidate["symbols_omitted"],
+        }
+        view["files"].append(row)
+        if _size(pack) > budget * 0.7:
+            view["files"].pop()
+            continue
+        selected.append((candidate, row))
+    # Fill signatures across files rather than spending the map on the first
+    # large class. Reserve the final quarter for relationship/test evidence.
+    for depth in range(6):
+        for candidate, row in selected:
+            if depth >= len(candidate["symbols"]):
+                continue
+            row["symbols"].append(candidate["symbols"][depth])
+            row["symbols_omitted"] -= 1
+            if _size(pack) > budget * 0.78:
+                row["symbols"].pop()
+                row["symbols_omitted"] += 1
+    ids = {symbol["id"] for row in view["files"] for symbol in row["symbols"]}
+    files = {row["file"] for row in view["files"]}
+    for link in candidates["links"]:
+        if link["to"] not in ids and not (link["relation"] == "imports" and link["file"] in files):
+            continue
+        view["links"].append(link)
+        if _size(pack) > budget:
+            view["links"].pop()
+    for test in candidates["tests"]:
+        view["tests"].append(test)
+        if _size(pack) > budget:
+            view["tests"].pop()
+    pack["stale_sources"] = len(reader.stale)
+    # Reserve staleness digits while fitting, and trim lowest-priority map rows
+    # if a concurrent edit made the final status larger.
+    while _size(pack) > budget and view["links"]:
+        view["links"].pop()
+    while _size(pack) > budget and view["tests"]:
+        view["tests"].pop()
+    while _size(pack) > budget and view["files"]:
+        view["files"].pop()
+    if not view["files"] or pack["stale_sources"]:
+        pack["confidence"] = "low"
+    if _size(pack) > budget:
+        del pack["overview"]
+    pack["budget"]["used_est"] = _size(pack)
 
 
 def _fill(
@@ -312,10 +441,39 @@ def _fill(
 ) -> None:
     reader = SourceReader(store)
     terms = _query_terms(query, index)
+    operations = request_operations(query)
     evidence = find_literals(index, reader, query)
+    if evidence.limited:
+        pack["search_limited"] = True
     exact_symbol = store.symbol(query)
     named = store.symbols_named(query) if query.isidentifier() else []
     exact_file = query if store.file_exists(query) else None
+    requested_range: tuple[str, int, int] | None = None
+    location = _SOURCE_RANGE.fullmatch(query)
+    if location and store.file_exists(location[1]):
+        start, end = int(location[2]), int(location[3] or location[2])
+        if start < 1 or end < start:
+            raise UserError("source range must use positive, ascending line numbers")
+        exact_file = location[1]
+        if location[3]:
+            requested_range = (exact_file, start, end)
+        else:
+            exact_symbol = store.symbol_at(exact_file, start)
+            requested_range = None if exact_symbol else (exact_file, start, end)
+    if "::" in query:
+        path, name = query.rsplit("::", 1)
+        if store.file_exists(path):
+            matches = [
+                s
+                for s in store.symbols_in_file(path)
+                if s.name == name or s.id.endswith("." + name)
+            ]
+            if len(matches) == 1:
+                exact_file, exact_symbol = path, matches[0]
+            elif len(matches) > 1:
+                raise UserError("symbol is ambiguous within this file; use its qualified name")
+            else:
+                raise UserError("symbol was not found in the requested file")
     exact = bool(exact_symbol or len(named) == 1 or exact_file)
     pack["intent"] = _intent(query, evidence.identifiers, exact)
     if evidence.absent:
@@ -327,9 +485,7 @@ def _fill(
 
     # Candidate files: body BM25, metadata search, literal hits and anything named outright.
     ranked = index.ranked(sorted(terms), MAX_FILE_CANDIDATES)
-    prior: dict[str, float] = {}
-    for rank, (file, _) in enumerate(ranked):
-        prior[file] = 1.0 / (1 + rank)
+    metadata_files: list[str] = []
     for hit in store.search(query, 40):
         hit_file: str | None = None
         if hit.kind == "symbol":
@@ -341,18 +497,32 @@ def _fill(
         elif hit.kind == "file":
             hit_file = hit.ref
         if hit_file:
-            prior[hit_file] = prior.get(hit_file, 0.0) + 0.3
+            metadata_files.append(hit_file)
+    prior = dict(fuse_files([[file for file, _ in ranked], metadata_files], MAX_FILE_CANDIDATES))
     literal_lines = evidence.hit_lines()
     for file, _ in literal_lines:
         prior.setdefault(file, 0.2)
     definitions = _definitions(store, query, evidence, exact_symbol, named, exact_file)
+    if requested_range is not None:
+        file, start, end = requested_range
+        lines = reader.lines(file)
+        if lines is not None and end > len(lines):
+            raise UserError("requested source range extends beyond the indexed file")
+        definitions = [
+            _Block(
+                file, start, end, None, EXPLICIT_BONUS, [start], role="requested range", whole=True
+            )
+        ]
     for block in definitions:
         prior.setdefault(block.file, 0.5)
-    candidates = sorted(prior, key=lambda f: (-prior[f], f))[: MAX_FILE_CANDIDATES + 10]
+    candidates = (
+        []
+        if requested_range is not None
+        else sorted(prior, key=lambda f: (-prior[f], f))[: MAX_FILE_CANDIDATES + 10]
+    )
 
     max_weight = max(terms.values(), default=0.0)
     blocks: list[_Block] = list(definitions)
-    matched_terms: dict[str, set[str]] = {}
     explained = {
         key for lit in evidence.literals if lit.complete and lit.kind != "identifier"
         for key in lit.lines
@@ -365,6 +535,7 @@ def _fill(
         header_end = min((s.start for s in symbols), default=0)
         path_bonus = PATH_BONUS * sum(terms.get(t, 0.0) for t in set(tokenize(file)))
         hits: dict[int, float] = {}
+        line_terms: dict[int, set[str]] = {}
         for number, text in enumerate(lines, 1):
             bonus = literal_lines.get((file, number), 0.0)
             if not bonus and (len(text) > 400 or not text.strip()):
@@ -380,13 +551,22 @@ def _fill(
             )
             if enough and score > 0:
                 hits[number] = score
-                matched_terms.setdefault(file, set()).update(matched)
+                line_terms[number] = set(matched)
         if not hits:
             continue
-        top = dict(sorted(hits.items(), key=lambda kv: -kv[1])[:MAX_HITS_PER_FILE])
+        # Group before capping. A large caller's eight matching lines used to
+        # eliminate a short helper in the same file before it could be ranked.
         blocks.extend(
             _group_blocks(
-                file, top, symbols, len(lines), terms, prior[file] + path_bonus, explained
+                file,
+                hits,
+                symbols,
+                len(lines),
+                terms,
+                prior[file] + path_bonus,
+                explained,
+                line_terms,
+                operations,
             )
         )
     pack["stale_sources"] = len(reader.stale)
@@ -403,7 +583,18 @@ def _fill(
         elif not wants_docs and block.file.split("/", 1)[0] in DOC_DIRS:
             block.score *= DOC_DEMOTION
     _reinforce(store, blocks)
-    blocks = _select(blocks, tight=any(lit.complete for lit in evidence.literals))
+    tight = any(lit.complete for lit in evidence.literals)
+    blocks = _select(blocks, tight=tight)
+    if not tight and not exact and pack["intent"] == "edit":
+        blocks = _coherent_classes(store, blocks, budget)
+    # A literal list or exact lookup already answers where. Expansion is for
+    # connected explanations and missing evidence, not a tax on every edit.
+    if not tight:
+        if _FLOW_REQUEST.search(query):
+            blocks.extend(_flow_blocks(store, reader, blocks, terms))
+        if not exact:
+            blocks.extend(_graphify_blocks(store, reader, query, blocks))
+        blocks = _select(blocks)
     structural = pack["intent"] == "structural"
 
     # Literals first (cheap, and the part an agent would otherwise grep for), then code.
@@ -439,13 +630,236 @@ def _fill(
             literals.pop()
     if not literals:
         del pack["literals"]
-    _fit_blocks(pack, blocks, reader, budget, seen, structural)
+    source_budget = int(budget * 0.85) if budget >= 512 else budget
+    _fit_blocks(pack, blocks, reader, source_budget, seen, structural)
+    support: list[_Block] = []
+    if pack["intent"] == "edit":
+        support = _support_blocks(store, reader, pack, budget, seen)
 
     primaries = _primaries(pack, blocks)
     if primaries:
         _links(store, index, reader, pack, primaries, budget, structural)
-    _confidence(pack, evidence, blocks, matched_terms, terms, exact)
+    pack["stale_sources"] = len(reader.stale)
+    _confidence(pack, evidence, blocks, terms, exact, query)
+    _read_next(pack, blocks[:1] + support, budget, seen)
     pack["budget"]["used_est"] = _size(pack)
+
+
+def _support_blocks(
+    store: IndexStore,
+    reader: SourceReader,
+    pack: dict[str, Any],
+    budget: int,
+    seen: set[tuple[str, int, int]] | None,
+) -> list[_Block]:
+    ranges: dict[str, list[tuple[int, int]]] = {}
+    for block in pack["blocks"][:2]:
+        if block.get("source"):
+            ranges.setdefault(block["file"], []).append(tuple(block["lines"]))
+    support: list[_Block] = []
+    for file, selected in ranges.items():
+        for item in local_support(reader, file, selected):
+            symbol = store.symbol_at(file, item.start)
+            support.append(
+                _Block(
+                    file,
+                    item.start,
+                    item.end,
+                    symbol,
+                    1.0,
+                    [item.start],
+                    role="definition",
+                    whole=True,
+                )
+            )
+    # Reuse exactly the same verification, session and budget fitting as code.
+    _fit_blocks(pack, support, reader, budget, seen, False)
+    return support
+
+
+def _coherent_classes(store: IndexStore, blocks: list[_Block], budget: int) -> list[_Block]:
+    """Two matching methods in a small class are one coherent edit unit.
+
+    Keep exact-symbol lookups narrow. Broader requests about cooperating methods
+    should not require three retrievals for an affordable 80-line service class.
+    """
+    if not blocks:
+        return blocks
+    groups: dict[str, list[_Block]] = {}
+    for block in blocks[:6]:
+        if block.symbol and block.symbol.parent and block.score >= blocks[0].score * 0.4:
+            groups.setdefault(block.symbol.parent, []).append(block)
+    for parent, members in groups.items():
+        if len({b.symbol.id for b in members if b.symbol}) < 2:
+            continue
+        symbol = store.symbol(parent)
+        if not symbol or symbol.kind != "class" or symbol.end - symbol.start + 1 > WHOLE_SYMBOL_MAX:
+            continue
+        if symbol.tokens_est > budget * 0.55:
+            continue  # preserve complete methods instead of forcing a truncated class
+        score = max(b.score for b in members)
+        combined = _Block(
+            symbol.file,
+            symbol.start,
+            symbol.end,
+            symbol,
+            score,
+            sorted({hit for b in members for hit in b.hits}),
+            whole=True,
+        )
+        blocks = [
+            b
+            for b in blocks
+            if b not in members
+            and not (b.file == symbol.file and symbol.start <= b.start and b.end <= symbol.end)
+        ]
+        blocks.append(combined)
+    return sorted(blocks, key=lambda b: (-b.score, b.file, b.start))
+
+
+def _read_next(
+    pack: dict[str, Any],
+    blocks: list[_Block],
+    budget: int,
+    seen: set[tuple[str, int, int]] | None,
+) -> None:
+    delivered = set(seen or ()) | {
+        (b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"]
+    }
+    missing: list[dict[str, Any]] = []
+    for block in blocks:
+        start = block.symbol.start if block.symbol else block.start
+        end = block.symbol.end if block.symbol else block.end
+        for lo, hi in _unseen_ranges(block.file, start, end, delivered):
+            missing.append({"file": block.file, "lines": [lo, hi]})
+    if not missing:
+        return
+    pack["sufficient"] = False
+    pack["next"] = (
+        "Source is partial: read the missing ranges if needed; avoid re-reading the entire file."
+    )
+    if pack.get("literals") and all(lit["complete"] for lit in pack["literals"]):
+        pack["next"] = (
+            "Partial source: read only missing ranges if needed; complete literal lists need no re-grepping."
+        )
+    pack["read_next"] = []
+    for item in missing[:6]:
+        pack["read_next"].append(item)
+        if _size(pack) > budget:
+            pack["read_next"].pop()
+    if not pack["read_next"]:
+        del pack["read_next"]
+
+
+def _flow_blocks(
+    store: IndexStore,
+    reader: SourceReader,
+    blocks: list[_Block],
+    terms: dict[str, float],
+) -> list[_Block]:
+    """Include a small connected implementation for explanation/flow requests.
+
+    Graphify's diverse seeds avoid a single lexical collision monopolizing the
+    graph. Its hub guard is paired with hard node, fan-out and two-hop caps.
+    Only non-low-confidence outgoing calls are traversed; graph neighbors never
+    outrank the source evidence that selected the starting point.
+    """
+    roots: dict[str, _Block] = {}
+    for block in blocks:
+        if block.symbol and block.symbol.kind in CODE_KINDS and block.score > 0:
+            roots.setdefault(block.symbol.id, block)
+    if not roots:
+        return []
+    ranked = sorted(((b.score, sid) for sid, b in roots.items()), key=lambda p: (-p[0], p[1]))
+    best_by_term: dict[str, str] = {}
+    for _, sid in ranked:
+        block = roots[sid]
+        symbol = block.symbol
+        if symbol is None:
+            continue
+        for term in set(tokenize(symbol.name + " " + symbol.doc)) & terms.keys():
+            best_by_term.setdefault(term, sid)
+    seeds = pick_seeds(ranked, {sid: sid for sid in roots}, best_by_term, max_k=2, max_total=3)
+    symbols: dict[str, SymbolRow] = {
+        sid: block.symbol for sid, block in roots.items() if block.symbol is not None
+    }
+    adjacent: dict[str, list[str]] = {}
+
+    def neighbors(sid: str) -> list[str]:
+        if sid not in adjacent:
+            links = [
+                link
+                for link in store.callees(sid)
+                if link.confidence in {"high", "medium"} and not store._is_test(link.symbol.file)
+            ]
+            links.sort(
+                key=lambda link: (
+                    link.confidence != "high",
+                    -sum(terms.get(t, 0.0) for t in sorted(set(tokenize(link.symbol.name)))),
+                    link.line or 0,
+                    link.symbol.id,
+                )
+            )
+            adjacent[sid] = list(dict.fromkeys(link.symbol.id for link in links))
+            symbols.update((link.symbol.id, link.symbol) for link in links)
+        return adjacent[sid]
+
+    extra: list[_Block] = []
+    weights = {sid: roots[sid].score for sid in seeds}
+    for sid, distance, parent in walk_graph(seeds, neighbors, max_nodes=18, max_neighbors=6):
+        if distance == 0:
+            continue
+        weights[sid] = weights.get(parent or "", 0.0) * 0.65
+        if sid in roots:
+            continue
+        symbol = symbols[sid]
+        lines = reader.lines(symbol.file)
+        if not lines or symbol.start > len(lines):
+            continue
+        whole = symbol.end - symbol.start + 1 <= WHOLE_SYMBOL_MAX
+        end = symbol.end if whole else min(symbol.end, symbol.start + 14)
+        extra.append(
+            _Block(
+                symbol.file,
+                symbol.start,
+                end,
+                symbol,
+                weights[sid],
+                [symbol.start],
+                role="dependency",
+                whole=whole,
+            )
+        )
+    return extra
+
+
+def _graphify_blocks(
+    store: IndexStore, reader: SourceReader, query: str, blocks: list[_Block]
+) -> list[_Block]:
+    from prism.navigator.graphify import graphify_hints
+
+    hints = graphify_hints(store, reader, query)
+    existing = {block.symbol.id for block in blocks if block.symbol}
+    weight = max((block.score for block in blocks), default=2.0) * 0.45
+    extra: list[_Block] = []
+    for hint in hints:
+        if hint.symbol and hint.symbol.id in existing:
+            continue
+        whole = hint.end - hint.start + 1 <= WHOLE_SYMBOL_MAX
+        end = hint.end if whole else min(hint.end, hint.start + 14)
+        extra.append(
+            _Block(
+                hint.file,
+                hint.start,
+                end,
+                hint.symbol,
+                weight,
+                [hint.start],
+                role="graphify hint",
+                whole=whole,
+            )
+        )
+    return extra
 
 
 def _definitions(
@@ -568,7 +982,12 @@ def _fit_blocks(
     seen: set[tuple[str, int, int]] | None,
     structural: bool,
 ) -> None:
-    placed = 0
+    placed = len(pack["blocks"])
+    # Read session memory as it was before this response. Parts included earlier
+    # in this same packet are tracked separately, so they never become a false
+    # "shown earlier" reference while the response is still being assembled.
+    previous = set(seen or ())
+    included: set[tuple[str, int, int]] = set()
     for rank, block in enumerate(blocks):
         if placed >= MAX_BLOCKS:
             break
@@ -578,57 +997,104 @@ def _fit_blocks(
         start, end = block.start, min(block.end, len(lines))
         if structural and rank == 0:
             end = min(end, start + 24)
-        key = (block.file, start, end)
         sym_id = block.symbol.id if block.symbol else None
-        if seen is not None and key in seen:
+        missing = _unseen_ranges(block.file, start, end, previous)
+        if not missing:
             pack["blocks"].append(
                 {
                     "role": block.role,
                     "file": block.file,
                     "symbol": sym_id,
                     "lines": [start, end],
-                    "truncated": False,
+                    "truncated": _partial_block(block, start, end, previous),
                     "seen": True,
                 }
             )
             if _size(pack) > budget:
                 pack["blocks"].pop()
-            placed += 1
-            continue
-        share = int(budget * (0.45 if rank == 0 else 0.25))
-        full_start, full_end = start, end
-        focus = block.hits[0] if block.hits else start
-        while start <= end:
-            item = {
-                "role": block.role,
-                "file": block.file,
-                "symbol": sym_id,
-                "lines": [start, end],
-                "truncated": start != full_start or end != full_end,
-                "source": _render_source(lines, start, end),
-            }
-            before = _size(pack)
-            pack["blocks"].append(item)
-            size = _size(pack)
-            if size <= budget and size - before <= share:
-                placed += 1
-                if seen is not None:
-                    seen.add((block.file, full_start, full_end))
-                break
-            pack["blocks"].pop()
-            # Shrink away from the matching lines first, keeping the focus visible.
-            if end - focus >= focus - start:
-                end -= 1
             else:
-                start += 1
+                placed += 1
+            continue
+        # Spend on a complete primary body before smaller peripheral snippets.
+        # A 45% slice used to truncate affordable functions and force a read.
+        share = int(budget * (0.82 if rank == 0 else 0.35))
+        original_start, original_end = start, end
+        for lo, hi in missing:
+            for full_start, full_end in _unseen_ranges(block.file, lo, hi, included):
+                if placed >= MAX_BLOCKS:
+                    break
+                start, end = full_start, full_end
+                focus = next((hit for hit in block.hits if start <= hit <= end), start)
+                while start <= end:
+                    item: dict[str, Any] = {
+                        "role": block.role,
+                        "file": block.file,
+                        "symbol": sym_id,
+                        "lines": [start, end],
+                        "truncated": _partial_block(block, start, end, previous | included),
+                        "source": _render_source(lines, start, end),
+                    }
+                    if missing != [(original_start, original_end)]:
+                        item["continued"] = True
+                    before = _size(pack)
+                    pack["blocks"].append(item)
+                    size = _size(pack)
+                    if size <= budget and size - before <= share:
+                        placed += 1
+                        included.add((block.file, start, end))
+                        # Remember the actual delivered excerpt, never the full
+                        # function that a small budget forced us to truncate.
+                        if seen is not None:
+                            seen.add((block.file, start, end))
+                        break
+                    pack["blocks"].pop()
+                    if end - focus >= focus - start:
+                        end -= 1
+                    else:
+                        start += 1
+
+
+def _unseen_ranges(
+    file: str, start: int, end: int, seen: set[tuple[str, int, int]]
+) -> list[tuple[int, int]]:
+    """Subtract earlier intervals, including partial overlaps, without per-line sets."""
+    missing: list[tuple[int, int]] = []
+    cursor = start
+    for lo, hi in sorted((lo, hi) for path, lo, hi in seen if path == file):
+        if hi < cursor:
+            continue
+        if lo > end:
+            break
+        if lo > cursor:
+            missing.append((cursor, min(end, lo - 1)))
+        cursor = max(cursor, hi + 1)
+        if cursor > end:
+            break
+    if cursor <= end:
+        missing.append((cursor, end))
+    return missing
+
+
+def _partial_block(
+    block: _Block, start: int, end: int, delivered: set[tuple[str, int, int]]
+) -> bool:
+    """A code window is partial even if it fit the budget without further trimming."""
+    if block.symbol is not None:
+        return bool(
+            _unseen_ranges(
+                block.file,
+                block.symbol.start,
+                block.symbol.end,
+                delivered | {(block.file, start, end)},
+            )
+        )
+    return start != block.start or end != block.end
 
 
 def _primaries(pack: dict[str, Any], blocks: list[_Block], limit: int = 2) -> list[SymbolRow]:
     """The symbols the answer is about: the first code symbols among the blocks, best first."""
-    shown = {(b["file"], tuple(b["lines"])) for b in pack["blocks"]}
-    candidates = [
-        b for b in blocks if b.symbol is not None and (b.file, (b.start, b.end)) in shown
-    ] or [b for b in blocks if b.symbol is not None]
+    by_id = {b.symbol.id: b for b in blocks if b.symbol is not None}
+    candidates = [by_id[b["symbol"]] for b in pack["blocks"] if b["symbol"] in by_id]
     out: list[SymbolRow] = []
     for block in candidates:
         sym = block.symbol
@@ -750,7 +1216,7 @@ def _named_by_request(blocks: list[_Block], terms: dict[str, float]) -> bool:
     """Is the best block's symbol named in the request (all words of a multi-word name)?"""
     if not blocks or blocks[0].symbol is None:
         return False
-    parts = set(tokenize(blocks[0].symbol.name))
+    parts = {t for t in tokenize(blocks[0].symbol.name) if "_" not in t}
     return len(parts) >= 2 and all(p in terms for p in parts)
 
 
@@ -758,35 +1224,68 @@ def _confidence(
     pack: dict[str, Any],
     evidence: EvidenceResult,
     blocks: list[_Block],
-    matched_terms: dict[str, set[str]],
     terms: dict[str, float],
     exact: bool,
+    query: str,
 ) -> None:
     shown = list(pack["blocks"])
     total = sum(terms.values())
     coverage = 0.0
     for b in shown[:2]:
-        got = matched_terms.get(b["file"], set()) | {
-            t for t in terms if t in set(tokenize(b["file"]))
-        }
+        # Other matching functions in this file cannot establish that this
+        # particular returned block answers the request.
+        got = set(tokenize(b.get("source", ""))) | set(tokenize(b["symbol"] or ""))
         if total:
             coverage = max(coverage, sum(terms[t] for t in got if t in terms) / total)
     literals = pack.get("literals", [])
-    exhaustive = any(lit["complete"] for lit in literals)
+    exhaustive = any(lit["complete"] and lit["kind"] != "identifier" for lit in literals)
+    expected_literals = [
+        lit for lit in evidence.literals if lit.kind != "identifier" or lit.complete
+    ]
+    incomplete_literals = any(not lit["complete"] for lit in literals) or len(literals) < len(
+        expected_literals
+    )
     margin = _margin(blocks)
     named = _named_by_request(blocks, terms)
-    if exact or exhaustive or coverage >= 0.55 or margin >= HIGH_MARGIN:
+    if exact or exhaustive or coverage >= 0.55 or named:
         level = "high"
-    elif coverage >= 0.3 or literals or margin >= MEDIUM_MARGIN or named:
+    elif coverage >= 0.3 or literals or margin >= MEDIUM_MARGIN:
         level = "medium"
     else:
         level = "low"
+    focus = request_focus(query)
+    if not exact and focus != query.strip():
+        # Error requirements can match many unrelated helpers. They cannot
+        # compensate for an entirely missing leading edit topic.
+        topic = set(
+            tokenize(" ".join(w for w in _WORDS.findall(focus) if w.lower() not in FILLER_WORDS))
+        )
+        topic |= {alias for term in topic for alias in related_terms(term)}
+        returned = set().union(
+            *(
+                set(tokenize(b.get("source", ""))) | set(tokenize(b["symbol"] or ""))
+                for b in shown[:2]
+            )
+        )
+        if topic and not topic & returned:
+            level = "low"
     if not shown and not literals:
         level = "low"
+    graph_led = bool(shown and shown[0]["role"] == "graphify hint")
+    if graph_led:
+        # Verified locations are useful candidates even without lexical source
+        # hits, but an imported relationship cannot justify high confidence.
+        level = "medium"
     pack["confidence"] = level
     stale = bool(pack["stale_sources"])
     top_cut = bool(shown and shown[0]["truncated"])
-    pack["sufficient"] = level == "high" and not stale and not top_cut
+    pack["sufficient"] = (
+        level == "high"
+        and not stale
+        and not top_cut
+        and not incomplete_literals
+        and not evidence.limited
+    )
     if stale:
         pack["next"] = "Index is behind the source: run prism update, then ask again."
     elif level == "low":
@@ -794,6 +1293,18 @@ def _confidence(
     elif level == "medium":
         pack["next"] = (
             "Candidates only: confirm against the request; search other wording if a spot is missing."
+        )
+    elif evidence.limited:
+        pack["next"] = (
+            "Exact-match search is incomplete: use targeted search for omitted candidates before editing."
+        )
+    elif incomplete_literals:
+        pack["next"] = (
+            "Some literal matches were omitted: increase the budget or grep before editing."
+        )
+    elif top_cut:
+        pack["next"] = (
+            "Source is partial: request a larger budget or read the remaining lines before editing."
         )
     elif literals:
         pack["next"] = (

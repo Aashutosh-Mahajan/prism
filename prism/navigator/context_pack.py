@@ -50,10 +50,12 @@ def _slice_tokens(sym: SymbolRow, start: int, end: int) -> int:
 
 
 def _read_source(store: IndexStore, path: str, start: int, end: int) -> str | None:
-    try:
-        lines = (store.root / path).read_text(encoding="utf-8", errors="replace").splitlines()
-    except OSError:
+    from prism.navigator.source_index import read_indexed_source, split_lines
+
+    text = read_indexed_source(store, path)
+    if text is None:
         return None
+    lines = split_lines(text)
     return "\n".join(lines[start - 1 : end])
 
 
