@@ -63,7 +63,7 @@ Useful options:
 
 | Option | Effect |
 |---|---|
-| `--agent claude-code\|cursor\|codex\|generic\|none` | Choose the integration instead of auto-detecting |
+| `--agent claude-code\|cursor\|codex\|gemini\|antigravity\|generic\|none` | Choose the integration instead of auto-detecting |
 | `--no-hooks` / `--no-mcp` / `--no-git-hooks` | Skip parts of the setup |
 | `--yes` | Accept the defaults (for scripts) |
 | `--scan` / `--no-scan` | Decide about the first scan up front |
@@ -74,7 +74,8 @@ The first scan of a 50,000-line repository takes a few seconds.
 
 ```bash
 prism status                      # enabled? fresh? any stale brief sections?
-prism brief                       # the ≤ 600-token project brief your agent receives
+prism brief                       # the compact session brief your agent receives
+prism task "discount applied twice"   # what one call returns for a request
 prism search "discount coupon"    # ranked hits with file:line
 prism context shop.pricing.discounts.apply_discount
 prism impact shop.pricing.discounts.apply_discount
@@ -126,24 +127,31 @@ sequenceDiagram
     participant P as PRISM
 
     Agent->>P: SessionStart hook → prism hook session-start
-    P-->>Agent: brief + "index fresh · 3 files changed, auto-updated"
+    P-->>Agent: compact brief + "index fresh"
     You->>Agent: "The discount is applied twice — fix it."
-    Agent->>P: prism_search("discount applied twice")
-    P-->>Agent: pricing.discounts.apply_discount (top hit)
-    Agent->>P: prism_context(...)
-    P-->>Agent: location, callers, tests, read list (~1,400 tokens)
-    Agent->>Agent: reads only those ranges, edits, runs the listed tests
+    Agent->>P: UserPromptSubmit hook → prism hook user-prompt
+    P-->>Agent: the code, every exact string match, callers and tests for that request
+    Agent->>Agent: edits from what it was given, runs the listed tests
     Agent->>P: PostToolUse hook → prism hook post-edit
-    P-->>P: index updated for the edited file
+    P-->>P: index updated for the edited file (in the background)
 ```
 
-For agents without hooks, the instruction block PRISM adds tells the agent to run
-`prism update --files <changed files>` after editing, or you can run `prism watch` in a terminal.
+The prompt hook adds nothing for greetings, confirmations and slash commands, and only what it
+is reasonably sure of for everything else, so most of the benefit is the answer already being
+there when the agent starts: no search, no extra turns. Agents without that hook (or without
+hooks at all) call `prism task` themselves; the instruction block PRISM adds says how.
+
+You never have to tell PRISM about an edit: every answer first checks the working tree and brings
+changed files up to date. `prism watch` and the git hooks remain for people who want the index
+current between questions.
 
 Things to ask your agent:
 
 - *"Refresh the PRISM brief."* runs the `prism-refresh` skill and writes the narrative sections
-  of `AGENTS.md` (purpose, architecture, conventions). Do this once after the first scan.
+  of `AGENTS.md` (purpose, architecture, conventions). This is optional: research on coding
+  agents finds that generated project overviews raise cost without helping agents find files
+  faster, so PRISM does not need them. Write them if you have conventions worth stating; once
+  written they are included in the session brief.
 - *"Audit the codebase"* or *"check before I merge"* runs the `prism-audit` skill. See
   [audit.md](audit.md).
 - *"Record the decision to …"* runs the `prism-decisions` skill.
@@ -153,7 +161,7 @@ Things to ask your agent:
 | Situation | What to do |
 |---|---|
 | You pulled or switched branches | Nothing with hooks (session start catches up), otherwise `prism update` |
-| `prism status` reports stale sections | Ask the agent to refresh the brief |
+| `prism status` reports stale sections (only if you wrote narrative sections) | Ask the agent to refresh the brief |
 | You upgraded PRISM and the schema changed | `prism migrate` |
 | Something looks wrong | `prism doctor` (see [troubleshooting.md](troubleshooting.md)) |
 | You want a break | `prism pause`, later `prism resume` |
