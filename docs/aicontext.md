@@ -124,7 +124,8 @@ scan; your agent owns the **narrative** regions, which PRISM never overwrites.
 ## Facts
 <!-- prism:generated:facts -->
 - Languages, key dependencies, entry points, commands (test / lint / typecheck),
-  top modules by importance, size
+  top modules by importance, size (the file keeps these; the injected brief uses only
+  languages and commands)
 <!-- /prism:generated:facts -->
 
 ## Purpose
@@ -144,13 +145,20 @@ Patterns to follow, gotchas.
 
 ## Navigation
 <!-- prism:generated:navigation -->
-Before reading files, use `prism search` … then `prism context` and read only its `read_list`.
+Start with `prism task "<request>"` …; follow up with `prism context` / `prism impact`.
 <!-- /prism:generated:navigation -->
 ```
 
-Narrative sections start as a placeholder until the agent runs the `prism-refresh` skill.
-Updates go through `prism refresh commit`, which validates the markers and the token limit; the
-whole brief must stay within 600 tokens.
+Narrative sections start as a placeholder and stay one unless someone writes them (by hand, or
+through the optional `prism-refresh` skill). Updates go through `prism refresh commit`, which
+validates the markers and the token limit; the whole file must stay within 600 tokens.
+
+**What an agent is actually shown** is the compact brief (`prism brief`, and the session-start
+hook): the title, the `Languages` and `Commands` facts, any narrative section that has been
+written, and one line on how to use PRISM, typically 100-150 tokens. Placeholders, key
+dependencies, entry points and module rankings are not injected: a repository overview does not
+help an agent find files faster, and a study of context files found they raise cost by about
+20% without improving success. `prism brief --full` prints the whole file.
 
 In monorepos, commands are detected per application and prefixed with the folder, for example
 `test (backend): cd backend && python manage.py test`.
