@@ -25,6 +25,42 @@ def test_version() -> None:
     assert result.exit_code == 0 and __version__ in result.output
 
 
+def test_global_root_and_session_work_before_the_task_command(tiny_repo: Path) -> None:
+    root = str(tiny_repo)
+    assert run("init", "--root", root, "--yes").exit_code == 0
+    first = run("--root", root, "--session", "global-flags", "task", "apply_discount", "--json")
+    assert first.exit_code == 0, first.output
+    initial = json.loads(first.output)
+    assert any("source" in b for b in initial["blocks"])
+    again = run("task", "apply_discount", "--root", root, "--session", "global-flags", "--json")
+    assert again.exit_code == 0, again.output
+    repeated = json.loads(again.output)
+    assert any(b.get("seen") for b in repeated["blocks"]), (initial, repeated)
+
+
+def test_task_options_override_global_defaults(tiny_repo: Path, tmp_path: Path) -> None:
+    root = str(tiny_repo)
+    assert run("init", "--root", root, "--yes").exit_code == 0
+    result = run(
+        "--root",
+        str(tmp_path / "missing"),
+        "--session",
+        "outer",
+        "task",
+        "apply_discount",
+        "--root",
+        root,
+        "--session",
+        "inner",
+        "--json",
+    )
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output)["blocks"]
+    outer = run("--root", root, "--session", "outer", "task", "apply_discount", "--json")
+    assert outer.exit_code == 0, outer.output
+    assert any("source" in b for b in json.loads(outer.output)["blocks"])
+
+
 def test_init_shows_plan_and_declining_changes_nothing(tiny_repo: Path) -> None:
     before = snapshot(tiny_repo)
     result = run("init", "--root", str(tiny_repo), input="n\n")

@@ -4,6 +4,11 @@ Every command accepts `--root PATH` (default: the repository containing the curr
 and `--help`. Commands with structured output accept `--json`. Human output is compact Markdown;
 hook commands are silent.
 
+For normal CLI commands, `--root` can also appear before the command. Task retrieval
+accepts `--session` there too: `prism --root PATH --session ID task "request"`.
+Command-level options override these defaults. Session defaults apply to task retrieval;
+host hooks use the repository and session supplied by their host event.
+
 - [Setup and consent](#setup-and-consent)
 - [Index](#index)
 - [Navigation](#navigation)
@@ -110,25 +115,38 @@ Upgrade `.aicontext/` to the installed PRISM version's schema and rebuild the in
 
 ## Navigation
 
-### `prism task "<request>" [--budget N] [--session ID] [--json]`
+### `prism task "<request>" [--mode auto|overview|code] [--budget N] [--session ID] [--json]`
 
 Start a coding task with one local call. Pass the request in the user's own words, a symbol
-name, or a file path. The answer contains:
+name, or a file path. `auto` selects a signature/relationship map for architecture requests
+and source for edits. `--mode overview` explicitly requests a compact map (a file path gives
+its symbol outline); `--mode code` explicitly requests source. MCP `prism_task` accepts the
+same `mode`. Maps are selective and never claim to contain enough source to edit.
+
+Examples: `prism task "repository architecture"`, `prism task src/service.py --mode overview`,
+`prism task "fix the cache expiry" --mode code`. Exact source follow-ups support
+`src/service.py::Class.method`, `src/service.py:42` (enclosing symbol) and
+`src/service.py:42-65` (only that range). The source answer contains:
 
 - **Literals**: every exact occurrence of the strings, names and quantities the request
   mentions, with `file:line` and the line. Quoted strings (`'Something went wrong'`), code names
   (`LIFETIME_MINUTES`, `EmailCode.verify`), numbers with units ("10 minutes", found even as
   `LIFETIME_MINUTES = 10`) and multi-word phrases are searched across the whole indexed source
   through the postings, without scanning the repository. A list marked *exhaustive* covers every
-  occurrence, so the agent does not grep for those strings. Names the request uses that do not
-  exist in the source are listed as new.
+  matching line, so the agent need not grep those strings again. Capped scans and unavailable
+  candidate files are explicitly marked limited; their totals are lower bounds. New names are
+  reported only after a complete candidate search.
 - **Blocks**: the code that best matches the request, with line numbers: a whole function when
   it is small, windows around the matching lines otherwise. Whole files and module headers are
-  never returned.
+  never returned as an orientation strategy. Cooperating methods in an affordable small class
+  can be returned together. Used Python constants/imports/local helpers are included when they
+  fit; unrelated file headers are excluded. Body and symbol rankings use reciprocal-rank fusion.
 - **Callers** of the symbols the answer is about, with the calling line, plus **tests** that
   mention them and the **impact** (how many symbols and files depend on them).
 - **Confidence** (`high`, `medium`, `low`), `sufficient`, and a `Next:` line saying how far to
-  trust the answer. `low` says to grep.
+  trust the answer. `low` says to search narrowly. Partial packets list precise `read_next`
+  ranges rather than requiring a repeat of the whole file. Completeness is about the supplied
+  evidence, not a guarantee that an edit is correct or static graphs cover dynamic dispatch.
 
 The default budget is 2000 (range 128-32000), using `ceil(characters/4)` across the entire
 returned packet, including serialization and metadata. It is an estimate, not the model's token

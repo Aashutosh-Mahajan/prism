@@ -1,0 +1,1538 @@
+{
+  "available": true,
+  "churn": {
+    "prism/__init__.py": 1,
+    "prism/__main__.py": 2,
+    "prism/audit/__init__.py": 1,
+    "prism/audit/plan.py": 1,
+    "prism/audit/record.py": 1,
+    "prism/audit/report.py": 1,
+    "prism/audit/store.py": 1,
+    "prism/audit/toolchain_detect.py": 2,
+    "prism/cli.py": 3,
+    "prism/config.py": 1,
+    "prism/consent/__init__.py": 1,
+    "prism/consent/registry.py": 1,
+    "prism/core/__init__.py": 1,
+    "prism/core/errors.py": 1,
+    "prism/core/markers.py": 1,
+    "prism/core/models.py": 1,
+    "prism/core/paths.py": 1,
+    "prism/core/tokens.py": 1,
+    "prism/discovery/__init__.py": 1,
+    "prism/discovery/language.py": 1,
+    "prism/discovery/scanner.py": 4,
+    "prism/drift/__init__.py": 1,
+    "prism/drift/scoring.py": 1,
+    "prism/drift/structural_diff.py": 1,
+    "prism/entry.py": 1,
+    "prism/extractors/__init__.py": 1,
+    "prism/extractors/base.py": 1,
+    "prism/extractors/blast_radius.py": 1,
+    "prism/extractors/config_keys.py": 1,
+    "prism/extractors/dead_code.py": 1,
+    "prism/extractors/entry_points.py": 1,
+    "prism/extractors/models.py": 1,
+    "prism/extractors/project.py": 2,
+    "prism/extractors/routes.py": 1,
+    "prism/extractors/tests_map.py": 2,
+    "prism/extractors/toolchain.py": 1,
+    "prism/graph/__init__.py": 1,
+    "prism/graph/blast.py": 1,
+    "prism/graph/call_graph.py": 1,
+    "prism/graph/communities.py": 1,
+    "prism/graph/import_graph.py": 1,
+    "prism/graph/ranking.py": 1,
+    "prism/graph/symbol_table.py": 1,
+    "prism/health/__init__.py": 1,
+    "prism/health/coverage.py": 1,
+    "prism/health/git_intel.py": 1,
+    "prism/health/risk.py": 1,
+    "prism/hooks/__init__.py": 2,
+    "prism/hooks/entry.py": 1,
+    "prism/hooks/formats.py": 1,
+    "prism/hooks/prompt.py": 1,
+    "prism/hooks/runner.py": 2,
+    "prism/hooks/update_job.py": 1,
+    "prism/incremental/__init__.py": 1,
+    "prism/incremental/hash_cache.py": 1,
+    "prism/incremental/lock.py": 1,
+    "prism/integrations/__init__.py": 2,
+    "prism/integrations/antigravity.py": 1,
+    "prism/integrations/base.py": 2,
+    "prism/integrations/claude_code.py": 2,
+    "prism/integrations/codex.py": 1,
+    "prism/integrations/common.py": 2,
+    "prism/integrations/gemini.py": 1,
+    "prism/integrations/git_hooks.py": 1,
+    "prism/integrations/global_note.py": 1,
+    "prism/integrations/hooks_json.py": 1,
+    "prism/integrations/other_agents.py": 2,
+    "prism/lifecycle.py": 2,
+    "prism/maintenance.py": 2,
+    "prism/mcp/__init__.py": 1,
+    "prism/mcp/server.py": 2,
+    "prism/narrator/__init__.py": 1,
+    "prism/narrator/refresh.py": 1,
+    "prism/navigator/api.py": 2,
+    "prism/navigator/cache_db.py": 4,
+    "prism/navigator/context_pack.py": 1,
+    "prism/navigator/freshness.py": 1,
+    "prism/navigator/impact.py": 1,
+    "prism/navigator/literals.py": 1,
+    "prism/navigator/render.py": 1,
+    "prism/navigator/resolve.py": 1,
+    "prism/navigator/semantic.py": 1,
+    "prism/navigator/session.py": 1,
+    "prism/navigator/source_index.py": 1,
+    "prism/navigator/store.py": 2,
+    "prism/navigator/synonyms.py": 1,
+    "prism/navigator/task_pack.py": 1,
+    "prism/navigator/text.py": 3,
+    "prism/parsing/__init__.py": 1,
+    "prism/parsing/base_parser.py": 1,
+    "prism/parsing/modules.py": 1,
+    "prism/parsing/python_ast.py": 1,
+    "prism/parsing/python_facts.py": 1,
+    "prism/parsing/smells.py": 1,
+    "prism/parsing/treesitter.py": 1,
+    "prism/pipeline.py": 1,
+    "prism/status.py": 2,
+    "prism/viewer/api.py": 3,
+    "prism/viewer/model.py": 3,
+    "prism/viewer/server.py": 3,
+    "prism/writers/__init__.py": 3,
+    "prism/writers/activity.py": 1,
+    "prism/writers/agents_md.py": 2,
+    "prism/writers/artifacts.py": 1,
+    "prism/writers/decisions.py": 1,
+    "prism/writers/graph_export.py": 1,
+    "prism/writers/index_writer.py": 1,
+    "prism/writers/json_writer.py": 2,
+    "prism/writers/manifest.py": 1,
+    "prism/writers/modules_md.py": 1,
+    "prism/writers/narrative.py": 1,
+    "prism/writers/obsidian.py": 1,
+    "tests/__init__.py": 1,
+    "tests/benchmarks/agent_collect.py": 1,
+    "tests/benchmarks/agent_measure.py": 1,
+    "tests/benchmarks/agent_prepare.py": 1,
+    "tests/benchmarks/agent_report.py": 1,
+    "tests/benchmarks/agent_score.py": 1,
+    "tests/benchmarks/edit_bench.py": 1,
+    "tests/benchmarks/prism_mcp_client.mjs": 1,
+    "tests/benchmarks/retrieval_eval.py": 1,
+    "tests/benchmarks/run.py": 1,
+    "tests/benchmarks/synth.py": 1,
+    "tests/benchmarks/tokens.py": 1,
+    "tests/conftest.py": 1,
+    "tests/integration/test_audit.py": 2,
+    "tests/integration/test_cli.py": 1,
+    "tests/integration/test_freshness.py": 1,
+    "tests/integration/test_hooks_mcp.py": 2,
+    "tests/integration/test_incremental.py": 1,
+    "tests/integration/test_integrations.py": 2,
+    "tests/integration/test_phase5.py": 2,
+    "tests/integration/test_prompt_hook.py": 1,
+    "tests/integration/test_refresh.py": 1,
+    "tests/integration/test_scan.py": 1,
+    "tests/integration/test_update_paths.py": 1,
+    "tests/integration/test_viewer.py": 3,
+    "tests/skills/test_skill_templates.py": 1,
+    "tests/test_agent_measure.py": 1,
+    "tests/unit/test_config.py": 1,
+    "tests/unit/test_consent.py": 1,
+    "tests/unit/test_discovery.py": 2,
+    "tests/unit/test_edit_bench.py": 1,
+    "tests/unit/test_extractors.py": 2,
+    "tests/unit/test_graph.py": 1,
+    "tests/unit/test_navigator.py": 2,
+    "tests/unit/test_phase3_extractors.py": 1,
+    "tests/unit/test_python_parser.py": 1,
+    "tests/unit/test_retrieval_eval.py": 1,
+    "tests/unit/test_task_pack.py": 1,
+    "tests/unit/test_task_retrieval.py": 1,
+    "tests/unit/test_treesitter.py": 1,
+    "tests/unit/test_writers.py": 1,
+    "viewer/src/app.ts": 1,
+    "viewer/src/chrome.ts": 1,
+    "viewer/src/controls.ts": 2,
+    "viewer/src/data.ts": 3,
+    "viewer/src/encode.ts": 3,
+    "viewer/src/graph-utils.ts": 2,
+    "viewer/src/hovercard.ts": 1,
+    "viewer/src/inspector.ts": 2,
+    "viewer/src/layout.ts": 1,
+    "viewer/src/live.ts": 1,
+    "viewer/src/main.ts": 3,
+    "viewer/src/nodelist.ts": 1,
+    "viewer/src/renderer.ts": 1,
+    "viewer/src/search.ts": 1,
+    "viewer/src/theme.ts": 1,
+    "viewer/src/types.ts": 2,
+    "viewer/src/ui.ts": 2,
+    "viewer/src/views.ts": 1,
+    "viewer/tests/graph.test.mjs": 2,
+    "viewer/tests/static.test.mjs": 1,
+    "viewer/vite.config.ts": 1
+  },
+  "co_change": [
+    {
+      "a": "prism/navigator/cache_db.py",
+      "b": "prism/navigator/text.py",
+      "count": 2,
+      "strength": 0.4
+    },
+    {
+      "a": "prism/viewer/api.py",
+      "b": "prism/viewer/model.py",
+      "count": 3,
+      "strength": 1.0
+    },
+    {
+      "a": "prism/viewer/api.py",
+      "b": "prism/viewer/server.py",
+      "count": 2,
+      "strength": 0.5
+    },
+    {
+      "a": "prism/viewer/api.py",
+      "b": "tests/integration/test_viewer.py",
+      "count": 2,
+      "strength": 0.5
+    },
+    {
+      "a": "prism/viewer/api.py",
+      "b": "viewer/src/data.ts",
+      "count": 2,
+      "strength": 0.5
+    },
+    {
+      "a": "prism/viewer/model.py",
+      "b": "prism/viewer/server.py",
+      "count": 2,
+      "strength": 0.5
+    },
+    {
+      "a": "prism/viewer/model.py",
+      "b": "tests/integration/test_viewer.py",
+      "count": 2,
+      "strength": 0.5
+    },
+    {
+      "a": "prism/viewer/model.py",
+      "b": "viewer/src/data.ts",
+      "count": 2,
+      "strength": 0.5
+    },
+    {
+      "a": "prism/viewer/server.py",
+      "b": "viewer/src/data.ts",
+      "count": 2,
+      "strength": 0.5
+    },
+    {
+      "a": "tests/integration/test_audit.py",
+      "b": "tests/unit/test_extractors.py",
+      "count": 2,
+      "strength": 1.0
+    },
+    {
+      "a": "tests/integration/test_phase5.py",
+      "b": "tests/unit/test_navigator.py",
+      "count": 2,
+      "strength": 1.0
+    },
+    {
+      "a": "viewer/src/data.ts",
+      "b": "viewer/src/encode.ts",
+      "count": 2,
+      "strength": 0.5
+    },
+    {
+      "a": "viewer/src/data.ts",
+      "b": "viewer/src/graph-utils.ts",
+      "count": 2,
+      "strength": 0.667
+    },
+    {
+      "a": "viewer/src/data.ts",
+      "b": "viewer/src/main.ts",
+      "count": 2,
+      "strength": 0.5
+    },
+    {
+      "a": "viewer/src/data.ts",
+      "b": "viewer/src/types.ts",
+      "count": 2,
+      "strength": 0.667
+    },
+    {
+      "a": "viewer/src/data.ts",
+      "b": "viewer/src/ui.ts",
+      "count": 2,
+      "strength": 0.667
+    },
+    {
+      "a": "viewer/src/encode.ts",
+      "b": "viewer/src/main.ts",
+      "count": 3,
+      "strength": 1.0
+    },
+    {
+      "a": "viewer/src/encode.ts",
+      "b": "viewer/src/types.ts",
+      "count": 2,
+      "strength": 0.667
+    },
+    {
+      "a": "viewer/src/encode.ts",
+      "b": "viewer/src/ui.ts",
+      "count": 2,
+      "strength": 0.667
+    },
+    {
+      "a": "viewer/src/main.ts",
+      "b": "viewer/src/types.ts",
+      "count": 2,
+      "strength": 0.667
+    },
+    {
+      "a": "viewer/src/main.ts",
+      "b": "viewer/src/ui.ts",
+      "count": 2,
+      "strength": 0.667
+    },
+    {
+      "a": "viewer/src/types.ts",
+      "b": "viewer/src/ui.ts",
+      "count": 2,
+      "strength": 1.0
+    }
+  ],
+  "commits_analyzed": 110,
+  "head": "45971b8ed11870750c9effc03cd341a585c85bcc",
+  "last_changed": {
+    "prism/__init__.py": 1790506328,
+    "prism/__main__.py": 1791348196,
+    "prism/audit/__init__.py": 1790506330,
+    "prism/audit/plan.py": 1790506330,
+    "prism/audit/record.py": 1790506330,
+    "prism/audit/report.py": 1790506330,
+    "prism/audit/store.py": 1790506330,
+    "prism/audit/toolchain_detect.py": 1790522342,
+    "prism/cli.py": 1791348196,
+    "prism/config.py": 1790506328,
+    "prism/consent/__init__.py": 1790506329,
+    "prism/consent/registry.py": 1790506329,
+    "prism/core/__init__.py": 1790506328,
+    "prism/core/errors.py": 1790506328,
+    "prism/core/markers.py": 1790506328,
+    "prism/core/models.py": 1790506328,
+    "prism/core/paths.py": 1790506328,
+    "prism/core/tokens.py": 1790506328,
+    "prism/discovery/__init__.py": 1790506328,
+    "prism/discovery/language.py": 1790506328,
+    "prism/discovery/scanner.py": 1791348191,
+    "prism/drift/__init__.py": 1790506329,
+    "prism/drift/scoring.py": 1790506329,
+    "prism/drift/structural_diff.py": 1790506329,
+    "prism/entry.py": 1791348196,
+    "prism/extractors/__init__.py": 1790506329,
+    "prism/extractors/base.py": 1790506329,
+    "prism/extractors/blast_radius.py": 1790506329,
+    "prism/extractors/config_keys.py": 1790506329,
+    "prism/extractors/dead_code.py": 1790506329,
+    "prism/extractors/entry_points.py": 1790506329,
+    "prism/extractors/models.py": 1790506329,
+    "prism/extractors/project.py": 1790522342,
+    "prism/extractors/routes.py": 1790506329,
+    "prism/extractors/tests_map.py": 1790522342,
+    "prism/extractors/toolchain.py": 1790522342,
+    "prism/graph/__init__.py": 1790506328,
+    "prism/graph/blast.py": 1790506328,
+    "prism/graph/call_graph.py": 1790506328,
+    "prism/graph/communities.py": 1790506328,
+    "prism/graph/import_graph.py": 1790506328,
+    "prism/graph/ranking.py": 1790506328,
+    "prism/graph/symbol_table.py": 1790506328,
+    "prism/health/__init__.py": 1790506329,
+    "prism/health/coverage.py": 1790506329,
+    "prism/health/git_intel.py": 1790506329,
+    "prism/health/risk.py": 1790506329,
+    "prism/hooks/__init__.py": 1791348196,
+    "prism/hooks/entry.py": 1791348195,
+    "prism/hooks/formats.py": 1791348195,
+    "prism/hooks/prompt.py": 1791348196,
+    "prism/hooks/runner.py": 1791348196,
+    "prism/hooks/update_job.py": 1791348195,
+    "prism/incremental/__init__.py": 1790506329,
+    "prism/incremental/hash_cache.py": 1790506329,
+    "prism/incremental/lock.py": 1791348193,
+    "prism/integrations/__init__.py": 1791348198,
+    "prism/integrations/antigravity.py": 1791348198,
+    "prism/integrations/base.py": 1791348197,
+    "prism/integrations/claude_code.py": 1791348197,
+    "prism/integrations/codex.py": 1791348197,
+    "prism/integrations/common.py": 1791348195,
+    "prism/integrations/gemini.py": 1791348197,
+    "prism/integrations/git_hooks.py": 1790506329,
+    "prism/integrations/global_note.py": 1790506329,
+    "prism/integrations/hooks_json.py": 1791348197,
+    "prism/integrations/other_agents.py": 1791348198,
+    "prism/lifecycle.py": 1791348194,
+    "prism/maintenance.py": 1791348198,
+    "prism/mcp/__init__.py": 1790506329,
+    "prism/mcp/server.py": 1791348196,
+    "prism/narrator/__init__.py": 1790506330,
+    "prism/narrator/refresh.py": 1790506330,
+    "prism/navigator/api.py": 1791348193,
+    "prism/navigator/cache_db.py": 1791348193,
+    "prism/navigator/context_pack.py": 1790506329,
+    "prism/navigator/freshness.py": 1791348193,
+    "prism/navigator/impact.py": 1790506329,
+    "prism/navigator/literals.py": 1791348192,
+    "prism/navigator/render.py": 1790506329,
+    "prism/navigator/resolve.py": 1790506329,
+    "prism/navigator/semantic.py": 1790506329,
+    "prism/navigator/session.py": 1791348192,
+    "prism/navigator/source_index.py": 1791348192,
+    "prism/navigator/store.py": 1790522342,
+    "prism/navigator/synonyms.py": 1791348192,
+    "prism/navigator/task_pack.py": 1791348193,
+    "prism/navigator/text.py": 1791348192,
+    "prism/parsing/__init__.py": 1790506328,
+    "prism/parsing/base_parser.py": 1790506328,
+    "prism/parsing/modules.py": 1790506328,
+    "prism/parsing/python_ast.py": 1790506328,
+    "prism/parsing/python_facts.py": 1790506328,
+    "prism/parsing/smells.py": 1790506328,
+    "prism/parsing/treesitter.py": 1790506330,
+    "prism/pipeline.py": 1790506329,
+    "prism/status.py": 1791348194,
+    "prism/viewer/api.py": 1790522328,
+    "prism/viewer/model.py": 1790522328,
+    "prism/viewer/server.py": 1790522361,
+    "prism/writers/__init__.py": 1791348194,
+    "prism/writers/activity.py": 1790506329,
+    "prism/writers/agents_md.py": 1791348194,
+    "prism/writers/artifacts.py": 1790506329,
+    "prism/writers/decisions.py": 1790506330,
+    "prism/writers/graph_export.py": 1790506330,
+    "prism/writers/index_writer.py": 1791348194,
+    "prism/writers/json_writer.py": 1791348194,
+    "prism/writers/manifest.py": 1790506329,
+    "prism/writers/modules_md.py": 1790506329,
+    "prism/writers/narrative.py": 1790506329,
+    "prism/writers/obsidian.py": 1790506330,
+    "tests/__init__.py": 1790506331,
+    "tests/benchmarks/agent_collect.py": 1791303418,
+    "tests/benchmarks/agent_measure.py": 1791303418,
+    "tests/benchmarks/agent_prepare.py": 1791303418,
+    "tests/benchmarks/agent_report.py": 1791303418,
+    "tests/benchmarks/agent_score.py": 1791303418,
+    "tests/benchmarks/edit_bench.py": 1791348201,
+    "tests/benchmarks/prism_mcp_client.mjs": 1791303418,
+    "tests/benchmarks/retrieval_eval.py": 1791348201,
+    "tests/benchmarks/run.py": 1790509125,
+    "tests/benchmarks/synth.py": 1790506331,
+    "tests/benchmarks/tokens.py": 1790522349,
+    "tests/conftest.py": 1790506331,
+    "tests/integration/test_audit.py": 1790522342,
+    "tests/integration/test_cli.py": 1790506331,
+    "tests/integration/test_freshness.py": 1791348200,
+    "tests/integration/test_hooks_mcp.py": 1791348200,
+    "tests/integration/test_incremental.py": 1790506331,
+    "tests/integration/test_integrations.py": 1791348200,
+    "tests/integration/test_phase5.py": 1790522349,
+    "tests/integration/test_prompt_hook.py": 1791348200,
+    "tests/integration/test_refresh.py": 1790506331,
+    "tests/integration/test_scan.py": 1790506331,
+    "tests/integration/test_update_paths.py": 1791348199,
+    "tests/integration/test_viewer.py": 1790522328,
+    "tests/skills/test_skill_templates.py": 1790506331,
+    "tests/test_agent_measure.py": 1791303418,
+    "tests/unit/test_config.py": 1790506331,
+    "tests/unit/test_consent.py": 1790506331,
+    "tests/unit/test_discovery.py": 1790522335,
+    "tests/unit/test_edit_bench.py": 1791348201,
+    "tests/unit/test_extractors.py": 1790522342,
+    "tests/unit/test_graph.py": 1790506331,
+    "tests/unit/test_navigator.py": 1790522349,
+    "tests/unit/test_phase3_extractors.py": 1790506331,
+    "tests/unit/test_python_parser.py": 1790506331,
+    "tests/unit/test_retrieval_eval.py": 1791348201,
+    "tests/unit/test_task_pack.py": 1791348199,
+    "tests/unit/test_task_retrieval.py": 1791348199,
+    "tests/unit/test_treesitter.py": 1790506331,
+    "tests/unit/test_writers.py": 1790506331,
+    "viewer/src/app.ts": 1790522361,
+    "viewer/src/chrome.ts": 1790522372,
+    "viewer/src/controls.ts": 1790523636,
+    "viewer/src/data.ts": 1790522361,
+    "viewer/src/encode.ts": 1790522361,
+    "viewer/src/graph-utils.ts": 1790522361,
+    "viewer/src/hovercard.ts": 1790522371,
+    "viewer/src/inspector.ts": 1790523636,
+    "viewer/src/layout.ts": 1790522361,
+    "viewer/src/live.ts": 1790522372,
+    "viewer/src/main.ts": 1790522361,
+    "viewer/src/nodelist.ts": 1790522371,
+    "viewer/src/renderer.ts": 1790522361,
+    "viewer/src/search.ts": 1790522371,
+    "viewer/src/theme.ts": 1790522361,
+    "viewer/src/types.ts": 1790522361,
+    "viewer/src/ui.ts": 1790522361,
+    "viewer/src/views.ts": 1790522361,
+    "viewer/tests/graph.test.mjs": 1790522372,
+    "viewer/tests/static.test.mjs": 1790509124,
+    "viewer/vite.config.ts": 1790506330
+  },
+  "owners": {
+    "prism/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/__main__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/audit/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/audit/plan.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/audit/record.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/audit/report.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/audit/store.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/audit/toolchain_detect.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/cli.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 3
+      }
+    ],
+    "prism/config.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/consent/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/consent/registry.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/core/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/core/errors.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/core/markers.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/core/models.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/core/paths.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/core/tokens.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/discovery/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/discovery/language.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/discovery/scanner.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 4
+      }
+    ],
+    "prism/drift/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/drift/scoring.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/drift/structural_diff.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/entry.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/extractors/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/extractors/base.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/extractors/blast_radius.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/extractors/config_keys.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/extractors/dead_code.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/extractors/entry_points.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/extractors/models.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/extractors/project.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/extractors/routes.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/extractors/tests_map.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/extractors/toolchain.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/graph/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/graph/blast.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/graph/call_graph.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/graph/communities.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/graph/import_graph.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/graph/ranking.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/graph/symbol_table.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/health/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/health/coverage.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/health/git_intel.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/health/risk.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/hooks/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/hooks/entry.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/hooks/formats.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/hooks/prompt.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/hooks/runner.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/hooks/update_job.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/incremental/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/incremental/hash_cache.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/incremental/lock.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/integrations/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/integrations/antigravity.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/integrations/base.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/integrations/claude_code.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/integrations/codex.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/integrations/common.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/integrations/gemini.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/integrations/git_hooks.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/integrations/global_note.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/integrations/hooks_json.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/integrations/other_agents.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/lifecycle.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/maintenance.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/mcp/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/mcp/server.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/narrator/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/narrator/refresh.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/api.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/navigator/cache_db.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 4
+      }
+    ],
+    "prism/navigator/context_pack.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/freshness.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/impact.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/literals.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/render.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/resolve.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/semantic.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/session.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/source_index.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/store.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/navigator/synonyms.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/task_pack.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/text.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 3
+      }
+    ],
+    "prism/parsing/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/parsing/base_parser.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/parsing/modules.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/parsing/python_ast.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/parsing/python_facts.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/parsing/smells.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/parsing/treesitter.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/pipeline.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/status.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/viewer/api.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 3
+      }
+    ],
+    "prism/viewer/model.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 3
+      }
+    ],
+    "prism/viewer/server.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 3
+      }
+    ],
+    "prism/writers/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 3
+      }
+    ],
+    "prism/writers/activity.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/writers/agents_md.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/writers/artifacts.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/writers/decisions.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/writers/graph_export.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/writers/index_writer.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/writers/json_writer.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "prism/writers/manifest.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/writers/modules_md.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/writers/narrative.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/writers/obsidian.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/__init__.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/agent_collect.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/agent_measure.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/agent_prepare.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/agent_report.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/agent_score.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/edit_bench.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/prism_mcp_client.mjs": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/retrieval_eval.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/run.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/synth.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/benchmarks/tokens.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/conftest.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/integration/test_audit.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "tests/integration/test_cli.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/integration/test_freshness.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/integration/test_hooks_mcp.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "tests/integration/test_incremental.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/integration/test_integrations.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "tests/integration/test_phase5.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "tests/integration/test_prompt_hook.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/integration/test_refresh.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/integration/test_scan.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/integration/test_update_paths.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/integration/test_viewer.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 3
+      }
+    ],
+    "tests/skills/test_skill_templates.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/test_agent_measure.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_config.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_consent.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_discovery.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "tests/unit/test_edit_bench.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_extractors.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "tests/unit/test_graph.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_navigator.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "tests/unit/test_phase3_extractors.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_python_parser.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_retrieval_eval.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_task_pack.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_task_retrieval.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_treesitter.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_writers.py": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/src/app.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/src/chrome.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/src/controls.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "viewer/src/data.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 3
+      }
+    ],
+    "viewer/src/encode.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 3
+      }
+    ],
+    "viewer/src/graph-utils.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "viewer/src/hovercard.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/src/inspector.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "viewer/src/layout.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/src/live.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/src/main.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 3
+      }
+    ],
+    "viewer/src/nodelist.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/src/renderer.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/src/search.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/src/theme.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/src/types.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "viewer/src/ui.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "viewer/src/views.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/tests/graph.test.mjs": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 2
+      }
+    ],
+    "viewer/tests/static.test.mjs": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "viewer/vite.config.ts": [
+      {
+        "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ]
+  },
+  "schema_version": "1.0"
+}

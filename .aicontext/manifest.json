@@ -1,0 +1,1737 @@
+{
+  "artifacts": {
+    "AGENTS.md": "d2b6dfb594269d9e9dba2972f067adacccbabe04031edbde407d6d2873e1ce7d",
+    "blast_radius.json": "6e93ba910508b292bf4eedfb09b351cb68d614b9f69b313cb7d01b7137cc04a3",
+    "call_graph.json": "110c6582ca9e78254ae32b2121a2090549702e66d5ae465088a54cce93d50476",
+    "config.json": "b6b988e240a2bcf2b8dd14665c6f136b953f286ac05ce358007b7e87f53dc320",
+    "dependency_graph.json": "571b9fabdc6fddb3b321615b6855009312e6354107f28df6fa7235c0ecd2b8a8",
+    "git_intelligence.json": "63fe50315d20d176c14a4e1129554a87e0ed648959be93773e30df04f40d1eef",
+    "health.json": "b6b3b959c7ec06f2ea0ace622de0cb231a289a726c4c84a91dc034570f0ec2b2",
+    "models.json": "a5737b895b0404c18a35330779ceb6b7c96792af65d4d1c941dc7e0c2dfc77a0",
+    "modules/prism._vendor.md": "ee193fe4fe0bd1ba5ce82fe50d3380449bad8aa3ea6001870f2fec3559598c47",
+    "modules/prism.audit.md": "ddc7e91a3f23c37774fcb0f2ba9307187b33588a73d5c0ae8f344083af70b607",
+    "modules/prism.consent.md": "3a1ac89dc8a29543be571f3e10ca27972380d32ab9c5ce93710224edea57087c",
+    "modules/prism.core.md": "9e4ab6191eec4217007610e73c35e992a5fb81da6f0c62bc250942720985b856",
+    "modules/prism.discovery.md": "82441f2ab2cfcf9625bb31ccef05648248ad99b2c9b3318feff406107cdd53bf",
+    "modules/prism.drift.md": "7fa50f7ebe40058d8b446318f31c0d951ff3ea8755a8a2570cddea36e12698a2",
+    "modules/prism.extractors.md": "33d3c73e5d46cdf343ca557ece783bd0ab120ed396993cf265dbfaf78bfecbfd",
+    "modules/prism.graph.md": "36a22e29f775d25716577ecf3fc5b9fbfbf63531fe0baf578d39e2f31f28b2ab",
+    "modules/prism.health.md": "cd2b60114f1cfb66d5c18323f5d956eb0d49b0dc366fe6a6cfaf2257a862ec30",
+    "modules/prism.hooks.md": "5fa50b13ed68b2b7e304f6713a95a900bc894eb60210552a3664a1d783d22ddc",
+    "modules/prism.incremental.md": "880778278f4c43473e3fcd77a493c22bd7bd4bff506ba71303847ca490cc09a4",
+    "modules/prism.integrations.md": "08ed6742821b6d20bf499ebaec1e453edfa5c17465ecfe55b44c256e0b0633aa",
+    "modules/prism.mcp.md": "0c2ade5974ef418dcf34df1ba8b41d634489cb81780b8bbad4de2fa1ee52df27",
+    "modules/prism.md": "e347a4aff93377f4b3d36579d43c02748a244e2dfa613b3a8f02842ccf0d4d4a",
+    "modules/prism.narrator.md": "155923be42a86842b34632c7f38c186bdb18598cfe6c168a14617dd37047ea6d",
+    "modules/prism.navigator.api.md": "c4da6ceed14298dc77943c21e1ddf464e581082e508d0e2c6c5fc755d3d779c6",
+    "modules/prism.navigator.cache_db.md": "e8e0f18c657064b7154dc38849eb1222a60a219a995842f86333768a1a56731a",
+    "modules/prism.navigator.context_pack.md": "b3382820f763980970c055a0fe37b22cd9c9ac297bc3d575d77ad4d470f00a8e",
+    "modules/prism.navigator.freshness.md": "fbd59f276288e9f27500fa3be5a101e0f5005bac82db92f9f69487c5dac40fc3",
+    "modules/prism.navigator.fusion.md": "a91154228bc2528dc16611e9071531bc1f47c64b8d787d6d326cf911ff3db5f2",
+    "modules/prism.navigator.graphify.md": "fe21be902916d81a6799759ddeab1d921b9fa5d349f12a9fcee17a878d980713",
+    "modules/prism.navigator.impact.md": "f19ee5f264b49188b9a67fb70ad068d47c401dc8f6108e02f30c4b45a071e967",
+    "modules/prism.navigator.literals.md": "3c0bcf11dd923a7d7cc7139aa04ab6e08f9e110b51cb85ccf9aacffdd67ad4cd",
+    "modules/prism.navigator.overview.md": "b8c893cd22ab3198bd8863ac741929bc110f1f8c70619e8f9c2376fa336ae572",
+    "modules/prism.navigator.render.md": "e2bcef1498f412ed72492ac572f2dcf39ca8bec0c80bb96f858514e7c7e3b4f8",
+    "modules/prism.navigator.request.md": "402f4e0a5c5cd303962cbe4f943aa861b3060fe57326ca1daccda75b6ae225b3",
+    "modules/prism.navigator.resolve.md": "79fae5396e0438292bddb8dfffe20131193d4e8b5dee6d6ad6e520b96a07ac61",
+    "modules/prism.navigator.semantic.md": "f36650db2d577aeb0b2253ee1213d02adddac564fc1bc9114dba18db0bc50c45",
+    "modules/prism.navigator.session.md": "b0d556b5ca87147355b64e88a7ca6a6c4610f3c9d532a7e33dd6e75dbc9bf9ce",
+    "modules/prism.navigator.source_index.md": "7f2005116404a52f2dcb1cdb9f80f0ca23b547142d7580559bfcfba92c9dc020",
+    "modules/prism.navigator.store.md": "44b4528304265ae4a6ae7d4a33d1870ac6b331f3a35cc81c265658e56047ca24",
+    "modules/prism.navigator.support.md": "b15d6cf355dd8c62990fda2825f6bb3c8e14f167481dec03fd897fcb58f043d0",
+    "modules/prism.navigator.synonyms.md": "669683d089d136584fe74693eb9b9a533e25fcbb8dc8881f8c0f6a59733233aa",
+    "modules/prism.navigator.task_pack.md": "12f5550bc7e75f2789578a9b05d19d9ce9ee6a99857bf60ad529c4385d7de8e3",
+    "modules/prism.navigator.text.md": "41f869f62b59ddcec944e708df2cdfa8e76a6835999a2d0bf8aa3ceb08505821",
+    "modules/prism.parsing.md": "896dd99e845ad3a49418d37bcbb6648cf759d58df76a900a540716e9f19a4bf5",
+    "modules/prism.viewer.api.md": "90c5e7a313f8d19a9e314615c756d3ebd939736af064c69a1cdf57a7fafd038f",
+    "modules/prism.viewer.model.md": "36b627b82ace364ec65906e679f47a3c28823ff90a9ca789fd810ae908accc67",
+    "modules/prism.viewer.server.md": "c1cdb31004bf532dbf36332a8d85fd05ca4099830516951d5e4720e0d765e151",
+    "modules/prism.writers.md": "43a5237f720883309517902222259b420018f284dfc8af3f37648cbf41198fad",
+    "modules/viewer.src.app.md": "109b81b82e026892ed093d7505e2f6d22dd7f8893e432fe38b13cf668cf76acf",
+    "modules/viewer.src.chrome.md": "be4294883ab8105300395bf8963e15dfca20f399c81e6bcbc3bcebee2c54bf07",
+    "modules/viewer.src.controls.md": "766aa6d0c71326f6c3bdaa2b67674d52c3037042b7dd29ea4a58ffd3a02b8ecf",
+    "modules/viewer.src.data.md": "df689fc15224513d7feeddb2f4c69c361881f648748baafcb657e0975ca0845d",
+    "modules/viewer.src.encode.md": "d7c7882f6068bb739d27fb347e8ad8bc265d94e58b0d65148fc39ae687855010",
+    "modules/viewer.src.graph_utils.md": "75ffe472c4a29b1fb0696cc27ac1aa2753fc40d0aa85eeef3c6fa2b956df3e07",
+    "modules/viewer.src.hovercard.md": "101fca3e5ff47afded4fd630f5ed4ac8552c5f5c6a887ff4e1330d105649467e",
+    "modules/viewer.src.inspector.md": "28b9c5cb0868d2c494b25681bfb7e03d19ec06eb3274a87cf3c23f1ed3948556",
+    "modules/viewer.src.layout.md": "9429bd0c9893944f3c8efca3068a9bbc6082b5db2e00b8a634f5656fd7df5763",
+    "modules/viewer.src.live.md": "86caa4ad0d6c982821edd7f693aa4f0fd6650fcc92684705127b22128c6ebe62",
+    "modules/viewer.src.main.md": "174dd860080dfd858315f80380bc3e21f754723f1876f22f5f53ef3490cbe7c2",
+    "modules/viewer.src.nodelist.md": "cd042922b82c7b42cb8e0ec540a270c613a8cfd76624d987c21e72a76bee4a00",
+    "modules/viewer.src.renderer.md": "c5afdbf13da0249df02793d6d3e43e640e6c49339d3ec855d8d9ddd1fd7f787e",
+    "modules/viewer.src.search.md": "ff7419ff3e46b03d488f548cd6899eef391218e1eacc9c4ec16710769bfbd1b1",
+    "modules/viewer.src.theme.md": "c86dbf67d715f8e867643260804f3270519e2efd808e15e5c3cfc254a0c228da",
+    "modules/viewer.src.types.md": "60584f9130fb38b78289d0bb79f8f317da00399f115861938be18e0b18cf4860",
+    "modules/viewer.src.ui.md": "93b58fe6f506dffc18570e65d8fa23044fd7b63f2e2fa4834357bf845ec0a502",
+    "modules/viewer.src.views.md": "73b32c8e636330539f6e4e2c7222eab9be09df80ac588212390d88ee121ecdd5",
+    "modules/viewer.vite_config.md": "837d34e1071c89e2da2995ad56b2a6620ac35edfe6f73e0694ba966a4bf012a9",
+    "routes.json": "65a5cf5653e0a94a4074375a80beca203b9c2884cca0088cb16dc0e6ca481690",
+    "symbols.json": "d13e65d7d5f127b382646e538dda274a5b19bc19aecde9d05b4d4e794610faa5",
+    "tests_map.json": "1d4e700fb6945eaee3176339066b031b3a76aed59d2bc4bbf87b83b545ff5725"
+  },
+  "created": "2026-10-06T16:18:10Z",
+  "drift": {
+    "sections": {
+      "architecture": {
+        "changes": [
+          "new module `prism.entry`",
+          "new module `prism.hooks.entry`",
+          "new module `prism.hooks.formats`",
+          "new module `prism.hooks.prompt`",
+          "new module `prism.hooks.update_job`",
+          "new module `prism.incremental.lock`",
+          "new module `prism.integrations.antigravity`",
+          "new module `prism.integrations.codex`",
+          "new module `prism.integrations.gemini`",
+          "new module `prism.integrations.hooks_json`",
+          "new module `prism.navigator.freshness`",
+          "new module `prism.navigator.literals`",
+          "new module `prism.navigator.session`",
+          "new module `prism.navigator.source_index`",
+          "new module `prism.navigator.synonyms`",
+          "new module `prism.navigator.task_pack`",
+          "new module `prism.writers.index_writer`",
+          "new public symbol `prism.navigator.api.op_task`",
+          "new config key `PRISM_HOOK_SYNC`",
+          "new config key `PRISM_MCP_PROFILE`"
+        ],
+        "ids": [
+          "prism.entry",
+          "prism.hooks.entry",
+          "prism.hooks.formats",
+          "prism.hooks.prompt",
+          "prism.hooks.update_job",
+          "prism.incremental.lock",
+          "prism.integrations.antigravity",
+          "prism.integrations.codex",
+          "prism.integrations.gemini",
+          "prism.integrations.hooks_json",
+          "prism.navigator.freshness",
+          "prism.navigator.literals",
+          "prism.navigator.session",
+          "prism.navigator.source_index",
+          "prism.navigator.synonyms",
+          "prism.navigator.task_pack",
+          "prism.writers.index_writer",
+          "prism.navigator.api.op_task",
+          "PRISM_HOOK_SYNC",
+          "PRISM_MCP_PROFILE",
+          "PRISM_PROMPT_CONTEXT",
+          "PRISM_SESSION",
+          "prism.core.paths.manifest_path",
+          "prism.lifecycle.scan",
+          "prism.writers.json_writer._replace",
+          "prism.core.models.Smell",
+          "prism.parsing.base_parser.get_parser",
+          "prism.pipeline.build_index",
+          "viewer.src.data.ApiError",
+          "prism._vendor"
+        ],
+        "score": 170,
+        "stale": true
+      },
+      "modules/prism": {
+        "changes": [
+          "new module `prism.entry`",
+          "new public symbol `prism.cli.hook_user_prompt`",
+          "new public symbol `prism.cli.task`",
+          "new public symbol `prism.entry.main`",
+          "new public symbol `prism.status.working_tree_changes`",
+          "signature of `prism.cli.brief` is now `brief(root: RootOption = None, full: Annotated[bool, typer.Option('--full', help='The whole AGENTS.md, not the compact session brief.')] = False, as_json: JsonOption = False) -> None`",
+          "signature of `prism.cli.hook_session_start` is now `hook_session_start(fmt: FormatOption = 'text', event: EventOption = None) -> None`",
+          "signature of `prism.cli.init` is now `init(root: RootOption = None, agent: Annotated[str, typer.Option('--agent', help='claude-code | cursor | codex | gemini | antigravity | generic | auto | none')] = 'auto', hooks: Annotated[bool | None, typer.Option('--hooks/--no-hooks', help='Agent hooks.')] = None, mcp: Annotated[bool | None, typer.Option('--mcp/--no-mcp', help='Register the MCP server.')] = None, git_hooks: Annotated[bool | None, typer.Option('--git-hooks/--no-git-hooks', help='Git post-commit/merge/checkout hooks.')] = None, yes: Annotated[bool, typer.Option('--yes', '-y', help='Skip prompts (scripted use).')] = False, run_scan: Annotated[bool | None, typer.Option('--scan/--no-scan', help='Run the initial scan without asking.')] = None) -> None`",
+          "signature of `prism.cli.mcp_cmd` is now `mcp_cmd(root: RootOption = None, profile: Annotated[str | None, typer.Option('--profile', help='lean (default: task, context, impact, status) or full (adds search, audit, ...).')] = None) -> None`",
+          "signature of `prism.cli.update_cmd` is now `update_cmd(paths: Annotated[list[str] | None, typer.Argument(help='Files known to have changed (same as --files; any number).')] = None, files: Annotated[list[str] | None, typer.Option('--files', help='A file known to have changed. Repeatable; extra paths work.')] = None, root: RootOption = None, quiet: QuietOption = False, as_json: JsonOption = False) -> None`",
+          "signature of `prism.lifecycle.run_index` is now `run_index(root: Path, *, incremental: bool, files: list[str] | None = None, full: bool = False, lazy_rank: bool = True, lock_wait: float = 10.0) -> IndexRun`",
+          "signature of `prism.lifecycle.scan` is now `scan(root: Path, full: bool = False, warm: bool = True) -> dict[str, Any]`",
+          "signature of `prism.lifecycle.update` is now `update(root: Path, files: list[str] | None = None, lazy_rank: bool = True, lock_wait: float = 10.0) -> IndexRun`",
+          "signature of `prism.cli.task` is now `task(query: Annotated[str, typer.Argument(help='The request, a symbol name, or a file path.')], root: RootOption = None, budget: Annotated[int, typer.Option('--budget', min=128, max=32000)] = 2000, mode: Annotated[str, typer.Option('--mode', help='auto | overview (signatures/map) | code (edit context)')] = 'auto', session: Annotated[str | None, typer.Option('--session', help='Remember returned code in this session; repeats become one-line references.')] = None, as_json: JsonOption = False) -> None`"
+        ],
+        "ids": [
+          "prism.entry",
+          "prism.cli.hook_user_prompt",
+          "prism.cli.task",
+          "prism.entry.main",
+          "prism.status.working_tree_changes",
+          "prism.cli.brief",
+          "prism.cli.hook_session_start",
+          "prism.cli.init",
+          "prism.cli.mcp_cmd",
+          "prism.cli.update_cmd",
+          "prism.lifecycle.run_index",
+          "prism.lifecycle.scan",
+          "prism.lifecycle.update"
+        ],
+        "score": 31,
+        "stale": true
+      },
+      "modules/prism._vendor": {
+        "changes": [
+          "new module `prism._vendor`",
+          "new module `prism._vendor.graphify_retrieval`"
+        ],
+        "ids": [
+          "prism._vendor",
+          "prism._vendor.graphify_retrieval"
+        ],
+        "score": 10,
+        "stale": true
+      },
+      "modules/prism.discovery": {
+        "changes": [
+          "signature of `prism.discovery.scanner.discover` is now `discover(root: Path, config: PrismConfig, known: Mapping[str, Mapping[str, Any]] | None = None, resniff: bool = True) -> list[SourceFile]`"
+        ],
+        "ids": [
+          "prism.discovery.scanner.discover"
+        ],
+        "score": 2,
+        "stale": false
+      },
+      "modules/prism.hooks": {
+        "changes": [
+          "new module `prism.hooks.entry`",
+          "new module `prism.hooks.formats`",
+          "new module `prism.hooks.prompt`",
+          "new module `prism.hooks.update_job`",
+          "new public symbol `prism.hooks.entry.background_enabled`",
+          "new public symbol `prism.hooks.entry.hard_exit`",
+          "new public symbol `prism.hooks.entry.parse_flags`",
+          "new public symbol `prism.hooks.entry.read_stdin`",
+          "new public symbol `prism.hooks.entry.run_hook`",
+          "new public symbol `prism.hooks.entry.use_utf8`",
+          "new public symbol `prism.hooks.formats.render_context`",
+          "new public symbol `prism.hooks.prompt.should_retrieve`",
+          "new public symbol `prism.hooks.prompt.user_prompt`",
+          "new public symbol `prism.hooks.runner.edited_paths`",
+          "new public symbol `prism.hooks.update_job.main`",
+          "signature of `prism.hooks.runner.post_edit` is now `post_edit(raw_stdin: str, background: bool = False) -> None`"
+        ],
+        "ids": [
+          "prism.hooks.entry",
+          "prism.hooks.formats",
+          "prism.hooks.prompt",
+          "prism.hooks.update_job",
+          "prism.hooks.entry.background_enabled",
+          "prism.hooks.entry.hard_exit",
+          "prism.hooks.entry.parse_flags",
+          "prism.hooks.entry.read_stdin",
+          "prism.hooks.entry.run_hook",
+          "prism.hooks.entry.use_utf8",
+          "prism.hooks.formats.render_context",
+          "prism.hooks.prompt.should_retrieve",
+          "prism.hooks.prompt.user_prompt",
+          "prism.hooks.runner.edited_paths",
+          "prism.hooks.update_job.main",
+          "prism.hooks.runner.post_edit"
+        ],
+        "score": 44,
+        "stale": true
+      },
+      "modules/prism.incremental": {
+        "changes": [
+          "new module `prism.incremental.lock`",
+          "new public symbol `prism.incremental.lock.LockBusy`",
+          "new public symbol `prism.incremental.lock.UpdateLock`",
+          "new public symbol `prism.incremental.lock.UpdateLock.__enter__`",
+          "new public symbol `prism.incremental.lock.UpdateLock.__exit__`",
+          "new public symbol `prism.incremental.lock.UpdateLock.__init__`"
+        ],
+        "ids": [
+          "prism.incremental.lock",
+          "prism.incremental.lock.LockBusy",
+          "prism.incremental.lock.UpdateLock",
+          "prism.incremental.lock.UpdateLock.__enter__",
+          "prism.incremental.lock.UpdateLock.__exit__",
+          "prism.incremental.lock.UpdateLock.__init__"
+        ],
+        "score": 15,
+        "stale": true
+      },
+      "modules/prism.integrations": {
+        "changes": [
+          "new module `prism.integrations.antigravity`",
+          "new module `prism.integrations.codex`",
+          "new module `prism.integrations.gemini`",
+          "new module `prism.integrations.hooks_json`",
+          "new public symbol `prism.integrations.all_integrations`",
+          "new public symbol `prism.integrations.antigravity.AntigravityIntegration`",
+          "new public symbol `prism.integrations.antigravity.AntigravityIntegration.detect`",
+          "new public symbol `prism.integrations.antigravity.AntigravityIntegration.notes`",
+          "new public symbol `prism.integrations.antigravity.AntigravityIntegration.plan`",
+          "new public symbol `prism.integrations.antigravity.AntigravityIntegration.plan_removal`",
+          "new public symbol `prism.integrations.antigravity.AntigravityIntegration.status`",
+          "new public symbol `prism.integrations.antigravity.rule_text`",
+          "new public symbol `prism.integrations.base.Integration.notes`",
+          "new public symbol `prism.integrations.base.Integration.status`",
+          "new public symbol `prism.integrations.base.outside_toml_block`",
+          "new public symbol `prism.integrations.base.with_toml_block`",
+          "new public symbol `prism.integrations.base.without_toml_block`",
+          "new public symbol `prism.integrations.claude_code.ClaudeCodeIntegration.status`",
+          "new public symbol `prism.integrations.codex.CodexIntegration`",
+          "new public symbol `prism.integrations.codex.CodexIntegration.detect`"
+        ],
+        "ids": [
+          "prism.integrations.antigravity",
+          "prism.integrations.codex",
+          "prism.integrations.gemini",
+          "prism.integrations.hooks_json",
+          "prism.integrations.all_integrations",
+          "prism.integrations.antigravity.AntigravityIntegration",
+          "prism.integrations.antigravity.AntigravityIntegration.detect",
+          "prism.integrations.antigravity.AntigravityIntegration.notes",
+          "prism.integrations.antigravity.AntigravityIntegration.plan",
+          "prism.integrations.antigravity.AntigravityIntegration.plan_removal",
+          "prism.integrations.antigravity.AntigravityIntegration.status",
+          "prism.integrations.antigravity.rule_text",
+          "prism.integrations.base.Integration.notes",
+          "prism.integrations.base.Integration.status",
+          "prism.integrations.base.outside_toml_block",
+          "prism.integrations.base.with_toml_block",
+          "prism.integrations.base.without_toml_block",
+          "prism.integrations.claude_code.ClaudeCodeIntegration.status",
+          "prism.integrations.codex.CodexIntegration",
+          "prism.integrations.codex.CodexIntegration.detect",
+          "prism.integrations.codex.CodexIntegration.notes",
+          "prism.integrations.codex.CodexIntegration.plan",
+          "prism.integrations.codex.CodexIntegration.plan_removal",
+          "prism.integrations.codex.CodexIntegration.status",
+          "prism.integrations.gemini.GeminiIntegration",
+          "prism.integrations.gemini.GeminiIntegration.detect",
+          "prism.integrations.gemini.GeminiIntegration.plan",
+          "prism.integrations.gemini.GeminiIntegration.plan_removal",
+          "prism.integrations.gemini.GeminiIntegration.status",
+          "prism.integrations.hooks_json.add_hooks"
+        ],
+        "score": 86,
+        "stale": true
+      },
+      "modules/prism.mcp": {
+        "changes": [
+          "new public symbol `prism.mcp.server.PrismTools.prism_task`",
+          "new public symbol `prism.mcp.server.resolve_profile`",
+          "signature of `prism.mcp.server.PrismTools.prism_brief` is now `prism_brief(self, full: bool = False) -> dict[str, Any]`",
+          "signature of `prism.mcp.server.build_server` is now `build_server(root: Path, profile: str | None = None) -> Any`",
+          "signature of `prism.mcp.server.enabled_tools` is now `enabled_tools(root: Path, profile: str | None = None) -> list[str]`",
+          "signature of `prism.mcp.server.run` is now `run(root: Path, profile: str | None = None) -> None`",
+          "signature of `prism.mcp.server.PrismTools.prism_task` is now `prism_task(self, query: str, budget: int = 2000, repeat: bool = False, mode: str = 'auto') -> dict[str, Any]`"
+        ],
+        "ids": [
+          "prism.mcp.server.PrismTools.prism_task",
+          "prism.mcp.server.resolve_profile",
+          "prism.mcp.server.PrismTools.prism_brief",
+          "prism.mcp.server.build_server",
+          "prism.mcp.server.enabled_tools",
+          "prism.mcp.server.run"
+        ],
+        "score": 14,
+        "stale": true
+      },
+      "modules/prism.navigator.api": {
+        "changes": [
+          "new public symbol `prism.navigator.api.op_task`",
+          "signature of `prism.navigator.api.op_brief` is now `op_brief(root: Path, full: bool = False) -> dict[str, Any]`",
+          "signature of `prism.navigator.api.op_task` is now `op_task(store: IndexStore, query: str, budget: int = 2000, seen: set[tuple[str, int, int]] | None = None, mode: str = 'auto') -> dict[str, Any]`"
+        ],
+        "ids": [
+          "prism.navigator.api.op_task",
+          "prism.navigator.api.op_brief"
+        ],
+        "score": 6,
+        "stale": false
+      },
+      "modules/prism.navigator.freshness": {
+        "changes": [
+          "new module `prism.navigator.freshness`",
+          "new public symbol `prism.navigator.freshness.caches_ready`",
+          "new public symbol `prism.navigator.freshness.refresh_if_stale`",
+          "new public symbol `prism.navigator.freshness.warm_caches`"
+        ],
+        "ids": [
+          "prism.navigator.freshness",
+          "prism.navigator.freshness.caches_ready",
+          "prism.navigator.freshness.refresh_if_stale",
+          "prism.navigator.freshness.warm_caches"
+        ],
+        "score": 11,
+        "stale": true
+      },
+      "modules/prism.navigator.fusion": {
+        "changes": [
+          "new module `prism.navigator.fusion`",
+          "new public symbol `prism.navigator.fusion.fuse_files`"
+        ],
+        "ids": [
+          "prism.navigator.fusion",
+          "prism.navigator.fusion.fuse_files"
+        ],
+        "score": 7,
+        "stale": false
+      },
+      "modules/prism.navigator.graphify": {
+        "changes": [
+          "new module `prism.navigator.graphify`",
+          "new public symbol `prism.navigator.graphify.GraphHint`",
+          "new public symbol `prism.navigator.graphify.GraphNode`",
+          "new public symbol `prism.navigator.graphify.GraphifyGraph`",
+          "new public symbol `prism.navigator.graphify.GraphifyGraph.__init__`",
+          "new public symbol `prism.navigator.graphify.GraphifyGraph.hints`",
+          "new public symbol `prism.navigator.graphify.GraphifyGraph.load`",
+          "new public symbol `prism.navigator.graphify.graphify_hints`"
+        ],
+        "ids": [
+          "prism.navigator.graphify",
+          "prism.navigator.graphify.GraphHint",
+          "prism.navigator.graphify.GraphNode",
+          "prism.navigator.graphify.GraphifyGraph",
+          "prism.navigator.graphify.GraphifyGraph.__init__",
+          "prism.navigator.graphify.GraphifyGraph.hints",
+          "prism.navigator.graphify.GraphifyGraph.load",
+          "prism.navigator.graphify.graphify_hints"
+        ],
+        "score": 19,
+        "stale": true
+      },
+      "modules/prism.navigator.literals": {
+        "changes": [
+          "new module `prism.navigator.literals`",
+          "new public symbol `prism.navigator.literals.Evidence`",
+          "new public symbol `prism.navigator.literals.Evidence.complete`",
+          "new public symbol `prism.navigator.literals.Evidence.line_weight`",
+          "new public symbol `prism.navigator.literals.Evidence.to_dict`",
+          "new public symbol `prism.navigator.literals.EvidenceResult`",
+          "new public symbol `prism.navigator.literals.EvidenceResult.hit_lines`",
+          "new public symbol `prism.navigator.literals.Occurrence`",
+          "new public symbol `prism.navigator.literals.Occurrence.snippet`",
+          "new public symbol `prism.navigator.literals.Occurrence.to_dict`",
+          "new public symbol `prism.navigator.literals.find_literals`",
+          "new public symbol `prism.navigator.literals.looks_like_code`"
+        ],
+        "ids": [
+          "prism.navigator.literals",
+          "prism.navigator.literals.Evidence",
+          "prism.navigator.literals.Evidence.complete",
+          "prism.navigator.literals.Evidence.line_weight",
+          "prism.navigator.literals.Evidence.to_dict",
+          "prism.navigator.literals.EvidenceResult",
+          "prism.navigator.literals.EvidenceResult.hit_lines",
+          "prism.navigator.literals.Occurrence",
+          "prism.navigator.literals.Occurrence.snippet",
+          "prism.navigator.literals.Occurrence.to_dict",
+          "prism.navigator.literals.find_literals",
+          "prism.navigator.literals.looks_like_code"
+        ],
+        "score": 27,
+        "stale": true
+      },
+      "modules/prism.navigator.overview": {
+        "changes": [
+          "new module `prism.navigator.overview`",
+          "new public symbol `prism.navigator.overview.overview_items`",
+          "new public symbol `prism.navigator.overview.render_overview`",
+          "new public symbol `prism.navigator.overview.wants_overview`"
+        ],
+        "ids": [
+          "prism.navigator.overview",
+          "prism.navigator.overview.overview_items",
+          "prism.navigator.overview.render_overview",
+          "prism.navigator.overview.wants_overview"
+        ],
+        "score": 11,
+        "stale": true
+      },
+      "modules/prism.navigator.request": {
+        "changes": [
+          "new module `prism.navigator.request`",
+          "new public symbol `prism.navigator.request.request_focus`",
+          "new public symbol `prism.navigator.request.request_operations`"
+        ],
+        "ids": [
+          "prism.navigator.request",
+          "prism.navigator.request.request_focus",
+          "prism.navigator.request.request_operations"
+        ],
+        "score": 9,
+        "stale": true
+      },
+      "modules/prism.navigator.session": {
+        "changes": [
+          "new module `prism.navigator.session`",
+          "new public symbol `prism.navigator.session.load_seen`",
+          "new public symbol `prism.navigator.session.save_seen`",
+          "new public symbol `prism.navigator.session.session_id`",
+          "signature of `prism.navigator.session.load_seen` is now `load_seen(root: Path, session: str, manifest: dict[str, Any] | None = None) -> set[Range]`",
+          "signature of `prism.navigator.session.save_seen` is now `save_seen(root: Path, session: str, seen: set[Range], manifest: dict[str, Any] | None = None) -> None`"
+        ],
+        "ids": [
+          "prism.navigator.session",
+          "prism.navigator.session.load_seen",
+          "prism.navigator.session.save_seen",
+          "prism.navigator.session.session_id"
+        ],
+        "score": 15,
+        "stale": true
+      },
+      "modules/prism.navigator.source_index": {
+        "changes": [
+          "new module `prism.navigator.source_index`",
+          "new public symbol `prism.navigator.source_index.SourceIndex`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.__enter__`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.__exit__`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.__init__`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.close`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.df`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.files_with_all`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.idf`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.paths_with`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.ranked`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.scores`",
+          "new public symbol `prism.navigator.source_index.SourceIndex.search`",
+          "new public symbol `prism.navigator.source_index.SourceReader`",
+          "new public symbol `prism.navigator.source_index.SourceReader.__init__`",
+          "new public symbol `prism.navigator.source_index.SourceReader.lines`",
+          "new public symbol `prism.navigator.source_index.pending_files`",
+          "new public symbol `prism.navigator.source_index.read_indexed_source`",
+          "new public symbol `prism.navigator.source_index.search_sources`",
+          "new public symbol `prism.navigator.source_index.split_lines`"
+        ],
+        "ids": [
+          "prism.navigator.source_index",
+          "prism.navigator.source_index.SourceIndex",
+          "prism.navigator.source_index.SourceIndex.__enter__",
+          "prism.navigator.source_index.SourceIndex.__exit__",
+          "prism.navigator.source_index.SourceIndex.__init__",
+          "prism.navigator.source_index.SourceIndex.close",
+          "prism.navigator.source_index.SourceIndex.df",
+          "prism.navigator.source_index.SourceIndex.files_with_all",
+          "prism.navigator.source_index.SourceIndex.idf",
+          "prism.navigator.source_index.SourceIndex.paths_with",
+          "prism.navigator.source_index.SourceIndex.ranked",
+          "prism.navigator.source_index.SourceIndex.scores",
+          "prism.navigator.source_index.SourceIndex.search",
+          "prism.navigator.source_index.SourceReader",
+          "prism.navigator.source_index.SourceReader.__init__",
+          "prism.navigator.source_index.SourceReader.lines",
+          "prism.navigator.source_index.pending_files",
+          "prism.navigator.source_index.read_indexed_source",
+          "prism.navigator.source_index.search_sources",
+          "prism.navigator.source_index.split_lines"
+        ],
+        "score": 43,
+        "stale": true
+      },
+      "modules/prism.navigator.support": {
+        "changes": [
+          "new module `prism.navigator.support`",
+          "new public symbol `prism.navigator.support.SupportRange`",
+          "new public symbol `prism.navigator.support.local_support`"
+        ],
+        "ids": [
+          "prism.navigator.support",
+          "prism.navigator.support.SupportRange",
+          "prism.navigator.support.local_support"
+        ],
+        "score": 9,
+        "stale": true
+      },
+      "modules/prism.navigator.synonyms": {
+        "changes": [
+          "new module `prism.navigator.synonyms`",
+          "new public symbol `prism.navigator.synonyms.related_terms`"
+        ],
+        "ids": [
+          "prism.navigator.synonyms",
+          "prism.navigator.synonyms.related_terms"
+        ],
+        "score": 7,
+        "stale": false
+      },
+      "modules/prism.navigator.task_pack": {
+        "changes": [
+          "new module `prism.navigator.task_pack`",
+          "new public symbol `prism.navigator.task_pack.build_task`",
+          "new public symbol `prism.navigator.task_pack.render_task`",
+          "signature of `prism.navigator.task_pack.build_task` is now `build_task(store: IndexStore, query: str, budget: int = 2000, seen: set[tuple[str, int, int]] | None = None, mode: str = 'auto') -> dict[str, Any]`"
+        ],
+        "ids": [
+          "prism.navigator.task_pack",
+          "prism.navigator.task_pack.build_task",
+          "prism.navigator.task_pack.render_task"
+        ],
+        "score": 11,
+        "stale": true
+      },
+      "modules/prism.writers": {
+        "changes": [
+          "new module `prism.writers.index_writer`",
+          "new public symbol `prism.writers.__getattr__`",
+          "new public symbol `prism.writers.agents_md.compact_brief`",
+          "new public symbol `prism.writers.agents_md.written_narrative`",
+          "new public symbol `prism.writers.index_writer.write_index`",
+          "public symbol `prism.writers.write_index` removed"
+        ],
+        "ids": [
+          "prism.writers.index_writer",
+          "prism.writers.__getattr__",
+          "prism.writers.agents_md.compact_brief",
+          "prism.writers.agents_md.written_narrative",
+          "prism.writers.index_writer.write_index",
+          "prism.writers.write_index"
+        ],
+        "score": 15,
+        "stale": true
+      },
+      "purpose": {
+        "changes": [
+          "entry point `main_guard:prism.entry.main` added",
+          "entry point `main_guard:prism.hooks.update_job.main` added",
+          "entry point `main_guard:tests.benchmarks.agent_collect.collect` added",
+          "entry point `main_guard:tests.benchmarks.agent_measure.summarise` added",
+          "entry point `main_guard:tests.benchmarks.agent_prepare.prepare` added",
+          "entry point `main_guard:tests.benchmarks.agent_report.report` added",
+          "entry point `main_guard:tests.benchmarks.agent_score.score` added",
+          "entry point `main_guard:tests.benchmarks.edit_bench.main` added",
+          "entry point `main_guard:tests.benchmarks.retrieval_eval.main` added",
+          "entry point `main_guard:prism.cli.main` removed",
+          "entry point `main_guard:tests.benchmarks.retrieval_economics.main` added"
+        ],
+        "ids": [],
+        "score": 33,
+        "stale": true
+      }
+    },
+    "threshold": 8
+  },
+  "files": {
+    "prism/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.2526877,
+      "sha256": "4db1a9d73ca48cf8c7ab21d9147cd9625c7044019a3e73f338110ec6be624aff",
+      "size": 184
+    },
+    "prism/__main__.py": {
+      "language": "python",
+      "mtime": 1791353780.8960116,
+      "sha256": "c3d122d3933796dbf56f475259fdddf56d349a3a5852e723a51ea977138f1f68",
+      "size": 72
+    },
+    "prism/_vendor/__init__.py": {
+      "language": "python",
+      "mtime": 1791355156.7705882,
+      "sha256": "b569b6d80e8daed231a7bf038eaadda08d8897ade3c8172e6bb3148c7725ebb7",
+      "size": 79
+    },
+    "prism/_vendor/graphify_retrieval.py": {
+      "language": "python",
+      "mtime": 1791355156.7705882,
+      "sha256": "e5ae9159c8abfbb3b39974df180834d9ddb3e648bd2cc74ac401da97ef3ba12f",
+      "size": 3342
+    },
+    "prism/audit/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.256208,
+      "sha256": "b098093c671fd907e4a8bacb81117aa113d9a08b8d1a544dfaecde4e3638e64c",
+      "size": 306
+    },
+    "prism/audit/plan.py": {
+      "language": "python",
+      "mtime": 1791302774.2577264,
+      "sha256": "6f309f6e7524c642ed6317cd624d8322855ab3b56389ffadaf05992d9a7d1673",
+      "size": 11308
+    },
+    "prism/audit/record.py": {
+      "language": "python",
+      "mtime": 1791302774.259741,
+      "sha256": "8512b50278fc885746e31c58249bbc5df2606f0cc84e635b81808a00e42120b6",
+      "size": 6396
+    },
+    "prism/audit/report.py": {
+      "language": "python",
+      "mtime": 1791302774.2618585,
+      "sha256": "0a20300f5b42d0de0aaf2c789b72b89b45b5d52ea42d8b63377318c88abe8f1e",
+      "size": 5706
+    },
+    "prism/audit/store.py": {
+      "language": "python",
+      "mtime": 1791302774.2640784,
+      "sha256": "fc948a46fe785d36c1943736f4b1f5e97265b0ecf1ccadbaf99d14d6ac558809",
+      "size": 1479
+    },
+    "prism/audit/toolchain_detect.py": {
+      "language": "python",
+      "mtime": 1791302774.26611,
+      "sha256": "440eb45057da6ab53dbb0fc8d4a99b353f192e57fb90b81f450b01253fc3d535",
+      "size": 386
+    },
+    "prism/cli.py": {
+      "language": "python",
+      "mtime": 1791391151.0756357,
+      "sha256": "7833a0faf95381516597464c7c7add0a3d787e0436f54f6abe45f883c31716f9",
+      "size": 36850
+    },
+    "prism/config.py": {
+      "language": "python",
+      "mtime": 1791302774.2692504,
+      "sha256": "b6d910e4eee3922926058e6baf77881386db2f4c769b0952864f9cb9a415fcc0",
+      "size": 2634
+    },
+    "prism/consent/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.2707853,
+      "sha256": "c80b94191b300786a6d69aa235c455701bed2f23d94fe6263a82b308ba84f7a8",
+      "size": 239
+    },
+    "prism/consent/registry.py": {
+      "language": "python",
+      "mtime": 1791302774.2718127,
+      "sha256": "23a60dc7af495b9b28b970c6c82b25f50424d9a87beb85225e289a8833e34185",
+      "size": 3159
+    },
+    "prism/core/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.2780588,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "prism/core/errors.py": {
+      "language": "python",
+      "mtime": 1791302774.279537,
+      "sha256": "415f690af5de24c2f28e3ac0211a51c1359db8caf6f866b51a47797f3b07de68",
+      "size": 1141
+    },
+    "prism/core/markers.py": {
+      "language": "python",
+      "mtime": 1791302774.2800517,
+      "sha256": "988a326e7375ecc01cbbea8b48a6cb2d828dfa741c63c34b29b4239751c83d8c",
+      "size": 1446
+    },
+    "prism/core/models.py": {
+      "language": "python",
+      "mtime": 1791302774.2816055,
+      "sha256": "43130370700210443a7f87f9c4e1e55067dd0b351dd56c31206497a2f87b096c",
+      "size": 7569
+    },
+    "prism/core/paths.py": {
+      "language": "python",
+      "mtime": 1791302774.2826307,
+      "sha256": "5525d2e2f5ba0359db629ac3574f463419ac8119d26a73984b6c1024d8c0bcd5",
+      "size": 818
+    },
+    "prism/core/tokens.py": {
+      "language": "python",
+      "mtime": 1791302774.283629,
+      "sha256": "1a876dbfe6b55d03a72c1cc884607d8dddc529440f46013bc6f5da0ce9cf7dca",
+      "size": 322
+    },
+    "prism/discovery/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.286149,
+      "sha256": "97d26be07d4375f0989b3fc0aa0e31f9f8a8ed883b5d0b306cca4c78194a44b6",
+      "size": 169
+    },
+    "prism/discovery/language.py": {
+      "language": "python",
+      "mtime": 1791302774.286149,
+      "sha256": "37dd478d92e02da776a0833d820e6a4ccf6ed1892c9bd17e92c84ef77ff7dbc2",
+      "size": 1586
+    },
+    "prism/discovery/scanner.py": {
+      "language": "python",
+      "mtime": 1791353780.9007256,
+      "sha256": "ef7cb5c62b6bd5dbec8898c1a51fe42db4e64e57a48f2f3682c77e6ee4a4bf6c",
+      "size": 8180
+    },
+    "prism/drift/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.2907035,
+      "sha256": "26609c02f482ce81e83736da3c50c64a60862abe5e84c36dd8b768346c95c825",
+      "size": 200
+    },
+    "prism/drift/scoring.py": {
+      "language": "python",
+      "mtime": 1791302774.2932372,
+      "sha256": "80c5a1668386a760929811afc8f965e83879ef004c539cb67cb6cef6e85a7d2f",
+      "size": 1878
+    },
+    "prism/drift/structural_diff.py": {
+      "language": "python",
+      "mtime": 1791302774.2943437,
+      "sha256": "e2b38a025742c96f3d95e9be5bd2843f941fca791e8bef25d6913e2e8cade4f8",
+      "size": 7888
+    },
+    "prism/entry.py": {
+      "language": "python",
+      "mtime": 1791353780.9007256,
+      "sha256": "decf0c0cc94d6fb45c03cdadbcdb28b6e33100204e26e012f59f7aa644bcc1be",
+      "size": 655
+    },
+    "prism/extractors/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.296386,
+      "sha256": "0fb0137e3b0927f4253b9f92f813a841335b4c82cfd8e8b5b004dcb3ade1b7c4",
+      "size": 542
+    },
+    "prism/extractors/base.py": {
+      "language": "python",
+      "mtime": 1791302774.296386,
+      "sha256": "46d2a63a9ef0b91b0d687f7271c3a95de96fe89e91fc0c851929a134826c4273",
+      "size": 1298
+    },
+    "prism/extractors/blast_radius.py": {
+      "language": "python",
+      "mtime": 1791302774.2979035,
+      "sha256": "2a72efaedd89b53ada59e4ca055ca5c436f9f3b90855b76036b824900531ccda",
+      "size": 2811
+    },
+    "prism/extractors/config_keys.py": {
+      "language": "python",
+      "mtime": 1791302774.29905,
+      "sha256": "c8586d1f8a762a8e9f012de2d11b722529c2a5bc350a05d52ef1fdffd9d83138",
+      "size": 1104
+    },
+    "prism/extractors/dead_code.py": {
+      "language": "python",
+      "mtime": 1791302774.3001587,
+      "sha256": "85d468eeb085ce3314af7520f7e17f1c159f71c4ac857ed2f502de5b517d0d9c",
+      "size": 3577
+    },
+    "prism/extractors/entry_points.py": {
+      "language": "python",
+      "mtime": 1791302774.3026793,
+      "sha256": "cecf2c656987917e207ca71fb519d6496988639158c82821e8fb1919421ab825",
+      "size": 3140
+    },
+    "prism/extractors/models.py": {
+      "language": "python",
+      "mtime": 1791302774.3052092,
+      "sha256": "09162537ed39c9d72179d9bb85485023279b7ad94ac2a72fda97a4132aa9b8d6",
+      "size": 3037
+    },
+    "prism/extractors/project.py": {
+      "language": "python",
+      "mtime": 1791302774.3062208,
+      "sha256": "3b7f93328c3f0840c465cfb9cb740e504f5849d6a6e1004cdf2447cae7d1e07f",
+      "size": 2827
+    },
+    "prism/extractors/routes.py": {
+      "language": "python",
+      "mtime": 1791302774.3084192,
+      "sha256": "d534233a6b5f9f7f379a5456c63b5e78c21934f82b34b5c2cde8e7538109a637",
+      "size": 3579
+    },
+    "prism/extractors/tests_map.py": {
+      "language": "python",
+      "mtime": 1791302774.3084192,
+      "sha256": "1e3bfe352bef3388cb019814100f213c93290842e5e53312aa5f2bddd6930d49",
+      "size": 4048
+    },
+    "prism/extractors/toolchain.py": {
+      "language": "python",
+      "mtime": 1791302774.3098707,
+      "sha256": "8c44c9ea7ab7863980780261bf06e03f14d00a7b3db31cfb7a31fe4f232d9a6c",
+      "size": 7257
+    },
+    "prism/graph/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.3124084,
+      "sha256": "4bb1c908280b5dada7fe05b50472d54b5fac469ec198b37fc1a6661ec5886ebf",
+      "size": 356
+    },
+    "prism/graph/blast.py": {
+      "language": "python",
+      "mtime": 1791302774.313872,
+      "sha256": "789bfb53c4cd59666d320c7fd5aad1344144e40f6a77555a93dfb9bf6800f04f",
+      "size": 1163
+    },
+    "prism/graph/call_graph.py": {
+      "language": "python",
+      "mtime": 1791302774.3149436,
+      "sha256": "d48be2f8578a1ad237a366f9bdf32208119a65169768f813f6a3fd7c528b6272",
+      "size": 8404
+    },
+    "prism/graph/communities.py": {
+      "language": "python",
+      "mtime": 1791302774.316955,
+      "sha256": "9b972e2b4fb53da08b57e2c80e88e36c17e3a73f409818240e2deaea15c3344c",
+      "size": 3340
+    },
+    "prism/graph/import_graph.py": {
+      "language": "python",
+      "mtime": 1791302774.319274,
+      "sha256": "f9b916446b4dc3c512caca3b0ee68982c1fa84cf76ab94143f12739be2b3fd45",
+      "size": 2838
+    },
+    "prism/graph/ranking.py": {
+      "language": "python",
+      "mtime": 1791302774.319791,
+      "sha256": "5d33091493f404f561b06ef801cb194fbe41d3d99de73ad109b04bb651a9ae50",
+      "size": 3373
+    },
+    "prism/graph/symbol_table.py": {
+      "language": "python",
+      "mtime": 1791302774.3213637,
+      "sha256": "97ed93f50b97f4ec63e0effd680af044a7ec2c148ff44f7005763ba90102b143",
+      "size": 5948
+    },
+    "prism/health/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.3276627,
+      "sha256": "6438ac6846295308839add5158089b1ce7f076bae51becf06769c622153d8f6a",
+      "size": 229
+    },
+    "prism/health/coverage.py": {
+      "language": "python",
+      "mtime": 1791302774.3286855,
+      "sha256": "c471d20ec1c3826191907daa35330e469e36304929d7ebd6de61f9169826d235",
+      "size": 2028
+    },
+    "prism/health/git_intel.py": {
+      "language": "python",
+      "mtime": 1791302774.330207,
+      "sha256": "834f4e34dee096f0e1f28323569815a4660e03dfba387c0c268612842bda393e",
+      "size": 3810
+    },
+    "prism/health/risk.py": {
+      "language": "python",
+      "mtime": 1791302774.331633,
+      "sha256": "d9c9bc1617c7c35d3f8ae8b2476e3a88e9016376313e9264cb1780783a21b4dc",
+      "size": 6286
+    },
+    "prism/hooks/__init__.py": {
+      "language": "python",
+      "mtime": 1791353780.9036908,
+      "sha256": "a233ac84e32e53c8c6dd8d331e16eebc9ee3c5b205f083a3a9a0426d523ff65f",
+      "size": 160
+    },
+    "prism/hooks/entry.py": {
+      "language": "python",
+      "mtime": 1791353780.9036908,
+      "sha256": "b132a14106b1c735150f2965c0f35bf70644047b3dcc94bb2c6ca1c3284b7908",
+      "size": 3532
+    },
+    "prism/hooks/formats.py": {
+      "language": "python",
+      "mtime": 1791353780.905527,
+      "sha256": "4a8992587f50e2bfb0021bd22490fd9d532d8e251c3d8d7613cae80557848ca4",
+      "size": 893
+    },
+    "prism/hooks/prompt.py": {
+      "language": "python",
+      "mtime": 1791355506.4617538,
+      "sha256": "82139b5203ba92ff0721cea4df65d1a51a492d5f5fc03ff4374d578e87426b81",
+      "size": 6358
+    },
+    "prism/hooks/runner.py": {
+      "language": "python",
+      "mtime": 1791353780.906669,
+      "sha256": "6146b534e9eae8248800d722b267f12bf80e4bab67b2b8149d706b915601116a",
+      "size": 8330
+    },
+    "prism/hooks/update_job.py": {
+      "language": "python",
+      "mtime": 1791353780.9097245,
+      "sha256": "ce621e0bc38651872835cfafd9891631a7356f6da2f42d4e598253a30859bb6f",
+      "size": 1366
+    },
+    "prism/incremental/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.337187,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "prism/incremental/hash_cache.py": {
+      "language": "python",
+      "mtime": 1791302774.3404934,
+      "sha256": "9e016f3ad8235f855beaccaae9c745004e8468dbd85cb00ecdbd0947f916cdd4",
+      "size": 4352
+    },
+    "prism/incremental/lock.py": {
+      "language": "python",
+      "mtime": 1791353780.9118204,
+      "sha256": "6e210accb89f84ed507a52eb36ce5e8edc7acc00e86e9c167ade9110f163e9f6",
+      "size": 2447
+    },
+    "prism/integrations/__init__.py": {
+      "language": "python",
+      "mtime": 1791353780.9144413,
+      "sha256": "1c58be080416a892ad27e282be039d49c3455da9ee2656dfa7edb2ce7f00493f",
+      "size": 2530
+    },
+    "prism/integrations/antigravity.py": {
+      "language": "python",
+      "mtime": 1791353780.915448,
+      "sha256": "b1f1ec32072ed3500415121ef1e81f164556ce32c8edc09649ca05658d8886aa",
+      "size": 2523
+    },
+    "prism/integrations/base.py": {
+      "language": "python",
+      "mtime": 1791353780.9175036,
+      "sha256": "51b9f7d4948af41af2843f61003e2106cac4bd8a966f8b8788b87166cc386e6d",
+      "size": 8624
+    },
+    "prism/integrations/claude_code.py": {
+      "language": "python",
+      "mtime": 1791353780.9190094,
+      "sha256": "e93d008c8637603e7b5d53fb1cefeb2c76bbfdd928aaec3c3839a196f19b1e20",
+      "size": 5061
+    },
+    "prism/integrations/codex.py": {
+      "language": "python",
+      "mtime": 1791353780.920302,
+      "sha256": "732045d7d7af9f867c06876757e999d262c88163039285237fc3e402ea351379",
+      "size": 5294
+    },
+    "prism/integrations/common.py": {
+      "language": "python",
+      "mtime": 1791391151.2268982,
+      "sha256": "88ab6fe00aac84a14d6ad1a2d9e44b98418fbd7a3189828ac90e29e387e73bc1",
+      "size": 2391
+    },
+    "prism/integrations/gemini.py": {
+      "language": "python",
+      "mtime": 1791353780.9234774,
+      "sha256": "a0c2432f2775c389d02ecc890f743f4ef9713f320776cafc733f4f47b3da0aac",
+      "size": 4643
+    },
+    "prism/integrations/git_hooks.py": {
+      "language": "python",
+      "mtime": 1791302774.361394,
+      "sha256": "2ae7779767a9602494ef4b0001f9cce8121c7543208896cb2e32080305cb87e9",
+      "size": 3614
+    },
+    "prism/integrations/global_note.py": {
+      "language": "python",
+      "mtime": 1791302774.362415,
+      "sha256": "c85e44f34f0fa42a4561dce3f5092ddc98a197e16a2acdfd2cc5e46b1e75d0f2",
+      "size": 1448
+    },
+    "prism/integrations/hooks_json.py": {
+      "language": "python",
+      "mtime": 1791353780.9234774,
+      "sha256": "0792125bc93fef8b92b4e5bc5a09976f97c58684f3c393e9afaee190426bad0c",
+      "size": 2123
+    },
+    "prism/integrations/other_agents.py": {
+      "language": "python",
+      "mtime": 1791353780.9254904,
+      "sha256": "fc2938de63faad220b99143d101b1835bee67246b994bd330b46555b618d512c",
+      "size": 6173
+    },
+    "prism/lifecycle.py": {
+      "language": "python",
+      "mtime": 1791353780.9287212,
+      "sha256": "389a03b9babf0ee8909fcb138cc3e50512dcb62f4a98ae0fbdf06dbd698d8239",
+      "size": 13765
+    },
+    "prism/maintenance.py": {
+      "language": "python",
+      "mtime": 1791353780.9304478,
+      "sha256": "0389e1843f586a897792c0579981493b8dd486aee7ff379b2fcddcd85abe15f2",
+      "size": 9127
+    },
+    "prism/mcp/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.367955,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "prism/mcp/server.py": {
+      "language": "python",
+      "mtime": 1791387246.1538825,
+      "sha256": "789a26308ebdb684f85961a5acc2a6774aab703c4d1c24f24032f7ad0947ea92",
+      "size": 11810
+    },
+    "prism/narrator/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.3714924,
+      "sha256": "da18b3b28b6f64a07f5fc1c5735c2c38b2bfce72702dab10d12e00f9241bb92a",
+      "size": 149
+    },
+    "prism/narrator/refresh.py": {
+      "language": "python",
+      "mtime": 1791302774.3725138,
+      "sha256": "0549693469ad32e1ed9276724eb3f6393a7a1564a182f4b7a3f2159284ba23b0",
+      "size": 7796
+    },
+    "prism/navigator/api.py": {
+      "language": "python",
+      "mtime": 1791387065.6546564,
+      "sha256": "347a02eb7a791b7ed5e9df77041c09042dcea174ff8956f8f63a85f21595f63d",
+      "size": 6730
+    },
+    "prism/navigator/cache_db.py": {
+      "language": "python",
+      "mtime": 1791353780.9367735,
+      "sha256": "529dc557046e8260ae49f2a34174d4c049992fd83c86888efed4664528a8d775",
+      "size": 11602
+    },
+    "prism/navigator/context_pack.py": {
+      "language": "python",
+      "mtime": 1791387246.1556413,
+      "sha256": "5b05a8470c7e0b12d93dfba9af50544467f7177db00349bc1393c186eb576099",
+      "size": 9761
+    },
+    "prism/navigator/freshness.py": {
+      "language": "python",
+      "mtime": 1791353780.9377747,
+      "sha256": "8594130ee8f4cbf933c2553f72509c222df831313e6afabca734dafa5cd774c8",
+      "size": 3202
+    },
+    "prism/navigator/fusion.py": {
+      "language": "python",
+      "mtime": 1791387246.159462,
+      "sha256": "fd196ce81afffd8a17c74f7676a0c0ad8de684df7d56d43e81ba13729883f007",
+      "size": 917
+    },
+    "prism/navigator/graphify.py": {
+      "language": "python",
+      "mtime": 1791386948.2739818,
+      "sha256": "a86454eec8e2b5122316bdb5fb5a951fd7b294a665e4261f5cd6ccdbe571bfb7",
+      "size": 10746
+    },
+    "prism/navigator/impact.py": {
+      "language": "python",
+      "mtime": 1791302774.3795638,
+      "sha256": "e9c825bf0799aacba7b4774689bbc51b93fc405c8eb6faf49165e05da5c1bcdb",
+      "size": 3921
+    },
+    "prism/navigator/literals.py": {
+      "language": "python",
+      "mtime": 1791387065.6546564,
+      "sha256": "f0ab3c32d51042d87b71245c6644aefc8c6b7779956ed85ab700f81ee71e3af8",
+      "size": 14820
+    },
+    "prism/navigator/overview.py": {
+      "language": "python",
+      "mtime": 1791387887.983064,
+      "sha256": "09fc965620cfe24e7b7b4f22ce971a05a0e3d226be3585db1159ee29761c20f4",
+      "size": 8736
+    },
+    "prism/navigator/render.py": {
+      "language": "python",
+      "mtime": 1791302774.3836806,
+      "sha256": "78180a31dbb5bdb64f7a6ef76f5acc2b3facd4dc890771a963337d809923741c",
+      "size": 5083
+    },
+    "prism/navigator/request.py": {
+      "language": "python",
+      "mtime": 1791391046.153382,
+      "sha256": "44993216d67fac5b6ced26540c6039c72e60678da91130f00970351c861d5cd9",
+      "size": 1612
+    },
+    "prism/navigator/resolve.py": {
+      "language": "python",
+      "mtime": 1791302774.3857062,
+      "sha256": "d428d57b65bba31e2cc55d53eec0d6ce1e753af9a9237daa2602c9f357066002",
+      "size": 6407
+    },
+    "prism/navigator/semantic.py": {
+      "language": "python",
+      "mtime": 1791302774.3862224,
+      "sha256": "473e5447638463e2ed824f588d0a9e6845fc3798a195d2cfacc748014dcfb39d",
+      "size": 4399
+    },
+    "prism/navigator/session.py": {
+      "language": "python",
+      "mtime": 1791355506.4617538,
+      "sha256": "b9194acc57dc170cbb2d54b3e4f2754ba5a90fa11f3081a3958906130611e5f4",
+      "size": 3998
+    },
+    "prism/navigator/source_index.py": {
+      "language": "python",
+      "mtime": 1791353780.9407818,
+      "sha256": "25b521ffac72bf1ffc7b9f4d4cbb96bf28792027b9dc0e16e596b90bc01c4d07",
+      "size": 9621
+    },
+    "prism/navigator/store.py": {
+      "language": "python",
+      "mtime": 1791355506.4656155,
+      "sha256": "6a0154acb87b8d6380b0cf7ba2dec1ab60352a4e764eb7781c4e10c147e3fd1e",
+      "size": 15432
+    },
+    "prism/navigator/support.py": {
+      "language": "python",
+      "mtime": 1791387115.195535,
+      "sha256": "02e3feee1a5dc4d0dfb78d7384938677a1e27b5152bbbc79597ec3206bc7000a",
+      "size": 2882
+    },
+    "prism/navigator/synonyms.py": {
+      "language": "python",
+      "mtime": 1791390999.1090245,
+      "sha256": "4e3953907c25d401716ec07e645069d8fc0b561b04379c77c8751bd17d5b131b",
+      "size": 2679
+    },
+    "prism/navigator/task_pack.py": {
+      "language": "python",
+      "mtime": 1791391151.2797263,
+      "sha256": "1ef30d83beb9fedd579601bed36607027c50cfbf0976a83c4d802fbcbbc198aa",
+      "size": 54450
+    },
+    "prism/navigator/text.py": {
+      "language": "python",
+      "mtime": 1791353780.9447734,
+      "sha256": "34fe8e75b27a58c976de7c7f4c10eeeb9a52ef08ed006f536780ffd85088b63e",
+      "size": 4730
+    },
+    "prism/parsing/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.3913205,
+      "sha256": "3f707a6b4d5f9149838a1ab9fa8d5db50f632dc8f04cbdbf7ac44d468f0de62d",
+      "size": 202
+    },
+    "prism/parsing/base_parser.py": {
+      "language": "python",
+      "mtime": 1791302774.3938706,
+      "sha256": "427cb6f333e3c012576acd7b45907cdd3c5ffc8dddac0a198b9a3d93dd4c4f6c",
+      "size": 1055
+    },
+    "prism/parsing/modules.py": {
+      "language": "python",
+      "mtime": 1791302774.395221,
+      "sha256": "12378a8ac29c5737fafdaf117229f9acb976e2a8ee6c5a62322dafa9753b61dc",
+      "size": 1669
+    },
+    "prism/parsing/python_ast.py": {
+      "language": "python",
+      "mtime": 1791302774.3962145,
+      "sha256": "e4d9d5e4aa7941104e134b4ac70da13aeb7db82fd9a643adab7bb918ca31e7a0",
+      "size": 13206
+    },
+    "prism/parsing/python_facts.py": {
+      "language": "python",
+      "mtime": 1791302774.3977304,
+      "sha256": "34199be2a27b677b93f4ad7fa234fcac909432f85bdeee5de66fb1174be44c6e",
+      "size": 4775
+    },
+    "prism/parsing/smells.py": {
+      "language": "python",
+      "mtime": 1791302774.3990152,
+      "sha256": "bc2ad3aa4b0eed9e11ca379d40e1a723c3443e4c1068809eff40dfd9eb36feb0",
+      "size": 10859
+    },
+    "prism/parsing/treesitter.py": {
+      "language": "python",
+      "mtime": 1791302774.400049,
+      "sha256": "f1a0d68e981fe3f660dd514203742582543e214dd478c894b791e28a4a1cd82e",
+      "size": 41171
+    },
+    "prism/pipeline.py": {
+      "language": "python",
+      "mtime": 1791302774.4026182,
+      "sha256": "0b42e44f0ebbeeb3460e8321975f287ef613a2b2ab0c935270dd65b6cfebfd70",
+      "size": 7117
+    },
+    "prism/status.py": {
+      "language": "python",
+      "mtime": 1791353780.9457698,
+      "sha256": "4a6c9e2dd7b132a0bd5d82aa7cda96f6cdac674063a99fb09cfeacaeb0dec018",
+      "size": 4416
+    },
+    "prism/viewer/api.py": {
+      "language": "python",
+      "mtime": 1791302774.4459014,
+      "sha256": "311f6f522164bcd7132d0a29335e555c1097c6b4e7855175d5785ac1296d1417",
+      "size": 11291
+    },
+    "prism/viewer/model.py": {
+      "language": "python",
+      "mtime": 1791302774.4504607,
+      "sha256": "efd7d8127b6b6b51c9f9e599b38f41d1bc5b0c5145bd4ec5c8d6c908672539f1",
+      "size": 29571
+    },
+    "prism/viewer/server.py": {
+      "language": "python",
+      "mtime": 1791302774.451771,
+      "sha256": "890ae89a39e31611a3b36f6fb6031037dcc60923ab0d718db9b4eca0421f31ed",
+      "size": 17354
+    },
+    "prism/writers/__init__.py": {
+      "language": "python",
+      "mtime": 1791353780.9518573,
+      "sha256": "252cf0a7aca509a944e05ba97a3bf88f477f71b6a12d5aaf76f5e031ff4830ee",
+      "size": 1016
+    },
+    "prism/writers/activity.py": {
+      "language": "python",
+      "mtime": 1791302774.469661,
+      "sha256": "2c46295b26e1df5d5b857119e170b6a88101b2a2633af87966c7b7aebe0ab1a9",
+      "size": 1786
+    },
+    "prism/writers/agents_md.py": {
+      "language": "python",
+      "mtime": 1791387246.1700008,
+      "sha256": "5de56ac09efb72cf86bb3251dc8758686636c9de0a016d8e88e89366096936b7",
+      "size": 5829
+    },
+    "prism/writers/artifacts.py": {
+      "language": "python",
+      "mtime": 1791302774.4730885,
+      "sha256": "a1a4d68a609db6192c6b2c0c6c753385e3f1c4b682809c5861108228855ee49d",
+      "size": 7119
+    },
+    "prism/writers/decisions.py": {
+      "language": "python",
+      "mtime": 1791302774.4837046,
+      "sha256": "087be07e4b2027f1e5523bc95436e2ef4f5ebcb71d272f63a8d6d526790600bc",
+      "size": 4683
+    },
+    "prism/writers/graph_export.py": {
+      "language": "python",
+      "mtime": 1791302774.485131,
+      "sha256": "5ef83a8c7b2999205efb8637ab173a13fb99008fb1320b11c0c560167875a3bd",
+      "size": 11193
+    },
+    "prism/writers/index_writer.py": {
+      "language": "python",
+      "mtime": 1791353780.9554024,
+      "sha256": "b21040da45dbd5019abebf38dd7c3739c233bb39df38b68b6dcf7783f33d8114",
+      "size": 5061
+    },
+    "prism/writers/json_writer.py": {
+      "language": "python",
+      "mtime": 1791353780.9554024,
+      "sha256": "ab38ca1c537e2453a8b3240d0d522dbff01e595240f93341ef8a9b75e1b63295",
+      "size": 1839
+    },
+    "prism/writers/manifest.py": {
+      "language": "python",
+      "mtime": 1791302774.4876478,
+      "sha256": "28edc2fc019e7ad6318e46ad6b7a41dac99962c83f298bda0446c9b3cb303c8e",
+      "size": 1887
+    },
+    "prism/writers/modules_md.py": {
+      "language": "python",
+      "mtime": 1791302774.4899092,
+      "sha256": "075b39374cb976ee96ae6dee14430f5a60f6324ee0cc3402503f3818b5aabd2d",
+      "size": 4568
+    },
+    "prism/writers/narrative.py": {
+      "language": "python",
+      "mtime": 1791302774.49195,
+      "sha256": "4bcf27a122c29e982c3e56f9036c3abc212c952df6071752130eba1fd136fe4e",
+      "size": 910
+    },
+    "prism/writers/obsidian.py": {
+      "language": "python",
+      "mtime": 1791302774.4939606,
+      "sha256": "0350777a2ca89f120134579c380670b3d95f7d11d87afdf4802e10c13e611afc",
+      "size": 7377
+    },
+    "tests/__init__.py": {
+      "language": "python",
+      "mtime": 1791302774.4990318,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    "tests/benchmarks/agent_collect.py": {
+      "language": "python",
+      "mtime": 1791353780.959437,
+      "sha256": "227f66c85c6eac6b4813756cf0ab2df54e6d5cc72573787668da3212da44a4aa",
+      "size": 4421
+    },
+    "tests/benchmarks/agent_measure.py": {
+      "language": "python",
+      "mtime": 1791353780.959437,
+      "sha256": "3c3599513a7fd972066a51114e6da9094af796c6578ba30b8f5618e6bbbc24e7",
+      "size": 5353
+    },
+    "tests/benchmarks/agent_prepare.py": {
+      "language": "python",
+      "mtime": 1791353780.9614472,
+      "sha256": "6238c84e9e95c65b9621471548b0aa40c2d4e867057afbbd769da34beb874df3",
+      "size": 5588
+    },
+    "tests/benchmarks/agent_report.py": {
+      "language": "python",
+      "mtime": 1791353780.9624634,
+      "sha256": "56bf1d48f570af080a6205d7dc5a91407b828c383f855da40c2f9bcef4915262",
+      "size": 17876
+    },
+    "tests/benchmarks/agent_score.py": {
+      "language": "python",
+      "mtime": 1791353780.9655402,
+      "sha256": "5be249e45a766266f5a52295885a485deb1860f823c9a49a9ff3ca026911910f",
+      "size": 4945
+    },
+    "tests/benchmarks/edit_bench.py": {
+      "language": "python",
+      "mtime": 1791353780.9678998,
+      "sha256": "8f6d2f1cfd9b4a9ed3efa5e850ad9f0a8d8be2d82a47bd592c5968860ed47bb9",
+      "size": 19371
+    },
+    "tests/benchmarks/prism_mcp_client.mjs": {
+      "language": "javascript",
+      "mtime": 1791353780.970631,
+      "sha256": "419084223705f82544699fdb1f070bd4bc50a19f891154100c2d0bc5bae6c698",
+      "size": 4467
+    },
+    "tests/benchmarks/retrieval_economics.py": {
+      "language": "python",
+      "mtime": 1791390902.3388646,
+      "sha256": "54d8752a07ca9b3eb8c075c73b685b128f744626047b0b7bb5ad976f9d09e144",
+      "size": 4313
+    },
+    "tests/benchmarks/retrieval_eval.py": {
+      "language": "python",
+      "mtime": 1791353780.973068,
+      "sha256": "6c763813c4387167d78e3cc1ad58e81bf16f7fb5af5ae76302f8a7579e16f86b",
+      "size": 5821
+    },
+    "tests/benchmarks/run.py": {
+      "language": "python",
+      "mtime": 1791302774.5015705,
+      "sha256": "bce93313f2c6dc4e1e41f9d5c66e773d53340e6507083347d2f6159d6344fb42",
+      "size": 3577
+    },
+    "tests/benchmarks/synth.py": {
+      "language": "python",
+      "mtime": 1791302774.5025885,
+      "sha256": "ab9956e1decf1341e57136fed60656199e35113e3bc64834021e9cd4fb959e0a",
+      "size": 4386
+    },
+    "tests/benchmarks/tokens.py": {
+      "language": "python",
+      "mtime": 1791302774.5046659,
+      "sha256": "109718e26b4c4a31811f4ab44c4f0714578953300dd81202547b5e5e37f78ef6",
+      "size": 17034
+    },
+    "tests/conftest.py": {
+      "language": "python",
+      "mtime": 1791302774.5061831,
+      "sha256": "9f1f2156099ce69ea8db046a74db9c1f0facbc0f4b72b1dbd4d6ece46c74c18a",
+      "size": 2649
+    },
+    "tests/integration/test_audit.py": {
+      "language": "python",
+      "mtime": 1791302774.784505,
+      "sha256": "a14b41169d25da8e5b71f009b4b958665e65112f6ceeef888b1e31e1c5b26529",
+      "size": 9325
+    },
+    "tests/integration/test_cli.py": {
+      "language": "python",
+      "mtime": 1791302774.7859905,
+      "sha256": "17e392355048cb734d330f51c11b50bddf32b35bd3ef91a8c70d8193a11b60d3",
+      "size": 4073
+    },
+    "tests/integration/test_freshness.py": {
+      "language": "python",
+      "mtime": 1791353781.0098345,
+      "sha256": "4fb4766d9edbeac120286151748629f2157452a3a6de90532565cb6d3113c349",
+      "size": 7827
+    },
+    "tests/integration/test_hooks_mcp.py": {
+      "language": "python",
+      "mtime": 1791353781.0108912,
+      "sha256": "b4fc0463f8d0b9822e3521d17a326b0290863d68880927b2f4e8742a878c8831",
+      "size": 8705
+    },
+    "tests/integration/test_incremental.py": {
+      "language": "python",
+      "mtime": 1791302774.7939482,
+      "sha256": "6999a34c809d72b41b032effaa29863ae0db83e4c4feffed4a452c372cb9f896",
+      "size": 8314
+    },
+    "tests/integration/test_integrations.py": {
+      "language": "python",
+      "mtime": 1791353781.0128913,
+      "sha256": "d8146b42c671a4014553256db4692ef292b957046b21a8c182706877ec10cccb",
+      "size": 15629
+    },
+    "tests/integration/test_phase5.py": {
+      "language": "python",
+      "mtime": 1791302774.7999122,
+      "sha256": "b83555e54ae8a046740eef293d5c74c8cdfda98401b5ef65369605006081ce8c",
+      "size": 6405
+    },
+    "tests/integration/test_prompt_hook.py": {
+      "language": "python",
+      "mtime": 1791353781.029161,
+      "sha256": "254fc623decc4ca269678e2322fcae871a9fe0bdba27359c31a0d10e3bfc945e",
+      "size": 9043
+    },
+    "tests/integration/test_refresh.py": {
+      "language": "python",
+      "mtime": 1791302774.8024516,
+      "sha256": "c455bc3b7006fe849f94d8607c8dbb26da609f36d048cc3e9ac1cc20488c6e8e",
+      "size": 3738
+    },
+    "tests/integration/test_scan.py": {
+      "language": "python",
+      "mtime": 1791302774.80379,
+      "sha256": "ddb444e1b658fb4c878089b56e43fa5b2a866ebd8aec4daeeac1bab0ab3f2311",
+      "size": 5911
+    },
+    "tests/integration/test_update_paths.py": {
+      "language": "python",
+      "mtime": 1791353781.029161,
+      "sha256": "c2aed5dedb0c12367621576ae440bc4e7b5245dab04d87ac5f486fe6f7e4bea7",
+      "size": 1885
+    },
+    "tests/integration/test_viewer.py": {
+      "language": "python",
+      "mtime": 1791302774.804791,
+      "sha256": "a1981ab88e8fd2d1ba43ce7b07af6b016f5e508a71f2ef77871cb1b5ab1495af",
+      "size": 18045
+    },
+    "tests/skills/test_skill_templates.py": {
+      "language": "python",
+      "mtime": 1791387450.1985497,
+      "sha256": "259abe099b558b0583423dfd0a8a2b02bd84d9d282f39fd71c970f46b2c9aaaa",
+      "size": 6436
+    },
+    "tests/test_agent_measure.py": {
+      "language": "python",
+      "mtime": 1791353781.0310977,
+      "sha256": "c7193d92eda2369b384c6e4c6831ea531fd35f26a0d8d99a3d1fbab88ae63dcc",
+      "size": 5797
+    },
+    "tests/unit/test_config.py": {
+      "language": "python",
+      "mtime": 1791302774.8104823,
+      "sha256": "bf64b53420ac77ed1224113168f49a8b05518b6bb2f01b171eac83aeb7af48ae",
+      "size": 1230
+    },
+    "tests/unit/test_consent.py": {
+      "language": "python",
+      "mtime": 1791302774.811497,
+      "sha256": "992dde94720c0cdc018c868306f824afaca5798fb0da4dfff86fdafb1d955d61",
+      "size": 1456
+    },
+    "tests/unit/test_discovery.py": {
+      "language": "python",
+      "mtime": 1791302774.8125074,
+      "sha256": "5b2b5d22a9c58c0df6729208c558ae175874feda23391d3031dbe2b3a99e661c",
+      "size": 4437
+    },
+    "tests/unit/test_edit_bench.py": {
+      "language": "python",
+      "mtime": 1791353781.034139,
+      "sha256": "fbaea10f3fbab6dd808a59a08a22788d1e0aa27cf065ebaeefc38934d11cb22a",
+      "size": 7321
+    },
+    "tests/unit/test_extractors.py": {
+      "language": "python",
+      "mtime": 1791302774.8160658,
+      "sha256": "7817c31556f15cb265990023a0136b3ec34bec52736facc12207271e3cd7f924",
+      "size": 3934
+    },
+    "tests/unit/test_graph.py": {
+      "language": "python",
+      "mtime": 1791302774.8172224,
+      "sha256": "81158f719185e22e8892d53d0b876c8faa7eb2af23d4e85622f37a792cc118f4",
+      "size": 6491
+    },
+    "tests/unit/test_graphify_hints.py": {
+      "language": "python",
+      "mtime": 1791388051.663723,
+      "sha256": "2bd8188030cca76b513ecd316bedbc45271574d6bc00d9fdf0d29390c6f7c4a7",
+      "size": 3174
+    },
+    "tests/unit/test_navigator.py": {
+      "language": "python",
+      "mtime": 1791302774.8182132,
+      "sha256": "eefb436905e3bc68b888207d547b8421d835535ad1cab54a5f0165710cd10ec7",
+      "size": 8383
+    },
+    "tests/unit/test_phase3_extractors.py": {
+      "language": "python",
+      "mtime": 1791302774.819214,
+      "sha256": "e88bd8bfc4afb215aae896e2ee9bb0da3b7ddb184f456227e5c042effc4c37a8",
+      "size": 7669
+    },
+    "tests/unit/test_python_parser.py": {
+      "language": "python",
+      "mtime": 1791302774.820212,
+      "sha256": "3ef609a25744786de8fe8291a9896ee557965046ca1b20eedb5ec054a528f8f0",
+      "size": 5749
+    },
+    "tests/unit/test_retrieval_eval.py": {
+      "language": "python",
+      "mtime": 1791353781.0351374,
+      "sha256": "213cb3a159e2dc1caeff079e9801bbd68d4b0e7da1517dae897cc619d4e750b3",
+      "size": 2102
+    },
+    "tests/unit/test_task_disclosure.py": {
+      "language": "python",
+      "mtime": 1791387767.367945,
+      "sha256": "d090aa2b3b04a4d1eacab3cf360a6612c66b97e34500b673dc78259b6f555d1f",
+      "size": 6719
+    },
+    "tests/unit/test_task_pack.py": {
+      "language": "python",
+      "mtime": 1791353781.0361316,
+      "sha256": "518677ccd0269ac4b09e774cacc01c386949f8c88eacad8ac6d555c39f4c1c00",
+      "size": 5458
+    },
+    "tests/unit/test_task_retrieval.py": {
+      "language": "python",
+      "mtime": 1791353781.0371377,
+      "sha256": "3a847b4154ea2f4338e185a9ec3f5a18e34367f8b47968566df890a7caaedf08",
+      "size": 8141
+    },
+    "tests/unit/test_treesitter.py": {
+      "language": "python",
+      "mtime": 1791302774.821731,
+      "sha256": "762bda1df4ae6c0376f51936d6520244b9f6a688b6cfe3ff6c2ce3c874acbee3",
+      "size": 5140
+    },
+    "tests/unit/test_writers.py": {
+      "language": "python",
+      "mtime": 1791302774.8227515,
+      "sha256": "f5368224561671416c0d9293ef07f0b6b1ad501e4bd631ac4b367330b6792f76",
+      "size": 2928
+    },
+    "viewer/src/app.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.833684,
+      "sha256": "5ca928400a7b50f81dbe1b37d0f013396f629177fe11a72a2de193a28363381f",
+      "size": 21570
+    },
+    "viewer/src/chrome.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8346767,
+      "sha256": "c0cc43a501cac9c5a9235ac95bf6b3c1e68b4af7ebad9351cf113af8562221e8",
+      "size": 6415
+    },
+    "viewer/src/controls.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8361886,
+      "sha256": "07d5855150436b290755dca60084df49754d1366ddea875d83e655de087c1141",
+      "size": 14512
+    },
+    "viewer/src/data.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8377106,
+      "sha256": "ca07ff2aaa2dcf969e2a50d7b81b95ccf0e3bee5d8a571786c874a4bc5967e31",
+      "size": 13345
+    },
+    "viewer/src/encode.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8463433,
+      "sha256": "c895381ff6a497c786dbd49bcdefcce6425820ea6857c075e696d1d26e508ec7",
+      "size": 9119
+    },
+    "viewer/src/graph-utils.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8488877,
+      "sha256": "8e6bf5e825a40ee76278dd43f8d88cb3bc8ded36533e4caa5554b079a40efd03",
+      "size": 5186
+    },
+    "viewer/src/hovercard.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.849927,
+      "sha256": "c3d813ccd0cee7a9db4ab1285ca1a10701fd66a16f1835a605fbc649fd2ab5c8",
+      "size": 3543
+    },
+    "viewer/src/inspector.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8535635,
+      "sha256": "98b3524aceb10331daf66bbef9d3045bbd4afbe48aebaef424eaef5a8733ea9a",
+      "size": 13128
+    },
+    "viewer/src/layout.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8545616,
+      "sha256": "02c8ee88a15742eb366bf55df132c8455a11da73a5f78b1f372a0cf557b7e32d",
+      "size": 3848
+    },
+    "viewer/src/live.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8575912,
+      "sha256": "7b10da43b0016e7ee7f74d296b76a1a4753babf3291a49510df8e4f25418638c",
+      "size": 3047
+    },
+    "viewer/src/main.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8575912,
+      "sha256": "9c43d136721bce237bf236d96ef38647e60500cc1fa74027b626e94436607a6f",
+      "size": 2615
+    },
+    "viewer/src/nodelist.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8598733,
+      "sha256": "3b391c02848c05ccafc2a5723f9557c2ff02f7efa57dcf5772d94f0e6e0e09f2",
+      "size": 8129
+    },
+    "viewer/src/renderer.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.860434,
+      "sha256": "c337845e90bcde9ba1aea018537bd8fdc2d9ba5485e8bc7fa236f580b32e2156",
+      "size": 8557
+    },
+    "viewer/src/search.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8626976,
+      "sha256": "0ff6aa024aa92d52a8a6cb10becb55319c1850ed916660d5b687d96265a0ae5a",
+      "size": 4680
+    },
+    "viewer/src/theme.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8661234,
+      "sha256": "2a5621c5c6bd55320d75e1f65c5c71316918fbb9b350298fb4ef2bb6b067e2dc",
+      "size": 1984
+    },
+    "viewer/src/types.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8666394,
+      "sha256": "136ef54107ea3627fa2e7119b15ba843cfdf242a7130680f35b6fbe1359e1568",
+      "size": 2355
+    },
+    "viewer/src/ui.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8676565,
+      "sha256": "cdc57a8b4f036e0fbacbcf93be6578180f13cada3fce04f710cc5c65e55b6254",
+      "size": 2992
+    },
+    "viewer/src/views.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.8690386,
+      "sha256": "8e36ad058e1584cacf3d83735963ac11f95b87d178ca47e4aedbeaae4e041dc5",
+      "size": 2818
+    },
+    "viewer/tests/graph.test.mjs": {
+      "language": "javascript",
+      "mtime": 1791302774.872061,
+      "sha256": "adf0c6a8e748868f8d6fe0719fd88c1b6b4933c6a7740fa5d89f40ec23f4f5dc",
+      "size": 5793
+    },
+    "viewer/tests/static.test.mjs": {
+      "language": "javascript",
+      "mtime": 1791302774.8734274,
+      "sha256": "46b9c4f2057aefbf72ce71a6060c1531fefdab2e971c8efa24cab42ed462348b",
+      "size": 1834
+    },
+    "viewer/vite.config.ts": {
+      "language": "typescript",
+      "mtime": 1791302774.878066,
+      "sha256": "f45985e383e1faa956943549c0e557bac6bf139d252d3a7e89b2f6485e2dbaec",
+      "size": 585
+    }
+  },
+  "last_scan": "2026-10-07T16:42:21Z",
+  "prism_version": "0.1.0",
+  "rank_approx": true,
+  "repo_id": "437b3cdddaad48daab794cb4094e333c",
+  "schema_version": "1.0",
+  "stats": {
+    "call_edges": 2820,
+    "config_keys": 10,
+    "dead_code_candidates": 23,
+    "files": 184,
+    "git": true,
+    "import_edges": 610,
+    "languages": {
+      "javascript": 3,
+      "python": 162,
+      "typescript": 19
+    },
+    "models": 26,
+    "modules": 184,
+    "parse_errors": 0,
+    "routes": 0,
+    "smells": 67,
+    "symbols": 1494,
+    "test_files": 46
+  }
+}

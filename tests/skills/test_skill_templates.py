@@ -11,9 +11,9 @@ import json
 import re
 from pathlib import Path
 
-import click
 import pytest
 import typer.main
+from typer.core import TyperCommand, TyperGroup
 
 from prism.cli import app
 from prism.mcp.server import EXTRA_TOOLS, NAVIGATION_TOOLS
@@ -30,9 +30,11 @@ SNIPPET_RE = re.compile(r"`(prism [^`]+)`")
 MCP_RE = re.compile(r"`(prism_[a-z_]+)`")
 
 
-def root_group() -> click.Group:
+def root_group() -> TyperGroup:
     group = typer.main.get_group(app)
-    assert isinstance(group, click.Group)
+    # Typer >=0.26 vendors Click; validate against Typer's own group on both
+    # old and new releases, without weakening command/flag introspection.
+    assert isinstance(group, TyperGroup)
     return group
 
 
@@ -44,11 +46,11 @@ def read(name: str) -> str:
     return (SKILLS / name / "SKILL.md").read_text(encoding="utf-8")
 
 
-def resolve(tokens: list[str]) -> tuple[click.Command | None, list[str]]:
+def resolve(tokens: list[str]) -> tuple[TyperCommand | TyperGroup | None, list[str]]:
     """Walk `prism a b c --flag` down the click tree. Returns (command, remaining tokens)."""
-    cmd: click.Command = root_group()
+    cmd: TyperCommand | TyperGroup = root_group()
     rest = tokens[1:]
-    while isinstance(cmd, click.Group) and rest and not rest[0].startswith("-"):
+    while isinstance(cmd, TyperGroup) and rest and not rest[0].startswith("-"):
         sub = cmd.commands.get(rest[0])
         if sub is None:
             return (None if cmd is root_group() else cmd), rest
@@ -107,7 +109,7 @@ def test_subcommands_and_flags_exist(name: str) -> None:
         if cmd is None:
             problems.append(f"{snippet}: unknown command")
             continue
-        if isinstance(cmd, click.Group) and rest and not rest[0].startswith(("<", "-")):
+        if isinstance(cmd, TyperGroup) and rest and not rest[0].startswith(("<", "-")):
             problems.append(f"{snippet}: unknown subcommand {rest[0]!r}")
             continue
         opts = {

@@ -1,0 +1,205 @@
+{
+  "keys": [
+    {
+      "key": "HF_HUB_OFFLINE",
+      "kind": "env",
+      "reads": [
+        {
+          "file": "prism/navigator/semantic.py",
+          "line": 35,
+          "symbol": "prism.navigator.semantic.SentenceTransformerEmbedder.__init__"
+        }
+      ]
+    },
+    {
+      "key": "PRISM_CONFIG_HOME",
+      "kind": "env",
+      "reads": [
+        {
+          "file": "prism/consent/registry.py",
+          "line": 39,
+          "symbol": "prism.consent.registry.config_home"
+        },
+        {
+          "file": "tests/benchmarks/agent_prepare.py",
+          "line": 75,
+          "symbol": "tests.benchmarks.agent_prepare.prepare"
+        },
+        {
+          "file": "tests/benchmarks/agent_prepare.py",
+          "line": 85,
+          "symbol": "tests.benchmarks.agent_prepare.prepare"
+        },
+        {
+          "file": "tests/benchmarks/agent_prepare.py",
+          "line": 136,
+          "symbol": "tests.benchmarks.agent_prepare.prepare"
+        },
+        {
+          "file": "tests/benchmarks/edit_bench.py",
+          "line": 130,
+          "symbol": "tests.benchmarks.edit_bench.refresh_hooks"
+        },
+        {
+          "file": "tests/benchmarks/edit_bench.py",
+          "line": 131,
+          "symbol": "tests.benchmarks.edit_bench.refresh_hooks"
+        },
+        {
+          "file": "tests/benchmarks/edit_bench.py",
+          "line": 143,
+          "symbol": "tests.benchmarks.edit_bench.refresh_hooks"
+        },
+        {
+          "file": "tests/benchmarks/edit_bench.py",
+          "line": 153,
+          "symbol": "tests.benchmarks.edit_bench.prepare"
+        },
+        {
+          "file": "tests/benchmarks/edit_bench.py",
+          "line": 154,
+          "symbol": "tests.benchmarks.edit_bench.prepare"
+        },
+        {
+          "file": "tests/benchmarks/edit_bench.py",
+          "line": 189,
+          "symbol": "tests.benchmarks.edit_bench.prepare"
+        },
+        {
+          "file": "tests/benchmarks/retrieval_eval.py",
+          "line": 65,
+          "symbol": "tests.benchmarks.retrieval_eval.evaluate"
+        },
+        {
+          "file": "tests/benchmarks/retrieval_eval.py",
+          "line": 67,
+          "symbol": "tests.benchmarks.retrieval_eval.evaluate"
+        },
+        {
+          "file": "tests/benchmarks/retrieval_eval.py",
+          "line": 96,
+          "symbol": "tests.benchmarks.retrieval_eval.evaluate"
+        },
+        {
+          "file": "tests/benchmarks/run.py",
+          "line": 25,
+          "symbol": "tests.benchmarks.run.benchmark"
+        },
+        {
+          "file": "tests/benchmarks/run.py",
+          "line": 28,
+          "symbol": "tests.benchmarks.run.benchmark"
+        },
+        {
+          "file": "tests/benchmarks/run.py",
+          "line": 71,
+          "symbol": "tests.benchmarks.run.benchmark"
+        },
+        {
+          "file": "tests/benchmarks/tokens.py",
+          "line": 276,
+          "symbol": "tests.benchmarks.tokens.benchmark_repo"
+        },
+        {
+          "file": "tests/benchmarks/tokens.py",
+          "line": 279,
+          "symbol": "tests.benchmarks.tokens.benchmark_repo"
+        },
+        {
+          "file": "tests/benchmarks/tokens.py",
+          "line": 299,
+          "symbol": "tests.benchmarks.tokens.benchmark_repo"
+        }
+      ]
+    },
+    {
+      "key": "PRISM_HOOK_NO_EXIT",
+      "kind": "env",
+      "reads": [
+        {
+          "file": "prism/hooks/entry.py",
+          "line": 45,
+          "symbol": "prism.hooks.entry.hard_exit"
+        }
+      ]
+    },
+    {
+      "key": "PRISM_HOOK_SYNC",
+      "kind": "env",
+      "reads": [
+        {
+          "file": "prism/hooks/entry.py",
+          "line": 51,
+          "symbol": "prism.hooks.entry.background_enabled"
+        }
+      ]
+    },
+    {
+      "key": "PRISM_MCP_PROFILE",
+      "kind": "env",
+      "reads": [
+        {
+          "file": "prism/mcp/server.py",
+          "line": 240,
+          "symbol": "prism.mcp.server.resolve_profile"
+        }
+      ]
+    },
+    {
+      "key": "PRISM_PROMPT_CONTEXT",
+      "kind": "env",
+      "reads": [
+        {
+          "file": "prism/hooks/prompt.py",
+          "line": 52,
+          "symbol": "prism.hooks.prompt._enabled"
+        }
+      ]
+    },
+    {
+      "key": "PRISM_SESSION",
+      "kind": "env",
+      "reads": [
+        {
+          "file": "prism/navigator/session.py",
+          "line": 107,
+          "symbol": "prism.navigator.session.session_id"
+        }
+      ]
+    },
+    {
+      "key": "PRISM_UPDATE_GOLDEN",
+      "kind": "env",
+      "reads": [
+        {
+          "file": "tests/integration/test_scan.py",
+          "line": 65,
+          "symbol": "tests.integration.test_scan.test_golden_tiny"
+        }
+      ]
+    },
+    {
+      "key": "PRISM_VIEWER_LOG",
+      "kind": "env",
+      "reads": [
+        {
+          "file": "prism/viewer/server.py",
+          "line": 154,
+          "symbol": "prism.viewer.server.make_handler"
+        }
+      ]
+    },
+    {
+      "key": "TRANSFORMERS_OFFLINE",
+      "kind": "env",
+      "reads": [
+        {
+          "file": "prism/navigator/semantic.py",
+          "line": 36,
+          "symbol": "prism.navigator.semantic.SentenceTransformerEmbedder.__init__"
+        }
+      ]
+    }
+  ],
+  "schema_version": "1.0"
+}

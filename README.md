@@ -171,6 +171,7 @@ Full reference: [CLI](docs/cli.md).
 | [Graph viewer](docs/viewer.md) | Using `prism view`, shortcuts, exports, API and security |
 | [Auditing](docs/audit.md) | The agent-driven audit workflow and finding schema |
 | [Configuration](docs/configuration.md) | `[tool.prism]` settings and environment variables |
+| [Graphify integration](docs/graphify-integration.md) | Graph-assisted retrieval, optional exports and session deduplication |
 | [Benchmarks](docs/benchmarks.md) | How token savings and latency are measured, and results |
 | [Troubleshooting](docs/troubleshooting.md) | Common problems and `prism doctor` |
 | [Decision records](docs/adr/) | Why things are built the way they are |
@@ -186,4 +187,5 @@ and report security issues as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-[MIT](LICENSE) © AlgoSmiths
+[MIT](LICENSE) © AlgoSmiths for PRISM's original code. Adapted Graphify retrieval
+algorithms are Apache-2.0; see [third-party notices](THIRD_PARTY_NOTICES.md).

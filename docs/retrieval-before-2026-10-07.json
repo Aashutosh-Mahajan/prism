@@ -1,0 +1,155 @@
+{
+  "type": "static retrieval diagnostic, not measured agent savings",
+  "gold_frozen": true,
+  "rows": [
+    {
+      "case": "github specification",
+      "query": "Fix extraction of the owner/repository slug used by GitHub pull-request creation. Accept only HTTP/HTTPS URLs with github.com as the actual host, git@github.com:owner/repo SCP syntax, or ssh://git@github.com/owner/repo. Host matching is case-insensitive. Strip surrounding whitespace, trailing slashes and one optional .git suffix; preserve owner/repo spelling. Reject foreign/lookalike hosts, unsupported schemes, HTTP credentials, any explicit port, query strings, fragments, extra path components and bare local paths with ValueError.",
+      "target": "._parse_repo_slug",
+      "first_target": false,
+      "complete_target": false,
+      "confidence": "high",
+      "sufficient": true,
+      "packet_tokens_est": 1154,
+      "symbols": [
+        "backend.app.services.github_service.GithubService._call_github_pr_api",
+        "backend.app.services.github_service.GithubService.create_fix_pull_request",
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "case": "github paraphrase",
+      "query": "Fix parsing of GitHub repository addresses into owner and repo names. Reject other hosts with ValueError, but keep SSH and HTTPS clone addresses working.",
+      "target": "._parse_repo_slug",
+      "first_target": false,
+      "complete_target": false,
+      "confidence": "high",
+      "sufficient": false,
+      "packet_tokens_est": 1154,
+      "symbols": [
+        "backend.app.services.github_service.GithubService._call_github_pr_api",
+        "backend.app.routers.webhooks.github_webhook",
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "case": "github short",
+      "query": "Fix the GitHub repo slug parser",
+      "target": "._parse_repo_slug",
+      "first_target": false,
+      "complete_target": false,
+      "confidence": "high",
+      "sufficient": false,
+      "packet_tokens_est": 1144,
+      "symbols": [
+        "backend.app.routers.webhooks.github_webhook",
+        "backend.app.services.github_service.GithubService._call_github_pr_api",
+        null,
+        null
+      ]
+    },
+    {
+      "case": "severity specification",
+      "query": "Fix the final finding aggregation order when severity labels contain whitespace, mixed case, or code-review aliases. Normalize string labels with strip and case folding: critical=0, high=1, medium=2, low=3, info=4; error is an alias for high and warning is an alias for medium. Unknown labels, empty strings and null rank last at 5. Preserve severity-first then descending-confidence ordering and stable ties.",
+      "target": "._severity_rank",
+      "first_target": false,
+      "complete_target": false,
+      "confidence": "low",
+      "sufficient": false,
+      "packet_tokens_est": 1161,
+      "symbols": [
+        "backend.app.agents.aggregator.aggregator_node",
+        "backend.app.agents.aggregator._severity_rank",
+        null,
+        "backend.app.agents.aggregator._hash_finding"
+      ]
+    },
+    {
+      "case": "severity paraphrase",
+      "query": "Fix severity ranking for findings. Allow warning and error aliases and labels padded with whitespace; leave confidence and deduplication alone.",
+      "target": "._severity_rank",
+      "first_target": false,
+      "complete_target": false,
+      "confidence": "medium",
+      "sufficient": false,
+      "packet_tokens_est": 1149,
+      "symbols": [
+        "backend.app.agents.aggregator.aggregator_node",
+        "backend.app.agents.aggregator._severity_rank",
+        null,
+        "backend.app.agents.aggregator._hash_finding"
+      ]
+    },
+    {
+      "case": "severity short",
+      "query": "Fix severity sorting",
+      "target": "._severity_rank",
+      "first_target": false,
+      "complete_target": true,
+      "confidence": "high",
+      "sufficient": false,
+      "packet_tokens_est": 938,
+      "symbols": [
+        "backend.app.routers.dashboard.get_dashboard_data",
+        "backend.app.agents.aggregator._severity_rank",
+        "backend.app.agents.aggregator.aggregator_node"
+      ]
+    },
+    {
+      "case": "privacy specification",
+      "query": "Fix AWS-secret handling in the privacy routing feature. For each candidate matching the existing 40-character AWS secret-key regex, treat it as sensitive only if aws, secret, credentials or access appears within the 80 characters immediately before or after that candidate. Detection, masking and routing must agree. Mask only sensitive candidates with [MASKED_AWS_SECRET_KEY]; preserve unrelated hashes when keywords occur farther away.",
+      "target": ".contains_sensitive_data",
+      "first_target": true,
+      "complete_target": true,
+      "confidence": "high",
+      "sufficient": false,
+      "packet_tokens_est": 1153,
+      "symbols": [
+        "backend.app.services.privacy_service.PrivacyService.contains_sensitive_data",
+        "backend.app.services.privacy_service.PrivacyService.mask_sensitive_data",
+        null,
+        null
+      ]
+    },
+    {
+      "case": "privacy paraphrase",
+      "query": "Fix privacy sensitive-data detection and masking so hashes far from an AWS keyword stay unchanged",
+      "target": ".contains_sensitive_data",
+      "first_target": false,
+      "complete_target": false,
+      "confidence": "high",
+      "sufficient": false,
+      "packet_tokens_est": 1137,
+      "symbols": [
+        "backend.app.services.privacy_service.PrivacyService.mask_sensitive_data",
+        "backend.app.services.privacy_service.PrivacyService.contains_sensitive_data",
+        "backend.tests.test_integration.TestPrivacyService.test_mask_sensitive_data",
+        null,
+        null
+      ]
+    },
+    {
+      "case": "privacy short",
+      "query": "Fix AWS secret detection",
+      "target": ".contains_sensitive_data",
+      "first_target": true,
+      "complete_target": false,
+      "confidence": "high",
+      "sufficient": false,
+      "packet_tokens_est": 1150,
+      "symbols": [
+        "backend.app.services.privacy_service.PrivacyService",
+        null,
+        null,
+        null
+      ]
+    }
+  ],
+  "first_targets": 2,
+  "complete_targets": 2,
+  "cases": 9
+}

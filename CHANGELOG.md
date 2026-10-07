@@ -7,6 +7,21 @@ All notable changes to PRISM are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Task ranking gives the leading edit operation and symbol names priority over repeated
+  caller-body words, without dropping later acceptance criteria. Confidence uses returned
+  source and cannot certify an absent leading topic from generic error matches alone.
+- Global `--root` and task `--session` defaults accept options before the command;
+  command options override them. Agent instructions reuse prompt-supplied context.
+- Query-focused architecture maps and file symbol outlines through `prism task --mode overview`;
+  `auto` recognizes broad orientation requests and `code` requests source explicitly.
+- Exact task targets: `file::Class.method`, `file:line`, and bounded `file:start-end` reads.
+- Local Python definition support and coherent small-class retrieval for cooperating methods;
+  precise missing-source ranges and overlap-aware, hash-invalidated session references.
+- Optional existing Graphify export hints and attributed, dependency-free Graphify seed/traversal
+  algorithms. See `THIRD_PARTY_NOTICES.md` for the Apache-2.0 portions.
+- Reciprocal-rank fusion across body and symbol search, without duplicate per-file votes.
+- Literal-search completeness tracks file/work caps and unavailable source instead of declaring
+  partial scans exhaustive. Prompt headers are included in the hook budget.
 - `prism task "<request>"` (MCP `prism_task`): one call returns the matching code, every exact
   occurrence of the strings, names and quantities the request mentions (an exhaustive list the
   agent need not grep), call sites with the calling line, tests that mention the code, impact,

@@ -1,0 +1,66 @@
+{
+  "full_suite": [
+    {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "334",
+      "time": "176.937",
+      "timestamp": "2026-10-07T21:13:53.017050+05:30",
+      "hostname": "priyanshug"
+    }
+  ],
+  "additional_graphify_tests": 4,
+  "lint": "passed",
+  "format": "passed",
+  "strict_mypy": "passed",
+  "wheel": "C:\\Users\\priya\\AppData\\Local\\Temp\\prism-retrieval-revision-wheel-final\\prism_ctx-0.1.0-py3-none-any.whl",
+  "wheel_sha256": "5b57332abd334c608b89eabd755a22d0ae4eee87ee1834cc591e6e1e1dca82d5",
+  "packaged_source_matches": {
+    "prism/navigator/overview.py": true,
+    "prism/navigator/support.py": true,
+    "prism/navigator/fusion.py": true,
+    "prism/navigator/task_pack.py": true,
+    "prism/_vendor/graphify_retrieval.py": true
+  },
+  "retrieval_summary": {
+    "all": {
+      "cases": 14,
+      "located": 0.9285714285714286,
+      "locations": 0.9545454545454546,
+      "tokens": 1042.4285714285713
+    },
+    "identifier": {
+      "cases": 3,
+      "located": 1.0,
+      "locations": 1.0,
+      "tokens": 1185.6666666666667
+    },
+    "natural": {
+      "cases": 7,
+      "located": 0.8571428571428571,
+      "locations": 0.8571428571428571,
+      "tokens": 957.2857142857143
+    },
+    "quantity": {
+      "cases": 2,
+      "located": 1.0,
+      "locations": 1.0,
+      "tokens": 1339.0
+    },
+    "quoted": {
+      "cases": 1,
+      "located": 1.0,
+      "locations": 1.0,
+      "tokens": 883.0
+    },
+    "structural": {
+      "cases": 1,
+      "located": 1.0,
+      "locations": 1.0,
+      "tokens": 775.0
+    }
+  },
+  "live_agent_benchmark_rerun": false
+}

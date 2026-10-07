@@ -18,6 +18,7 @@ drift_threshold = 8                  # drift points before a brief section is ma
 semantic_model = "/models/all-MiniLM-L6-v2"   # local model path for `search --semantic`
 prompt_context = true                # let the prompt hook add the code a request needs
 prompt_budget = 1200                 # tokens (chars/4) the prompt hook may add, 128-8000
+# graphify_graph = "graphify-out/graph.json"  # enable only if this export exists
 ```
 
 | Key | Type | Default | Effect |
@@ -30,6 +31,7 @@ prompt_budget = 1200                 # tokens (chars/4) the prompt hook may add,
 | `semantic_model` | string | `sentence-transformers/all-MiniLM-L6-v2` | Embedding model for `--semantic`; must already be on disk, PRISM never downloads |
 | `prompt_context` | boolean | `true` | `false` stops `prism hook user-prompt` from adding anything to prompts |
 | `prompt_budget` | integer | `1200` | Most the prompt hook adds to one prompt, as `ceil(characters/4)` (128-8000) |
+| `graphify_graph` | string | unset | Existing local Graphify export used as advisory source hints by `prism task`; see [integration guide](graphify-integration.md) |
 
 Invalid values stop the command with a clear error rather than being silently ignored.
 

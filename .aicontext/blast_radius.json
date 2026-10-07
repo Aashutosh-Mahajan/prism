@@ -1,0 +1,6223 @@
+{
+  "files": {
+    "prism/__init__.py": {
+      "count": 65,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/store.py",
+        "prism/cli.py",
+        "prism/incremental/hash_cache.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism/_vendor/graphify_retrieval.py": {
+      "count": 38,
+      "top": [
+        "prism/navigator/graphify.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism/audit/__init__.py": {
+      "count": 11,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py",
+        "prism/entry.py",
+        "tests/integration/test_cli.py"
+      ]
+    },
+    "prism/audit/plan.py": {
+      "count": 11,
+      "top": [
+        "prism/audit/__init__.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism/audit/record.py": {
+      "count": 11,
+      "top": [
+        "prism/audit/__init__.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism/audit/report.py": {
+      "count": 11,
+      "top": [
+        "prism/audit/__init__.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism/audit/store.py": {
+      "count": 7,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/report.py",
+        "prism/audit/__init__.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism/audit/toolchain_detect.py": {
+      "count": 12,
+      "top": [
+        "prism/audit/__init__.py",
+        "prism/audit/plan.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism/cli.py": {
+      "count": 8,
+      "top": [
+        "prism/entry.py",
+        "tests/integration/test_cli.py",
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/integration/test_update_paths.py"
+      ]
+    },
+    "prism/config.py": {
+      "count": 76,
+      "top": [
+        "prism/discovery/scanner.py",
+        "prism/extractors/base.py",
+        "prism/hooks/prompt.py",
+        "prism/lifecycle.py",
+        "prism/navigator/graphify.py"
+      ]
+    },
+    "prism/consent/__init__.py": {
+      "count": 43,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/runner.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism/consent/registry.py": {
+      "count": 39,
+      "top": [
+        "prism/consent/__init__.py",
+        "prism/hooks/runner.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism/core/errors.py": {
+      "count": 96,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/cli.py",
+        "prism/config.py",
+        "prism/integrations/__init__.py"
+      ]
+    },
+    "prism/core/markers.py": {
+      "count": 34,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/writers/agents_md.py",
+        "prism/writers/modules_md.py",
+        "prism/writers/narrative.py",
+        "tests/unit/test_writers.py"
+      ]
+    },
+    "prism/core/models.py": {
+      "count": 103,
+      "top": [
+        "prism/discovery/scanner.py",
+        "prism/extractors/base.py",
+        "prism/extractors/blast_radius.py",
+        "prism/extractors/config_keys.py",
+        "prism/extractors/dead_code.py"
+      ]
+    },
+    "prism/core/paths.py": {
+      "count": 92,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/store.py",
+        "prism/cli.py",
+        "prism/hooks/runner.py",
+        "prism/incremental/hash_cache.py"
+      ]
+    },
+    "prism/core/tokens.py": {
+      "count": 48,
+      "top": [
+        "prism/hooks/prompt.py",
+        "prism/narrator/refresh.py",
+        "prism/navigator/context_pack.py",
+        "prism/navigator/task_pack.py",
+        "prism/parsing/python_ast.py"
+      ]
+    },
+    "prism/discovery/__init__.py": {
+      "count": 47,
+      "top": [
+        "prism/hooks/runner.py",
+        "prism/lifecycle.py",
+        "prism/pipeline.py",
+        "prism/status.py",
+        "tests/unit/test_discovery.py"
+      ]
+    },
+    "prism/discovery/language.py": {
+      "count": 44,
+      "top": [
+        "prism/discovery/__init__.py",
+        "prism/discovery/scanner.py",
+        "prism/hooks/runner.py",
+        "tests/unit/test_discovery.py",
+        "prism/extractors/toolchain.py"
+      ]
+    },
+    "prism/discovery/scanner.py": {
+      "count": 45,
+      "top": [
+        "prism/discovery/__init__.py",
+        "prism/extractors/toolchain.py",
+        "prism/lifecycle.py",
+        "prism/pipeline.py",
+        "prism/status.py"
+      ]
+    },
+    "prism/drift/__init__.py": {
+      "count": 40,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/narrator/refresh.py",
+        "prism/writers/index_writer.py",
+        "prism/cli.py",
+        "prism/hooks/runner.py"
+      ]
+    },
+    "prism/drift/scoring.py": {
+      "count": 33,
+      "top": [
+        "prism/drift/__init__.py",
+        "prism/narrator/refresh.py",
+        "prism/writers/index_writer.py",
+        "prism/cli.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism/drift/structural_diff.py": {
+      "count": 33,
+      "top": [
+        "prism/drift/__init__.py",
+        "prism/drift/scoring.py",
+        "prism/lifecycle.py",
+        "prism/narrator/refresh.py",
+        "prism/writers/index_writer.py"
+      ]
+    },
+    "prism/entry.py": {
+      "count": 1,
+      "top": [
+        "prism/__main__.py"
+      ]
+    },
+    "prism/extractors/__init__.py": {
+      "count": 32,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism/extractors/base.py": {
+      "count": 45,
+      "top": [
+        "prism/extractors/__init__.py",
+        "prism/extractors/blast_radius.py",
+        "prism/extractors/config_keys.py",
+        "prism/extractors/dead_code.py",
+        "prism/extractors/entry_points.py"
+      ]
+    },
+    "prism/extractors/blast_radius.py": {
+      "count": 32,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism/extractors/config_keys.py": {
+      "count": 32,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism/extractors/dead_code.py": {
+      "count": 32,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism/extractors/entry_points.py": {
+      "count": 7,
+      "top": [
+        "prism/extractors/__init__.py",
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism/extractors/models.py": {
+      "count": 32,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism/extractors/project.py": {
+      "count": 7,
+      "top": [
+        "prism/extractors/__init__.py",
+        "prism/pipeline.py",
+        "tests/unit/test_extractors.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism/extractors/routes.py": {
+      "count": 32,
+      "top": [
+        "prism/pipeline.py",
+        "tests/unit/test_phase3_extractors.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism/extractors/tests_map.py": {
+      "count": 54,
+      "top": [
+        "prism/extractors/__init__.py",
+        "prism/extractors/dead_code.py",
+        "prism/navigator/store.py",
+        "prism/pipeline.py",
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism/extractors/toolchain.py": {
+      "count": 12,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/toolchain_detect.py",
+        "prism/extractors/project.py",
+        "tests/benchmarks/tokens.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism/graph/__init__.py": {
+      "count": 33,
+      "top": [
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism/graph/blast.py": {
+      "count": 30,
+      "top": [
+        "prism/extractors/blast_radius.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/api.py",
+        "prism/navigator/context_pack.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism/graph/call_graph.py": {
+      "count": 44,
+      "top": [
+        "prism/extractors/entry_points.py",
+        "prism/extractors/models.py",
+        "prism/extractors/routes.py",
+        "prism/extractors/tests_map.py",
+        "prism/graph/__init__.py"
+      ]
+    },
+    "prism/graph/communities.py": {
+      "count": 32,
+      "top": [
+        "prism/pipeline.py",
+        "tests/integration/test_phase5.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism/graph/import_graph.py": {
+      "count": 8,
+      "top": [
+        "prism/graph/__init__.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism/graph/ranking.py": {
+      "count": 52,
+      "top": [
+        "prism/graph/__init__.py",
+        "prism/graph/call_graph.py",
+        "prism/graph/import_graph.py",
+        "prism/lifecycle.py",
+        "prism/pipeline.py"
+      ]
+    },
+    "prism/graph/symbol_table.py": {
+      "count": 23,
+      "top": [
+        "prism/drift/structural_diff.py",
+        "prism/extractors/base.py",
+        "prism/graph/__init__.py",
+        "prism/graph/call_graph.py",
+        "prism/graph/import_graph.py"
+      ]
+    },
+    "prism/health/__init__.py": {
+      "count": 41,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/pipeline.py",
+        "tests/unit/test_phase3_extractors.py",
+        "prism/cli.py",
+        "prism/hooks/runner.py"
+      ]
+    },
+    "prism/health/coverage.py": {
+      "count": 33,
+      "top": [
+        "prism/health/__init__.py",
+        "prism/pipeline.py",
+        "tests/unit/test_phase3_extractors.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism/health/git_intel.py": {
+      "count": 36,
+      "top": [
+        "prism/health/__init__.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/pipeline.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism/health/risk.py": {
+      "count": 33,
+      "top": [
+        "prism/health/__init__.py",
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism/hooks/__init__.py": {
+      "count": 14,
+      "top": [
+        "prism/hooks/entry.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism/hooks/entry.py": {
+      "count": 10,
+      "top": [
+        "prism/cli.py",
+        "prism/entry.py",
+        "tests/integration/test_integrations.py",
+        "prism/__main__.py",
+        "tests/integration/test_cli.py"
+      ]
+    },
+    "prism/hooks/formats.py": {
+      "count": 12,
+      "top": [
+        "prism/hooks/entry.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/cli.py",
+        "prism/entry.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism/hooks/prompt.py": {
+      "count": 9,
+      "top": [
+        "prism/hooks/__init__.py",
+        "prism/hooks/entry.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism/hooks/runner.py": {
+      "count": 11,
+      "top": [
+        "prism/hooks/__init__.py",
+        "prism/hooks/entry.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/update_job.py",
+        "tests/integration/test_hooks_mcp.py"
+      ]
+    },
+    "prism/incremental/hash_cache.py": {
+      "count": 107,
+      "top": [
+        "prism/_vendor/graphify_retrieval.py",
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/report.py",
+        "prism/audit/store.py"
+      ]
+    },
+    "prism/incremental/lock.py": {
+      "count": 54,
+      "top": [
+        "prism/hooks/runner.py",
+        "prism/hooks/update_job.py",
+        "prism/lifecycle.py",
+        "prism/navigator/freshness.py",
+        "tests/integration/test_freshness.py"
+      ]
+    },
+    "prism/integrations/__init__.py": {
+      "count": 37,
+      "top": [
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "tests/integration/test_integrations.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism/integrations/antigravity.py": {
+      "count": 31,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism/integrations/base.py": {
+      "count": 73,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/store.py",
+        "prism/cli.py",
+        "prism/discovery/scanner.py"
+      ]
+    },
+    "prism/integrations/claude_code.py": {
+      "count": 31,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism/integrations/codex.py": {
+      "count": 31,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism/integrations/common.py": {
+      "count": 21,
+      "top": [
+        "prism/integrations/antigravity.py",
+        "prism/integrations/claude_code.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/global_note.py"
+      ]
+    },
+    "prism/integrations/gemini.py": {
+      "count": 31,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism/integrations/git_hooks.py": {
+      "count": 38,
+      "top": [
+        "prism/cli.py",
+        "prism/integrations/__init__.py",
+        "prism/lifecycle.py",
+        "prism/entry.py",
+        "prism/hooks/runner.py"
+      ]
+    },
+    "prism/integrations/global_note.py": {
+      "count": 10,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_integrations.py",
+        "prism/entry.py",
+        "tests/integration/test_cli.py",
+        "tests/integration/test_freshness.py"
+      ]
+    },
+    "prism/integrations/hooks_json.py": {
+      "count": 9,
+      "top": [
+        "prism/integrations/claude_code.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/other_agents.py",
+        "prism/integrations/__init__.py"
+      ]
+    },
+    "prism/integrations/other_agents.py": {
+      "count": 31,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism/lifecycle.py": {
+      "count": 65,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/cli.py",
+        "prism/discovery/scanner.py",
+        "prism/drift/structural_diff.py"
+      ]
+    },
+    "prism/maintenance.py": {
+      "count": 10,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_phase5.py",
+        "prism/entry.py",
+        "tests/integration/test_cli.py",
+        "tests/integration/test_freshness.py"
+      ]
+    },
+    "prism/mcp/__init__.py": {
+      "count": 10,
+      "top": [
+        "prism/maintenance.py",
+        "prism/cli.py",
+        "tests/integration/test_phase5.py",
+        "prism/entry.py",
+        "tests/integration/test_cli.py"
+      ]
+    },
+    "prism/mcp/server.py": {
+      "count": 9,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/skills/test_skill_templates.py",
+        "tests/unit/test_task_pack.py"
+      ]
+    },
+    "prism/narrator/__init__.py": {
+      "count": 11,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_refresh.py",
+        "prism/entry.py",
+        "tests/integration/test_cli.py"
+      ]
+    },
+    "prism/narrator/refresh.py": {
+      "count": 11,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/narrator/__init__.py",
+        "tests/integration/test_refresh.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism/navigator/api.py": {
+      "count": 35,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/runner.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py"
+      ]
+    },
+    "prism/navigator/cache_db.py": {
+      "count": 62,
+      "top": [
+        "prism/navigator/freshness.py",
+        "prism/navigator/semantic.py",
+        "prism/navigator/source_index.py",
+        "prism/navigator/store.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism/navigator/context_pack.py": {
+      "count": 33,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/runner.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism/navigator/freshness.py": {
+      "count": 37,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/update_job.py",
+        "prism/lifecycle.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism/navigator/fusion.py": {
+      "count": 28,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism/navigator/graphify.py": {
+      "count": 46,
+      "top": [
+        "prism/navigator/store.py",
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_graphify_hints.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py"
+      ]
+    },
+    "prism/navigator/impact.py": {
+      "count": 35,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/navigator/context_pack.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py"
+      ]
+    },
+    "prism/navigator/literals.py": {
+      "count": 28,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism/navigator/overview.py": {
+      "count": 28,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/navigator/api.py",
+        "tests/unit/test_task_disclosure.py"
+      ]
+    },
+    "prism/navigator/render.py": {
+      "count": 11,
+      "top": [
+        "prism/cli.py",
+        "tests/benchmarks/tokens.py",
+        "tests/unit/test_navigator.py",
+        "prism/entry.py",
+        "tests/integration/test_cli.py"
+      ]
+    },
+    "prism/navigator/request.py": {
+      "count": 28,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/navigator/api.py",
+        "tests/unit/test_task_disclosure.py"
+      ]
+    },
+    "prism/navigator/resolve.py": {
+      "count": 36,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/navigator/context_pack.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism/navigator/semantic.py": {
+      "count": 33,
+      "top": [
+        "prism/navigator/api.py",
+        "tests/integration/test_phase5.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/runner.py"
+      ]
+    },
+    "prism/navigator/session.py": {
+      "count": 14,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/entry.py",
+        "prism/hooks/__init__.py"
+      ]
+    },
+    "prism/navigator/source_index.py": {
+      "count": 47,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/freshness.py",
+        "prism/navigator/graphify.py",
+        "prism/navigator/literals.py",
+        "prism/navigator/overview.py"
+      ]
+    },
+    "prism/navigator/store.py": {
+      "count": 70,
+      "top": [
+        "prism/cli.py",
+        "prism/config.py",
+        "prism/consent/registry.py",
+        "prism/discovery/scanner.py",
+        "prism/extractors/toolchain.py"
+      ]
+    },
+    "prism/navigator/support.py": {
+      "count": 28,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/navigator/api.py",
+        "tests/unit/test_task_disclosure.py"
+      ]
+    },
+    "prism/navigator/synonyms.py": {
+      "count": 28,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/navigator/api.py",
+        "tests/unit/test_task_disclosure.py"
+      ]
+    },
+    "prism/navigator/task_pack.py": {
+      "count": 35,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/navigator/api.py",
+        "tests/unit/test_task_disclosure.py",
+        "tests/unit/test_task_pack.py"
+      ]
+    },
+    "prism/navigator/text.py": {
+      "count": 50,
+      "top": [
+        "prism/navigator/cache_db.py",
+        "prism/navigator/graphify.py",
+        "prism/navigator/literals.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/request.py"
+      ]
+    },
+    "prism/parsing/__init__.py": {
+      "count": 43,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "tests/unit/test_python_parser.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism/parsing/base_parser.py": {
+      "count": 42,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/parsing/__init__.py",
+        "prism/parsing/python_ast.py",
+        "prism/parsing/treesitter.py"
+      ]
+    },
+    "prism/parsing/modules.py": {
+      "count": 35,
+      "top": [
+        "prism/parsing/__init__.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "tests/unit/test_python_parser.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism/parsing/python_ast.py": {
+      "count": 13,
+      "top": [
+        "prism/parsing/base_parser.py",
+        "prism/parsing/python_facts.py",
+        "prism/parsing/smells.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism/parsing/python_facts.py": {
+      "count": 6,
+      "top": [
+        "prism/parsing/python_ast.py",
+        "prism/parsing/base_parser.py",
+        "prism/parsing/smells.py",
+        "prism/maintenance.py",
+        "prism/parsing/__init__.py"
+      ]
+    },
+    "prism/parsing/smells.py": {
+      "count": 6,
+      "top": [
+        "prism/parsing/python_ast.py",
+        "prism/parsing/base_parser.py",
+        "prism/parsing/python_facts.py",
+        "prism/maintenance.py",
+        "prism/parsing/__init__.py"
+      ]
+    },
+    "prism/parsing/treesitter.py": {
+      "count": 13,
+      "top": [
+        "prism/parsing/base_parser.py",
+        "tests/unit/test_treesitter.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/parsing/__init__.py"
+      ]
+    },
+    "prism/pipeline.py": {
+      "count": 40,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py",
+        "tests/unit/test_writers.py"
+      ]
+    },
+    "prism/status.py": {
+      "count": 42,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/runner.py",
+        "prism/maintenance.py",
+        "prism/mcp/server.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism/viewer/api.py": {
+      "count": 11,
+      "top": [
+        "prism/viewer/server.py",
+        "tests/integration/test_viewer.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism/viewer/model.py": {
+      "count": 14,
+      "top": [
+        "prism/viewer/api.py",
+        "prism/writers/graph_export.py",
+        "prism/writers/obsidian.py",
+        "tests/integration/test_viewer.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism/viewer/server.py": {
+      "count": 11,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_viewer.py",
+        "prism/entry.py",
+        "tests/integration/test_cli.py"
+      ]
+    },
+    "prism/writers/activity.py": {
+      "count": 33,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/viewer/server.py",
+        "tests/unit/test_navigator.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py"
+      ]
+    },
+    "prism/writers/agents_md.py": {
+      "count": 46,
+      "top": [
+        "prism/hooks/runner.py",
+        "prism/narrator/refresh.py",
+        "prism/navigator/api.py",
+        "prism/writers/index_writer.py",
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "prism/writers/artifacts.py": {
+      "count": 38,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/writers/index_writer.py",
+        "tests/integration/test_scan.py",
+        "prism/cli.py",
+        "prism/hooks/runner.py"
+      ]
+    },
+    "prism/writers/decisions.py": {
+      "count": 11,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_phase5.py",
+        "prism/entry.py",
+        "tests/integration/test_cli.py"
+      ]
+    },
+    "prism/writers/graph_export.py": {
+      "count": 10,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_viewer.py",
+        "prism/entry.py",
+        "tests/integration/test_cli.py",
+        "tests/integration/test_freshness.py"
+      ]
+    },
+    "prism/writers/index_writer.py": {
+      "count": 37,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/writers/__init__.py",
+        "prism/cli.py",
+        "prism/hooks/runner.py",
+        "prism/hooks/update_job.py"
+      ]
+    },
+    "prism/writers/json_writer.py": {
+      "count": 85,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/report.py",
+        "prism/audit/store.py",
+        "prism/consent/registry.py",
+        "prism/hooks/prompt.py"
+      ]
+    },
+    "prism/writers/manifest.py": {
+      "count": 73,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/report.py",
+        "prism/hooks/runner.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism/writers/modules_md.py": {
+      "count": 29,
+      "top": [
+        "prism/writers/index_writer.py",
+        "prism/lifecycle.py",
+        "prism/writers/__init__.py",
+        "prism/cli.py",
+        "prism/hooks/runner.py"
+      ]
+    },
+    "prism/writers/narrative.py": {
+      "count": 5,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/narrator/__init__.py",
+        "tests/integration/test_refresh.py"
+      ]
+    },
+    "prism/writers/obsidian.py": {
+      "count": 10,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_viewer.py",
+        "prism/entry.py",
+        "tests/integration/test_cli.py",
+        "tests/integration/test_freshness.py"
+      ]
+    },
+    "tests/benchmarks/agent_collect.py": {
+      "count": 1,
+      "top": [
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests/benchmarks/agent_measure.py": {
+      "count": 2,
+      "top": [
+        "tests/benchmarks/agent_collect.py",
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests/benchmarks/agent_prepare.py": {
+      "count": 2,
+      "top": [
+        "tests/benchmarks/agent_collect.py",
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests/benchmarks/agent_score.py": {
+      "count": 1,
+      "top": [
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests/benchmarks/edit_bench.py": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_edit_bench.py"
+      ]
+    },
+    "tests/benchmarks/retrieval_eval.py": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_retrieval_eval.py"
+      ]
+    },
+    "tests/benchmarks/synth.py": {
+      "count": 2,
+      "top": [
+        "tests/benchmarks/run.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "tests/benchmarks/tokens.py": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "tests/conftest.py": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_discovery.py"
+      ]
+    },
+    "tests/integration/test_viewer.py": {
+      "count": 1,
+      "top": [
+        "viewer/src/data.ts"
+      ]
+    },
+    "tests/skills/test_skill_templates.py": {
+      "count": 16,
+      "top": [
+        "prism/discovery/scanner.py",
+        "prism/navigator/graphify.py",
+        "prism/viewer/server.py",
+        "tests/integration/test_viewer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "tests/unit/test_phase3_extractors.py": {
+      "count": 55,
+      "top": [
+        "prism/hooks/runner.py",
+        "prism/incremental/lock.py",
+        "prism/writers/activity.py",
+        "prism/writers/json_writer.py",
+        "prism/audit/report.py"
+      ]
+    },
+    "viewer/src/app.ts": {
+      "count": 69,
+      "top": [
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py",
+        "prism/navigator/session.py",
+        "prism/viewer/server.py"
+      ]
+    },
+    "viewer/src/chrome.ts": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer/src/controls.ts": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer/src/data.ts": {
+      "count": 11,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/live.ts",
+        "viewer/src/main.ts",
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts"
+      ]
+    },
+    "viewer/src/encode.ts": {
+      "count": 58,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/data.ts",
+        "viewer/src/hovercard.ts"
+      ]
+    },
+    "viewer/src/hovercard.ts": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer/src/inspector.ts": {
+      "count": 55,
+      "top": [
+        "prism/discovery/scanner.py",
+        "prism/hooks/prompt.py",
+        "prism/integrations/git_hooks.py",
+        "prism/maintenance.py",
+        "prism/navigator/graphify.py"
+      ]
+    },
+    "viewer/src/layout.ts": {
+      "count": 10,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/hovercard.ts",
+        "viewer/src/inspector.ts"
+      ]
+    },
+    "viewer/src/live.ts": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer/src/nodelist.ts": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer/src/renderer.ts": {
+      "count": 10,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts",
+        "viewer/src/main.ts",
+        "viewer/src/chrome.ts"
+      ]
+    },
+    "viewer/src/search.ts": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer/src/theme.ts": {
+      "count": 11,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts",
+        "viewer/src/renderer.ts",
+        "viewer/src/chrome.ts"
+      ]
+    },
+    "viewer/src/types.ts": {
+      "count": 56,
+      "top": [
+        "prism/incremental/lock.py",
+        "prism/navigator/source_index.py",
+        "viewer/src/app.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/data.ts"
+      ]
+    },
+    "viewer/src/ui.ts": {
+      "count": 30,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/hovercard.ts",
+        "viewer/src/inspector.ts"
+      ]
+    },
+    "viewer/src/views.ts": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    }
+  },
+  "schema_version": "1.0",
+  "symbols": {
+    "prism.audit.plan.build_plan": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.plan.changed_files": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.plan.default_base": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.plan.smell_score": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.record.fingerprint": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.record.record_finding": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.record.update_status": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.record.validate": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.report.build_report": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.store.audit_dir": {
+      "count": 6,
+      "top": [
+        "prism/audit/report.py",
+        "prism/audit/plan.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.store.findings_path": {
+      "count": 6,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/report.py",
+        "prism/cli.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.audit.store.load_findings": {
+      "count": 6,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/report.py",
+        "prism/cli.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.audit.store.plan_path": {
+      "count": 4,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.audit.store.write_findings": {
+      "count": 6,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/report.py",
+        "prism/cli.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.cli.emit": {
+      "count": 0,
+      "top": []
+    },
+    "prism.cli.emit_json": {
+      "count": 0,
+      "top": []
+    },
+    "prism.cli.main": {
+      "count": 1,
+      "top": [
+        "prism/entry.py"
+      ]
+    },
+    "prism.config.PrismConfig": {
+      "count": 20,
+      "top": [
+        "tests/unit/test_config.py",
+        "tests/unit/test_discovery.py",
+        "prism/hooks/prompt.py",
+        "prism/lifecycle.py",
+        "prism/navigator/graphify.py"
+      ]
+    },
+    "prism.config.load_config": {
+      "count": 33,
+      "top": [
+        "prism/hooks/prompt.py",
+        "prism/lifecycle.py",
+        "prism/navigator/graphify.py",
+        "prism/navigator/semantic.py",
+        "prism/navigator/store.py"
+      ]
+    },
+    "prism.consent.registry.RepoEntry": {
+      "count": 25,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/unit/test_consent.py",
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py"
+      ]
+    },
+    "prism.consent.registry.config_home": {
+      "count": 25,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/integration/test_cli.py",
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/integration/test_prompt_hook.py"
+      ]
+    },
+    "prism.consent.registry.get_entry": {
+      "count": 32,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "tests/unit/test_consent.py",
+        "prism/cli.py",
+        "prism/hooks/runner.py"
+      ]
+    },
+    "prism.consent.registry.load_registry": {
+      "count": 29,
+      "top": [
+        "tests/unit/test_consent.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "prism/cli.py",
+        "prism/hooks/runner.py"
+      ]
+    },
+    "prism.consent.registry.registry_path": {
+      "count": 26,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/integration/test_cli.py",
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/integration/test_prompt_hook.py"
+      ]
+    },
+    "prism.consent.registry.repo_key": {
+      "count": 29,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "tests/unit/test_consent.py",
+        "prism/cli.py",
+        "prism/hooks/runner.py"
+      ]
+    },
+    "prism.consent.registry.repo_state": {
+      "count": 19,
+      "top": [
+        "prism/hooks/runner.py",
+        "prism/maintenance.py",
+        "prism/mcp/server.py",
+        "prism/navigator/freshness.py",
+        "prism/status.py"
+      ]
+    },
+    "prism.consent.registry.save_registry": {
+      "count": 24,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/unit/test_consent.py",
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py"
+      ]
+    },
+    "prism.consent.registry.set_entry": {
+      "count": 25,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/unit/test_consent.py",
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py"
+      ]
+    },
+    "prism.core.errors.AmbiguousTargetError": {
+      "count": 11,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/navigator/resolve.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py"
+      ]
+    },
+    "prism.core.errors.IndexMissingError": {
+      "count": 43,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/navigator/store.py",
+        "prism/viewer/model.py",
+        "prism/cli.py",
+        "prism/config.py"
+      ]
+    },
+    "prism.core.errors.NotEnabledError": {
+      "count": 6,
+      "top": [
+        "prism/maintenance.py",
+        "prism/narrator/refresh.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.core.errors.NotFoundError": {
+      "count": 20,
+      "top": [
+        "prism/audit/record.py",
+        "prism/narrator/refresh.py",
+        "prism/navigator/api.py",
+        "prism/navigator/resolve.py",
+        "prism/viewer/api.py"
+      ]
+    },
+    "prism.core.errors.UserError": {
+      "count": 57,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/cli.py",
+        "prism/config.py",
+        "prism/integrations/__init__.py"
+      ]
+    },
+    "prism.core.markers.Region": {
+      "count": 10,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/writers/agents_md.py",
+        "prism/writers/modules_md.py",
+        "tests/unit/test_writers.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.core.markers.close_marker": {
+      "count": 9,
+      "top": [
+        "prism/writers/narrative.py",
+        "prism/narrator/refresh.py",
+        "prism/writers/agents_md.py",
+        "prism/writers/modules_md.py",
+        "tests/unit/test_writers.py"
+      ]
+    },
+    "prism.core.markers.open_marker": {
+      "count": 9,
+      "top": [
+        "prism/writers/narrative.py",
+        "prism/narrator/refresh.py",
+        "prism/writers/agents_md.py",
+        "prism/writers/modules_md.py",
+        "tests/unit/test_writers.py"
+      ]
+    },
+    "prism.core.markers.parse_regions": {
+      "count": 17,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/writers/agents_md.py",
+        "prism/writers/modules_md.py",
+        "tests/unit/test_writers.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.core.markers.render_region": {
+      "count": 5,
+      "top": [
+        "prism/writers/agents_md.py",
+        "prism/writers/modules_md.py",
+        "tests/unit/test_writers.py",
+        "prism/writers/index_writer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.core.models.BlastRadius": {
+      "count": 1,
+      "top": [
+        "prism/extractors/blast_radius.py"
+      ]
+    },
+    "prism.core.models.CallGraph": {
+      "count": 8,
+      "top": [
+        "prism/graph/call_graph.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism.core.models.CallRef": {
+      "count": 4,
+      "top": [
+        "prism/incremental/hash_cache.py",
+        "prism/parsing/python_ast.py",
+        "prism/parsing/treesitter.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.core.models.ConfigKey": {
+      "count": 1,
+      "top": [
+        "prism/extractors/config_keys.py"
+      ]
+    },
+    "prism.core.models.ConfigRead": {
+      "count": 1,
+      "top": [
+        "prism/extractors/config_keys.py"
+      ]
+    },
+    "prism.core.models.DeadCode": {
+      "count": 1,
+      "top": [
+        "prism/extractors/dead_code.py"
+      ]
+    },
+    "prism.core.models.Edge": {
+      "count": 9,
+      "top": [
+        "prism/graph/call_graph.py",
+        "prism/graph/import_graph.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.core.models.EntryPoint": {
+      "count": 1,
+      "top": [
+        "prism/extractors/entry_points.py"
+      ]
+    },
+    "prism.core.models.EnvRead": {
+      "count": 5,
+      "top": [
+        "prism/incremental/hash_cache.py",
+        "prism/parsing/python_facts.py",
+        "prism/parsing/treesitter.py",
+        "prism/parsing/python_ast.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.core.models.GitIntel": {
+      "count": 7,
+      "top": [
+        "prism/health/git_intel.py",
+        "prism/lifecycle.py",
+        "prism/pipeline.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism.core.models.Health": {
+      "count": 7,
+      "top": [
+        "prism/health/risk.py",
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism.core.models.ImportGraph": {
+      "count": 8,
+      "top": [
+        "prism/graph/import_graph.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism.core.models.ImportRef": {
+      "count": 5,
+      "top": [
+        "prism/incremental/hash_cache.py",
+        "prism/parsing/python_ast.py",
+        "prism/parsing/treesitter.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.core.models.Index": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.core.models.ModelInfo": {
+      "count": 1,
+      "top": [
+        "prism/extractors/models.py"
+      ]
+    },
+    "prism.core.models.ModuleNode": {
+      "count": 8,
+      "top": [
+        "prism/graph/import_graph.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism.core.models.ParsedFile": {
+      "count": 9,
+      "top": [
+        "prism/incremental/hash_cache.py",
+        "prism/parsing/python_ast.py",
+        "prism/parsing/treesitter.py",
+        "prism/pipeline.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.core.models.ParsedSymbol": {
+      "count": 4,
+      "top": [
+        "prism/incremental/hash_cache.py",
+        "prism/parsing/python_ast.py",
+        "prism/parsing/treesitter.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.core.models.Route": {
+      "count": 1,
+      "top": [
+        "prism/extractors/routes.py"
+      ]
+    },
+    "prism.core.models.Smell": {
+      "count": 5,
+      "top": [
+        "prism/incremental/hash_cache.py",
+        "prism/parsing/smells.py",
+        "prism/parsing/treesitter.py",
+        "prism/lifecycle.py",
+        "prism/parsing/python_ast.py"
+      ]
+    },
+    "prism.core.models.SourceFile": {
+      "count": 10,
+      "top": [
+        "prism/discovery/scanner.py",
+        "prism/lifecycle.py",
+        "prism/pipeline.py",
+        "prism/status.py",
+        "tests/unit/test_discovery.py"
+      ]
+    },
+    "prism.core.models.Symbol": {
+      "count": 8,
+      "top": [
+        "prism/graph/symbol_table.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism.core.models.TestsMap": {
+      "count": 1,
+      "top": [
+        "prism/extractors/tests_map.py"
+      ]
+    },
+    "prism.core.models.UrlPattern": {
+      "count": 4,
+      "top": [
+        "prism/incremental/hash_cache.py",
+        "prism/parsing/python_facts.py",
+        "prism/parsing/python_ast.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.core.paths.aicontext_dir": {
+      "count": 16,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/viewer/server.py",
+        "prism/writers/manifest.py",
+        "prism/hooks/runner.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.core.paths.find_repo_root": {
+      "count": 7,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/runner.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/entry.py",
+        "tests/benchmarks/edit_bench.py"
+      ]
+    },
+    "prism.core.paths.manifest_path": {
+      "count": 48,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/viewer/server.py",
+        "prism/writers/manifest.py",
+        "prism/hooks/runner.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.core.tokens.estimate_tokens": {
+      "count": 23,
+      "top": [
+        "prism/hooks/prompt.py",
+        "prism/narrator/refresh.py",
+        "prism/navigator/context_pack.py",
+        "prism/navigator/task_pack.py",
+        "prism/parsing/python_ast.py"
+      ]
+    },
+    "prism.discovery.language.detect_language": {
+      "count": 13,
+      "top": [
+        "prism/discovery/scanner.py",
+        "prism/hooks/runner.py",
+        "tests/unit/test_discovery.py",
+        "prism/lifecycle.py",
+        "prism/pipeline.py"
+      ]
+    },
+    "prism.discovery.scanner.discover": {
+      "count": 20,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/pipeline.py",
+        "prism/status.py",
+        "tests/unit/test_discovery.py",
+        "prism/navigator/freshness.py"
+      ]
+    },
+    "prism.discovery.scanner.hash_file": {
+      "count": 9,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/pipeline.py",
+        "prism/status.py",
+        "tests/unit/test_discovery.py",
+        "prism/navigator/freshness.py"
+      ]
+    },
+    "prism.discovery.scanner.looks_minified": {
+      "count": 9,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/pipeline.py",
+        "prism/status.py",
+        "tests/unit/test_discovery.py",
+        "prism/navigator/freshness.py"
+      ]
+    },
+    "prism.drift.scoring.apply_drift": {
+      "count": 2,
+      "top": [
+        "prism/writers/index_writer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.drift.scoring.reset_section": {
+      "count": 4,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_refresh.py"
+      ]
+    },
+    "prism.drift.structural_diff.Change": {
+      "count": 1,
+      "top": [
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.drift.structural_diff.diff": {
+      "count": 1,
+      "top": [
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.drift.structural_diff.snapshot": {
+      "count": 1,
+      "top": [
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.extractors.base.ExtractorContext": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.extractors.blast_radius.BlastRadiusExtractor": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.extractors.config_keys.ConfigExtractor": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.extractors.dead_code.DeadCodeExtractor": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.extractors.entry_points.EntryPointsExtractor": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.extractors.models.ModelsExtractor": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.extractors.project.ProjectExtractor": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.extractors.project.ProjectFacts": {
+      "count": 0,
+      "top": []
+    },
+    "prism.extractors.project.declared_dependencies": {
+      "count": 0,
+      "top": []
+    },
+    "prism.extractors.project.detect_commands": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism.extractors.routes.RoutesExtractor": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.extractors.routes.parse_route_decorator": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism.extractors.tests_map.TestsMapExtractor": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.extractors.tests_map.is_test_file": {
+      "count": 7,
+      "top": [
+        "prism/extractors/dead_code.py",
+        "prism/navigator/store.py",
+        "tests/unit/test_extractors.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.extractors.toolchain.brief_commands": {
+      "count": 2,
+      "top": [
+        "prism/extractors/project.py",
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism.extractors.toolchain.detect_toolchain": {
+      "count": 6,
+      "top": [
+        "prism/audit/plan.py",
+        "tests/integration/test_audit.py",
+        "prism/cli.py",
+        "prism/extractors/project.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.extractors.toolchain.project_dirs": {
+      "count": 7,
+      "top": [
+        "tests/benchmarks/tokens.py",
+        "prism/audit/plan.py",
+        "tests/integration/test_audit.py",
+        "prism/cli.py",
+        "prism/extractors/project.py"
+      ]
+    },
+    "prism.graph.blast.reverse_bfs": {
+      "count": 5,
+      "top": [
+        "prism/extractors/blast_radius.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/context_pack.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.graph.call_graph.Resolver": {
+      "count": 11,
+      "top": [
+        "prism/extractors/models.py",
+        "prism/extractors/routes.py",
+        "prism/extractors/entry_points.py",
+        "prism/extractors/tests_map.py",
+        "prism/pipeline.py"
+      ]
+    },
+    "prism.graph.call_graph.Resolver.method_in_class": {
+      "count": 4,
+      "top": [
+        "prism/extractors/entry_points.py",
+        "prism/extractors/tests_map.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py"
+      ]
+    },
+    "prism.graph.call_graph.Resolver.resolve_call": {
+      "count": 9,
+      "top": [
+        "prism/extractors/entry_points.py",
+        "prism/extractors/tests_map.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.graph.call_graph.Resolver.resolve_name": {
+      "count": 6,
+      "top": [
+        "prism/extractors/models.py",
+        "prism/extractors/routes.py",
+        "prism/extractors/entry_points.py",
+        "prism/extractors/tests_map.py",
+        "prism/pipeline.py"
+      ]
+    },
+    "prism.graph.call_graph.Resolver.resolve_qualified": {
+      "count": 2,
+      "top": [
+        "prism/extractors/models.py",
+        "prism/extractors/routes.py"
+      ]
+    },
+    "prism.graph.call_graph.build_call_graph": {
+      "count": 7,
+      "top": [
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism.graph.call_graph.resolve_module_calls": {
+      "count": 2,
+      "top": [
+        "prism/extractors/entry_points.py",
+        "prism/extractors/tests_map.py"
+      ]
+    },
+    "prism.graph.communities.louvain": {
+      "count": 7,
+      "top": [
+        "prism/pipeline.py",
+        "tests/integration/test_phase5.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism.graph.import_graph.build_import_graph": {
+      "count": 7,
+      "top": [
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism.graph.ranking.LazyRanker": {
+      "count": 1,
+      "top": [
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.graph.ranking.pagerank": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_graph.py"
+      ]
+    },
+    "prism.graph.symbol_table.ModuleIndex": {
+      "count": 9,
+      "top": [
+        "prism/drift/structural_diff.py",
+        "viewer/src/data.ts",
+        "prism/lifecycle.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py"
+      ]
+    },
+    "prism.graph.symbol_table.ModuleIndex.find": {
+      "count": 3,
+      "top": [
+        "prism/drift/structural_diff.py",
+        "viewer/src/data.ts",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.graph.symbol_table.ModuleScope": {
+      "count": 7,
+      "top": [
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism.graph.symbol_table.SymbolTable": {
+      "count": 7,
+      "top": [
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism.graph.symbol_table.build_symbol_table": {
+      "count": 7,
+      "top": [
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism.graph.symbol_table.resolve_relative": {
+      "count": 8,
+      "top": [
+        "prism/graph/import_graph.py",
+        "tests/unit/test_graph.py",
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py"
+      ]
+    },
+    "prism.graph.symbol_table.visibility_for": {
+      "count": 7,
+      "top": [
+        "tests/unit/test_graph.py",
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py"
+      ]
+    },
+    "prism.health.coverage.read_coverage": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "tests/unit/test_phase3_extractors.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.health.git_intel.collect_git": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "tests/unit/test_phase3_extractors.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.health.git_intel.git_head": {
+      "count": 9,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/cli.py",
+        "prism/pipeline.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.health.risk.compute_health": {
+      "count": 6,
+      "top": [
+        "prism/pipeline.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.hooks.entry.background_enabled": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.entry.hard_exit": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.entry.parse_flags": {
+      "count": 3,
+      "top": [
+        "tests/integration/test_integrations.py",
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.entry.read_stdin": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.entry.run_hook": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.entry.use_utf8": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.formats.render_context": {
+      "count": 4,
+      "top": [
+        "prism/hooks/entry.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.prompt.should_retrieve": {
+      "count": 5,
+      "top": [
+        "tests/integration/test_prompt_hook.py",
+        "prism/hooks/entry.py",
+        "tests/benchmarks/edit_bench.py",
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.prompt.user_prompt": {
+      "count": 6,
+      "top": [
+        "prism/hooks/entry.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.runner.edited_paths": {
+      "count": 5,
+      "top": [
+        "tests/integration/test_prompt_hook.py",
+        "prism/hooks/entry.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.runner.parse_payload": {
+      "count": 7,
+      "top": [
+        "prism/hooks/prompt.py",
+        "prism/hooks/entry.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/integration/test_prompt_hook.py"
+      ]
+    },
+    "prism.hooks.runner.post_edit": {
+      "count": 4,
+      "top": [
+        "prism/hooks/entry.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.hooks.runner.session_start": {
+      "count": 4,
+      "top": [
+        "prism/hooks/entry.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/cli.py",
+        "prism/entry.py"
+      ]
+    },
+    "prism.incremental.hash_cache.StateCache": {
+      "count": 88,
+      "top": [
+        "prism/_vendor/graphify_retrieval.py",
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/report.py",
+        "prism/audit/store.py"
+      ]
+    },
+    "prism.incremental.hash_cache.StateCache.cached_parses": {
+      "count": 1,
+      "top": [
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.incremental.hash_cache.StateCache.close": {
+      "count": 0,
+      "top": []
+    },
+    "prism.incremental.hash_cache.StateCache.get": {
+      "count": 88,
+      "top": [
+        "prism/_vendor/graphify_retrieval.py",
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/report.py",
+        "prism/audit/store.py"
+      ]
+    },
+    "prism.incremental.hash_cache.StateCache.put": {
+      "count": 1,
+      "top": [
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.incremental.hash_cache.StateCache.store_parses": {
+      "count": 1,
+      "top": [
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.incremental.lock.LockBusy": {
+      "count": 0,
+      "top": []
+    },
+    "prism.incremental.lock.UpdateLock": {
+      "count": 44,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/integration/test_freshness.py",
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.integrations.all_integrations": {
+      "count": 5,
+      "top": [
+        "prism/maintenance.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_phase5.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism.integrations.all_removals": {
+      "count": 3,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/cli.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism.integrations.antigravity.AntigravityIntegration": {
+      "count": 25,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.integrations.antigravity.rule_text": {
+      "count": 0,
+      "top": []
+    },
+    "prism.integrations.base.FileChange": {
+      "count": 30,
+      "top": [
+        "prism/integrations/antigravity.py",
+        "prism/integrations/claude_code.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/git_hooks.py"
+      ]
+    },
+    "prism.integrations.base.FileChange.is_noop": {
+      "count": 2,
+      "top": [
+        "prism/integrations/git_hooks.py",
+        "prism/integrations/other_agents.py"
+      ]
+    },
+    "prism.integrations.base.FileChange.kind": {
+      "count": 24,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/retrieval_eval.py"
+      ]
+    },
+    "prism.integrations.base.FileChange.resolve": {
+      "count": 25,
+      "top": [
+        "prism/integrations/git_hooks.py",
+        "prism/integrations/other_agents.py",
+        "prism/lifecycle.py",
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py"
+      ]
+    },
+    "prism.integrations.base.IntegrationOptions": {
+      "count": 24,
+      "top": [
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py"
+      ]
+    },
+    "prism.integrations.base.apply_changes": {
+      "count": 24,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/retrieval_eval.py"
+      ]
+    },
+    "prism.integrations.base.dump_json": {
+      "count": 27,
+      "top": [
+        "prism/integrations/claude_code.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/other_agents.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.integrations.base.ledger_path": {
+      "count": 23,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/retrieval_eval.py"
+      ]
+    },
+    "prism.integrations.base.load_json": {
+      "count": 4,
+      "top": [
+        "prism/integrations/claude_code.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/other_agents.py"
+      ]
+    },
+    "prism.integrations.base.outside_toml_block": {
+      "count": 1,
+      "top": [
+        "prism/integrations/codex.py"
+      ]
+    },
+    "prism.integrations.base.read_text": {
+      "count": 66,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/store.py",
+        "prism/cli.py",
+        "prism/discovery/scanner.py"
+      ]
+    },
+    "prism.integrations.base.remove_changes": {
+      "count": 3,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/cli.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism.integrations.base.with_block": {
+      "count": 7,
+      "top": [
+        "prism/integrations/claude_code.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/global_note.py",
+        "prism/integrations/other_agents.py"
+      ]
+    },
+    "prism.integrations.base.with_toml_block": {
+      "count": 1,
+      "top": [
+        "prism/integrations/codex.py"
+      ]
+    },
+    "prism.integrations.base.without_block": {
+      "count": 7,
+      "top": [
+        "prism/integrations/claude_code.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/global_note.py",
+        "prism/integrations/other_agents.py"
+      ]
+    },
+    "prism.integrations.base.without_toml_block": {
+      "count": 1,
+      "top": [
+        "prism/integrations/codex.py"
+      ]
+    },
+    "prism.integrations.claude_code.ClaudeCodeIntegration": {
+      "count": 25,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.integrations.codex.CodexIntegration": {
+      "count": 25,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.integrations.common.skill_body": {
+      "count": 1,
+      "top": [
+        "prism/integrations/other_agents.py"
+      ]
+    },
+    "prism.integrations.common.skill_description": {
+      "count": 1,
+      "top": [
+        "prism/integrations/other_agents.py"
+      ]
+    },
+    "prism.integrations.common.skill_text": {
+      "count": 6,
+      "top": [
+        "prism/integrations/antigravity.py",
+        "prism/integrations/claude_code.py",
+        "prism/maintenance.py",
+        "prism/cli.py",
+        "prism/integrations/other_agents.py"
+      ]
+    },
+    "prism.integrations.detect_agents": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism.integrations.gemini.GeminiIntegration": {
+      "count": 25,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.integrations.get_integration": {
+      "count": 25,
+      "top": [
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "prism/maintenance.py",
+        "tests/benchmarks/agent_prepare.py"
+      ]
+    },
+    "prism.integrations.git_hooks.GitHooksIntegration": {
+      "count": 25,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/lifecycle.py",
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py"
+      ]
+    },
+    "prism.integrations.git_hooks.hooks_dir": {
+      "count": 1,
+      "top": [
+        "prism/cli.py"
+      ]
+    },
+    "prism.integrations.git_hooks.make_executable": {
+      "count": 24,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/retrieval_eval.py"
+      ]
+    },
+    "prism.integrations.global_note.global_files": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism.integrations.global_note.install_global": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism.integrations.global_note.uninstall_global": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism.integrations.hooks_json.add_hooks": {
+      "count": 4,
+      "top": [
+        "prism/integrations/claude_code.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/other_agents.py"
+      ]
+    },
+    "prism.integrations.hooks_json.is_prism_entry": {
+      "count": 4,
+      "top": [
+        "prism/integrations/claude_code.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/other_agents.py"
+      ]
+    },
+    "prism.integrations.hooks_json.strip_hooks": {
+      "count": 4,
+      "top": [
+        "prism/integrations/claude_code.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/other_agents.py"
+      ]
+    },
+    "prism.integrations.other_agents.AgentsMdIntegration": {
+      "count": 25,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.integrations.other_agents.CursorIntegration": {
+      "count": 25,
+      "top": [
+        "prism/integrations/__init__.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_integrations.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.integrations.other_agents.cursor_procedure": {
+      "count": 0,
+      "top": []
+    },
+    "prism.integrations.other_agents.cursor_rule": {
+      "count": 0,
+      "top": []
+    },
+    "prism.lifecycle.IndexRun": {
+      "count": 0,
+      "top": []
+    },
+    "prism.lifecycle.InitPlan": {
+      "count": 23,
+      "top": [
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/retrieval_eval.py",
+        "tests/benchmarks/run.py"
+      ]
+    },
+    "prism.lifecycle.PlannedChange": {
+      "count": 23,
+      "top": [
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/retrieval_eval.py",
+        "tests/benchmarks/run.py"
+      ]
+    },
+    "prism.lifecycle.apply_init": {
+      "count": 24,
+      "top": [
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/retrieval_eval.py",
+        "tests/benchmarks/run.py"
+      ]
+    },
+    "prism.lifecycle.apply_uninstall": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism.lifecycle.plan_init": {
+      "count": 24,
+      "top": [
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/retrieval_eval.py",
+        "tests/benchmarks/run.py"
+      ]
+    },
+    "prism.lifecycle.plan_uninstall": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_integrations.py"
+      ]
+    },
+    "prism.lifecycle.require_manifest": {
+      "count": 43,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/integration/test_phase5.py",
+        "tests/integration/test_prompt_hook.py"
+      ]
+    },
+    "prism.lifecycle.run_index": {
+      "count": 51,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/cli.py",
+        "prism/discovery/scanner.py",
+        "prism/drift/structural_diff.py"
+      ]
+    },
+    "prism.lifecycle.scan": {
+      "count": 24,
+      "top": [
+        "prism/cli.py",
+        "prism/maintenance.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/retrieval_eval.py"
+      ]
+    },
+    "prism.lifecycle.set_enabled": {
+      "count": 1,
+      "top": [
+        "prism/cli.py"
+      ]
+    },
+    "prism.lifecycle.set_paused": {
+      "count": 5,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/integration/test_phase5.py",
+        "tests/integration/test_prompt_hook.py"
+      ]
+    },
+    "prism.lifecycle.update": {
+      "count": 55,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/cli.py",
+        "prism/discovery/scanner.py",
+        "prism/drift/structural_diff.py"
+      ]
+    },
+    "prism.maintenance.Check": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.maintenance.doctor": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.maintenance.migrate": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.maintenance.watch": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.mcp.server.PrismTools": {
+      "count": 4,
+      "top": [
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/unit/test_task_pack.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.mcp.server.PrismTools.call": {
+      "count": 3,
+      "top": [
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/unit/test_task_pack.py"
+      ]
+    },
+    "prism.mcp.server.PrismTools.prism_locate": {
+      "count": 1,
+      "top": [
+        "tests/integration/test_hooks_mcp.py"
+      ]
+    },
+    "prism.mcp.server.PrismTools.prism_task": {
+      "count": 2,
+      "top": [
+        "tests/integration/test_freshness.py",
+        "tests/unit/test_task_pack.py"
+      ]
+    },
+    "prism.mcp.server.PrismTools.store": {
+      "count": 3,
+      "top": [
+        "tests/unit/test_task_pack.py",
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_hooks_mcp.py"
+      ]
+    },
+    "prism.mcp.server.build_server": {
+      "count": 2,
+      "top": [
+        "tests/integration/test_hooks_mcp.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.mcp.server.enabled_tools": {
+      "count": 3,
+      "top": [
+        "tests/integration/test_hooks_mcp.py",
+        "tests/unit/test_task_pack.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.mcp.server.resolve_profile": {
+      "count": 2,
+      "top": [
+        "tests/integration/test_hooks_mcp.py",
+        "tests/unit/test_task_pack.py"
+      ]
+    },
+    "prism.mcp.server.run": {
+      "count": 1,
+      "top": [
+        "prism/cli.py"
+      ]
+    },
+    "prism.narrator.refresh.refresh_commit": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_refresh.py"
+      ]
+    },
+    "prism.narrator.refresh.refresh_prepare": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_refresh.py"
+      ]
+    },
+    "prism.navigator.api.freshness_line": {
+      "count": 11,
+      "top": [
+        "prism/hooks/runner.py",
+        "prism/cli.py",
+        "prism/hooks/entry.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/edit_bench.py"
+      ]
+    },
+    "prism.navigator.api.op_brief": {
+      "count": 7,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/tokens.py",
+        "tests/integration/test_audit.py"
+      ]
+    },
+    "prism.navigator.api.op_context": {
+      "count": 8,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/run.py",
+        "tests/benchmarks/tokens.py"
+      ]
+    },
+    "prism.navigator.api.op_impact": {
+      "count": 7,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/tokens.py"
+      ]
+    },
+    "prism.navigator.api.op_locate": {
+      "count": 4,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/unit/test_navigator.py",
+        "tests/integration/test_hooks_mcp.py"
+      ]
+    },
+    "prism.navigator.api.op_module": {
+      "count": 5,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/unit/test_navigator.py",
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.navigator.api.op_search": {
+      "count": 7,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/tokens.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.navigator.api.op_task": {
+      "count": 14,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/retrieval_economics.py",
+        "tests/benchmarks/retrieval_eval.py"
+      ]
+    },
+    "prism.navigator.cache_db.cache_dir": {
+      "count": 35,
+      "top": [
+        "prism/navigator/freshness.py",
+        "prism/navigator/semantic.py",
+        "prism/navigator/source_index.py",
+        "prism/hooks/prompt.py",
+        "prism/navigator/store.py"
+      ]
+    },
+    "prism.navigator.cache_db.fingerprint": {
+      "count": 34,
+      "top": [
+        "prism/navigator/freshness.py",
+        "prism/navigator/semantic.py",
+        "prism/navigator/store.py",
+        "prism/hooks/prompt.py",
+        "prism/viewer/api.py"
+      ]
+    },
+    "prism.navigator.cache_db.open_cache": {
+      "count": 41,
+      "top": [
+        "prism/navigator/store.py",
+        "prism/cli.py",
+        "prism/config.py",
+        "prism/consent/registry.py",
+        "prism/discovery/scanner.py"
+      ]
+    },
+    "prism.navigator.context_pack.build_context": {
+      "count": 9,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/run.py"
+      ]
+    },
+    "prism.navigator.freshness.caches_ready": {
+      "count": 4,
+      "top": [
+        "prism/hooks/prompt.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/hooks/entry.py",
+        "tests/benchmarks/edit_bench.py"
+      ]
+    },
+    "prism.navigator.freshness.refresh_if_stale": {
+      "count": 9,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_freshness.py",
+        "tests/unit/test_task_pack.py"
+      ]
+    },
+    "prism.navigator.freshness.warm_caches": {
+      "count": 25,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/update_job.py",
+        "prism/lifecycle.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.navigator.fusion.fuse_files": {
+      "count": 3,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.graphify.GraphHint": {
+      "count": 0,
+      "top": []
+    },
+    "prism.navigator.graphify.GraphNode": {
+      "count": 2,
+      "top": [
+        "tests/unit/test_graphify_hints.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.graphify.GraphifyGraph": {
+      "count": 2,
+      "top": [
+        "tests/unit/test_graphify_hints.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.graphify.GraphifyGraph.hints": {
+      "count": 1,
+      "top": [
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.graphify.GraphifyGraph.load": {
+      "count": 2,
+      "top": [
+        "tests/unit/test_graphify_hints.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.graphify.graphify_hints": {
+      "count": 1,
+      "top": [
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.impact.dependents": {
+      "count": 9,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.navigator.impact.impact": {
+      "count": 8,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/agent_prepare.py"
+      ]
+    },
+    "prism.navigator.literals.Evidence": {
+      "count": 2,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py"
+      ]
+    },
+    "prism.navigator.literals.EvidenceResult": {
+      "count": 3,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.literals.EvidenceResult.hit_lines": {
+      "count": 2,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.literals.Occurrence": {
+      "count": 2,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py"
+      ]
+    },
+    "prism.navigator.literals.Occurrence.snippet": {
+      "count": 0,
+      "top": []
+    },
+    "prism.navigator.literals.find_literals": {
+      "count": 3,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.literals.looks_like_code": {
+      "count": 2,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py"
+      ]
+    },
+    "prism.navigator.overview.overview_items": {
+      "count": 2,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.overview.render_overview": {
+      "count": 5,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/hooks/prompt.py",
+        "tests/unit/test_task_disclosure.py",
+        "tests/unit/test_task_pack.py",
+        "tests/unit/test_task_retrieval.py"
+      ]
+    },
+    "prism.navigator.overview.wants_overview": {
+      "count": 11,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.navigator.render.render_brief": {
+      "count": 2,
+      "top": [
+        "tests/benchmarks/tokens.py",
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "prism.navigator.render.render_context": {
+      "count": 2,
+      "top": [
+        "tests/benchmarks/tokens.py",
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "prism.navigator.render.render_impact": {
+      "count": 2,
+      "top": [
+        "tests/benchmarks/tokens.py",
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "prism.navigator.render.render_search": {
+      "count": 2,
+      "top": [
+        "tests/benchmarks/tokens.py",
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "prism.navigator.request.request_focus": {
+      "count": 1,
+      "top": [
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.request.request_operations": {
+      "count": 2,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.resolve.Candidate": {
+      "count": 4,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "prism.navigator.resolve.Target": {
+      "count": 10,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py"
+      ]
+    },
+    "prism.navigator.resolve.locate": {
+      "count": 10,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/unit/test_navigator.py",
+        "prism/viewer/api.py"
+      ]
+    },
+    "prism.navigator.resolve.resolve_target": {
+      "count": 10,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/agent_prepare.py"
+      ]
+    },
+    "prism.navigator.semantic.Embedder": {
+      "count": 7,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/tokens.py"
+      ]
+    },
+    "prism.navigator.semantic.Embedder.embed": {
+      "count": 7,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/tokens.py"
+      ]
+    },
+    "prism.navigator.semantic.SentenceTransformerEmbedder": {
+      "count": 7,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/tokens.py"
+      ]
+    },
+    "prism.navigator.semantic.get_embedder": {
+      "count": 8,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/tokens.py"
+      ]
+    },
+    "prism.navigator.semantic.hybrid_search": {
+      "count": 8,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/tokens.py"
+      ]
+    },
+    "prism.navigator.semantic.semantic_model": {
+      "count": 8,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py",
+        "tests/benchmarks/tokens.py"
+      ]
+    },
+    "prism.navigator.session.load_seen": {
+      "count": 5,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/hooks/entry.py",
+        "tests/benchmarks/edit_bench.py"
+      ]
+    },
+    "prism.navigator.session.save_seen": {
+      "count": 5,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/entry.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/integration/test_prompt_hook.py"
+      ]
+    },
+    "prism.navigator.session.session_id": {
+      "count": 1,
+      "top": [
+        "prism/cli.py"
+      ]
+    },
+    "prism.navigator.source_index.SourceIndex": {
+      "count": 31,
+      "top": [
+        "prism/navigator/freshness.py",
+        "prism/navigator/literals.py",
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.navigator.source_index.SourceIndex.close": {
+      "count": 0,
+      "top": []
+    },
+    "prism.navigator.source_index.SourceIndex.df": {
+      "count": 4,
+      "top": [
+        "prism/navigator/literals.py",
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.source_index.SourceIndex.files_with_all": {
+      "count": 3,
+      "top": [
+        "prism/navigator/literals.py",
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py"
+      ]
+    },
+    "prism.navigator.source_index.SourceIndex.idf": {
+      "count": 1,
+      "top": [
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.source_index.SourceIndex.paths_with": {
+      "count": 3,
+      "top": [
+        "prism/navigator/literals.py",
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_disclosure.py"
+      ]
+    },
+    "prism.navigator.source_index.SourceIndex.ranked": {
+      "count": 2,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.source_index.SourceIndex.scores": {
+      "count": 1,
+      "top": [
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.source_index.SourceReader": {
+      "count": 8,
+      "top": [
+        "prism/navigator/graphify.py",
+        "prism/navigator/literals.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/support.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.source_index.SourceReader.lines": {
+      "count": 7,
+      "top": [
+        "prism/navigator/graphify.py",
+        "prism/navigator/literals.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/support.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.source_index.pending_files": {
+      "count": 3,
+      "top": [
+        "prism/navigator/freshness.py",
+        "prism/hooks/prompt.py",
+        "tests/integration/test_prompt_hook.py"
+      ]
+    },
+    "prism.navigator.source_index.read_indexed_source": {
+      "count": 6,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/graphify.py",
+        "prism/navigator/literals.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/support.py"
+      ]
+    },
+    "prism.navigator.source_index.search_sources": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_task_pack.py"
+      ]
+    },
+    "prism.navigator.source_index.split_lines": {
+      "count": 6,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/graphify.py",
+        "prism/navigator/literals.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/support.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore": {
+      "count": 55,
+      "top": [
+        "prism/cli.py",
+        "prism/config.py",
+        "prism/consent/registry.py",
+        "prism/discovery/scanner.py",
+        "prism/extractors/toolchain.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.all_symbols": {
+      "count": 2,
+      "top": [
+        "prism/navigator/semantic.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.call_edges": {
+      "count": 3,
+      "top": [
+        "prism/navigator/impact.py",
+        "prism/navigator/context_pack.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.callees": {
+      "count": 3,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.callers": {
+      "count": 4,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.children": {
+      "count": 4,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.close": {
+      "count": 2,
+      "top": [
+        "prism/viewer/api.py",
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.cochanged": {
+      "count": 2,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.config_reads": {
+      "count": 2,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.externals_of": {
+      "count": 4,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.file_exists": {
+      "count": 12,
+      "top": [
+        "prism/navigator/resolve.py",
+        "prism/navigator/task_pack.py",
+        "tests/integration/test_freshness.py",
+        "prism/navigator/api.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.file_language": {
+      "count": 2,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.files_with_suffix": {
+      "count": 12,
+      "top": [
+        "prism/navigator/overview.py",
+        "prism/navigator/resolve.py",
+        "prism/navigator/api.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.findings": {
+      "count": 1,
+      "top": [
+        "prism/navigator/context_pack.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.health_file": {
+      "count": 9,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.health_symbol": {
+      "count": 9,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.import_edges": {
+      "count": 3,
+      "top": [
+        "prism/navigator/impact.py",
+        "prism/navigator/context_pack.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.importers_of": {
+      "count": 6,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/navigator/context_pack.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.imports_of": {
+      "count": 8,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/navigator/context_pack.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.is_current": {
+      "count": 4,
+      "top": [
+        "prism/viewer/api.py",
+        "tests/unit/test_navigator.py",
+        "tests/unit/test_task_pack.py",
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.module": {
+      "count": 19,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/navigator/api.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/resolve.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.module_for_file": {
+      "count": 12,
+      "top": [
+        "prism/navigator/overview.py",
+        "prism/navigator/resolve.py",
+        "prism/navigator/api.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.modules": {
+      "count": 9,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/resolve.py",
+        "prism/cli.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.modules_with_prefix": {
+      "count": 2,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.open": {
+      "count": 55,
+      "top": [
+        "prism/cli.py",
+        "prism/config.py",
+        "prism/consent/registry.py",
+        "prism/discovery/scanner.py",
+        "prism/extractors/toolchain.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.open_findings": {
+      "count": 2,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.routes": {
+      "count": 10,
+      "top": [
+        "prism/navigator/resolve.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.routes_for_handler": {
+      "count": 2,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.search": {
+      "count": 11,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/semantic.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.symbol": {
+      "count": 21,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/navigator/api.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/resolve.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.symbol_at": {
+      "count": 11,
+      "top": [
+        "prism/navigator/resolve.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.symbol_names": {
+      "count": 5,
+      "top": [
+        "prism/navigator/resolve.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.symbols_in_file": {
+      "count": 6,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/graphify.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.symbols_named": {
+      "count": 6,
+      "top": [
+        "prism/navigator/resolve.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.symbols_with_suffix": {
+      "count": 6,
+      "top": [
+        "prism/navigator/resolve.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.test_files": {
+      "count": 11,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/api.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.tests_for_file": {
+      "count": 11,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.tests_for_symbol": {
+      "count": 10,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/task_pack.py",
+        "prism/navigator/api.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.navigator.store.IndexStore.top_symbols": {
+      "count": 1,
+      "top": [
+        "prism/navigator/context_pack.py"
+      ]
+    },
+    "prism.navigator.store.Link": {
+      "count": 3,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.store.ModuleRow": {
+      "count": 7,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/navigator/api.py",
+        "prism/navigator/context_pack.py",
+        "prism/navigator/impact.py",
+        "prism/navigator/overview.py"
+      ]
+    },
+    "prism.navigator.store.SearchHit": {
+      "count": 10,
+      "top": [
+        "prism/navigator/semantic.py",
+        "prism/navigator/api.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.navigator.store.SymbolRow": {
+      "count": 14,
+      "top": [
+        "prism/navigator/context_pack.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/task_pack.py",
+        "prism/narrator/refresh.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.navigator.support.SupportRange": {
+      "count": 1,
+      "top": [
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.support.local_support": {
+      "count": 1,
+      "top": [
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.synonyms.related_terms": {
+      "count": 1,
+      "top": [
+        "prism/navigator/task_pack.py"
+      ]
+    },
+    "prism.navigator.task_pack.build_task": {
+      "count": 12,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/retrieval_economics.py"
+      ]
+    },
+    "prism.navigator.task_pack.render_task": {
+      "count": 8,
+      "top": [
+        "prism/hooks/prompt.py",
+        "tests/unit/test_task_disclosure.py",
+        "tests/unit/test_task_pack.py",
+        "tests/unit/test_task_retrieval.py",
+        "prism/hooks/entry.py"
+      ]
+    },
+    "prism.navigator.text.bm25": {
+      "count": 12,
+      "top": [
+        "prism/navigator/source_index.py",
+        "prism/navigator/store.py",
+        "prism/navigator/api.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/semantic.py"
+      ]
+    },
+    "prism.navigator.text.stem": {
+      "count": 13,
+      "top": [
+        "prism/navigator/literals.py",
+        "tests/unit/test_navigator.py",
+        "prism/navigator/graphify.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/request.py"
+      ]
+    },
+    "prism.navigator.text.term_counts": {
+      "count": 2,
+      "top": [
+        "prism/navigator/cache_db.py",
+        "prism/navigator/source_index.py"
+      ]
+    },
+    "prism.navigator.text.tokenize": {
+      "count": 18,
+      "top": [
+        "prism/navigator/graphify.py",
+        "prism/navigator/literals.py",
+        "prism/navigator/overview.py",
+        "prism/navigator/request.py",
+        "prism/navigator/source_index.py"
+      ]
+    },
+    "prism.parsing.base_parser.get_parser": {
+      "count": 11,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "tests/unit/test_python_parser.py"
+      ]
+    },
+    "prism.parsing.base_parser.register_parser": {
+      "count": 7,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "tests/unit/test_python_parser.py"
+      ]
+    },
+    "prism.parsing.modules.module_name": {
+      "count": 8,
+      "top": [
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py",
+        "tests/unit/test_python_parser.py",
+        "tests/unit/test_treesitter.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.parsing.python_ast.PythonAstParser": {
+      "count": 8,
+      "top": [
+        "prism/parsing/base_parser.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py"
+      ]
+    },
+    "prism.parsing.python_ast.dotted_name": {
+      "count": 2,
+      "top": [
+        "prism/parsing/python_facts.py",
+        "prism/parsing/smells.py"
+      ]
+    },
+    "prism.parsing.python_facts.class_fields": {
+      "count": 1,
+      "top": [
+        "prism/parsing/python_ast.py"
+      ]
+    },
+    "prism.parsing.python_facts.cyclomatic_complexity": {
+      "count": 1,
+      "top": [
+        "prism/parsing/python_ast.py"
+      ]
+    },
+    "prism.parsing.python_facts.dunder_all": {
+      "count": 1,
+      "top": [
+        "prism/parsing/python_ast.py"
+      ]
+    },
+    "prism.parsing.python_facts.env_reads": {
+      "count": 1,
+      "top": [
+        "prism/parsing/python_ast.py"
+      ]
+    },
+    "prism.parsing.python_facts.url_patterns": {
+      "count": 1,
+      "top": [
+        "prism/parsing/python_ast.py"
+      ]
+    },
+    "prism.parsing.smells.detect_smells": {
+      "count": 1,
+      "top": [
+        "prism/parsing/python_ast.py"
+      ]
+    },
+    "prism.parsing.treesitter.GoParser": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.GoParser.receiver_type": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.JavaParser": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.JavaScriptParser": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.JavaScriptParser.symbol_name": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.__init__": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.add_symbol": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.bases": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.call_target": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.calls_in": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.collect_imports": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.complexity": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.decorators": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.env_read": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.env_reads_in": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.fields_of": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.is_symbol": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.local_types": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.module_override": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.parent_qualname": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.signature": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.symbol_name": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.symbol_nodes": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TreeSitterParser.visibility": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.TypeScriptParser": {
+      "count": 0,
+      "top": []
+    },
+    "prism.parsing.treesitter.available": {
+      "count": 8,
+      "top": [
+        "prism/parsing/base_parser.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py"
+      ]
+    },
+    "prism.parsing.treesitter.parsers": {
+      "count": 8,
+      "top": [
+        "prism/parsing/base_parser.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/pipeline.py",
+        "tests/unit/test_graph.py"
+      ]
+    },
+    "prism.parsing.treesitter.resolve_js_specifier": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_treesitter.py"
+      ]
+    },
+    "prism.pipeline.build_index": {
+      "count": 5,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py",
+        "tests/unit/test_writers.py"
+      ]
+    },
+    "prism.pipeline.open_finding_counts": {
+      "count": 5,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py",
+        "tests/unit/test_writers.py"
+      ]
+    },
+    "prism.pipeline.parse_files": {
+      "count": 5,
+      "top": [
+        "prism/lifecycle.py",
+        "tests/unit/test_extractors.py",
+        "tests/unit/test_phase3_extractors.py",
+        "tests/unit/test_treesitter.py",
+        "tests/unit/test_writers.py"
+      ]
+    },
+    "prism.status.StatusReport": {
+      "count": 12,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/runner.py",
+        "prism/maintenance.py",
+        "prism/mcp/server.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.status.audit_summary": {
+      "count": 12,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/runner.py",
+        "prism/maintenance.py",
+        "prism/mcp/server.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.status.compute_status": {
+      "count": 16,
+      "top": [
+        "prism/cli.py",
+        "prism/hooks/runner.py",
+        "prism/maintenance.py",
+        "prism/mcp/server.py",
+        "prism/navigator/api.py"
+      ]
+    },
+    "prism.status.working_tree_changes": {
+      "count": 15,
+      "top": [
+        "prism/navigator/freshness.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/runner.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend": {
+      "count": 2,
+      "top": [
+        "prism/viewer/server.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.diff": {
+      "count": 1,
+      "top": [
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.get_layout": {
+      "count": 2,
+      "top": [
+        "prism/viewer/server.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.graph": {
+      "count": 2,
+      "top": [
+        "prism/viewer/server.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.impact": {
+      "count": 1,
+      "top": [
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.list_views": {
+      "count": 1,
+      "top": [
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.meta": {
+      "count": 1,
+      "top": [
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.model": {
+      "count": 2,
+      "top": [
+        "tests/integration/test_viewer.py",
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.node": {
+      "count": 1,
+      "top": [
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.path": {
+      "count": 1,
+      "top": [
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.save_layout": {
+      "count": 2,
+      "top": [
+        "prism/viewer/server.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.save_view": {
+      "count": 1,
+      "top": [
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.search": {
+      "count": 1,
+      "top": [
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.viewer.api.ViewerBackend.store": {
+      "count": 1,
+      "top": [
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.viewer.model.GraphFilters": {
+      "count": 5,
+      "top": [
+        "prism/viewer/api.py",
+        "tests/integration/test_viewer.py",
+        "prism/viewer/server.py",
+        "prism/writers/graph_export.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.viewer.model.GraphFilters.from_query": {
+      "count": 3,
+      "top": [
+        "prism/viewer/api.py",
+        "prism/viewer/server.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.viewer.model.GraphModel": {
+      "count": 6,
+      "top": [
+        "prism/viewer/api.py",
+        "prism/writers/graph_export.py",
+        "prism/writers/obsidian.py",
+        "tests/integration/test_viewer.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.viewer.model.GraphModel.canonical": {
+      "count": 4,
+      "top": [
+        "prism/viewer/api.py",
+        "prism/viewer/server.py",
+        "prism/writers/graph_export.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.viewer.model.GraphModel.cycle_edges": {
+      "count": 2,
+      "top": [
+        "prism/writers/graph_export.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.viewer.model.GraphModel.graph": {
+      "count": 3,
+      "top": [
+        "prism/writers/graph_export.py",
+        "tests/integration/test_viewer.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.viewer.model.GraphModel.node_id_at": {
+      "count": 5,
+      "top": [
+        "prism/viewer/api.py",
+        "prism/viewer/server.py",
+        "prism/writers/graph_export.py",
+        "tests/integration/test_viewer.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.viewer.model.GraphModel.nodes_at": {
+      "count": 3,
+      "top": [
+        "prism/writers/graph_export.py",
+        "tests/integration/test_viewer.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.viewer.model.GraphModel.path": {
+      "count": 1,
+      "top": [
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.viewer.model.GraphPayload": {
+      "count": 3,
+      "top": [
+        "prism/writers/graph_export.py",
+        "tests/integration/test_viewer.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.viewer.model.git_changes": {
+      "count": 3,
+      "top": [
+        "prism/writers/graph_export.py",
+        "tests/integration/test_viewer.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.viewer.server.EventHub": {
+      "count": 0,
+      "top": []
+    },
+    "prism.viewer.server.EventHub.subscribe": {
+      "count": 0,
+      "top": []
+    },
+    "prism.viewer.server.EventHub.unsubscribe": {
+      "count": 0,
+      "top": []
+    },
+    "prism.viewer.server.ViewerServer": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.viewer.server.ViewerServer.serve_forever": {
+      "count": 1,
+      "top": [
+        "prism/cli.py"
+      ]
+    },
+    "prism.viewer.server.ViewerServer.shutdown": {
+      "count": 2,
+      "top": [
+        "tests/integration/test_viewer.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.viewer.server.ViewerServer.start": {
+      "count": 1,
+      "top": [
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.viewer.server.ViewerServer.url": {
+      "count": 1,
+      "top": [
+        "prism/cli.py"
+      ]
+    },
+    "prism.viewer.server.Watcher": {
+      "count": 0,
+      "top": []
+    },
+    "prism.viewer.server.make_handler": {
+      "count": 0,
+      "top": []
+    },
+    "prism.viewer.server.running_viewer": {
+      "count": 2,
+      "top": [
+        "prism/mcp/server.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.writers.activity.activity_path": {
+      "count": 18,
+      "top": [
+        "prism/viewer/server.py",
+        "prism/navigator/api.py",
+        "tests/unit/test_navigator.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py"
+      ]
+    },
+    "prism.writers.activity.read_activity": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "prism.writers.activity.record_activity": {
+      "count": 21,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
+        "prism/viewer/api.py"
+      ]
+    },
+    "prism.writers.agents_md.brief_tokens": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_writers.py"
+      ]
+    },
+    "prism.writers.agents_md.compact_brief": {
+      "count": 12,
+      "top": [
+        "prism/hooks/runner.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/entry.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.writers.agents_md.render_agents_md": {
+      "count": 3,
+      "top": [
+        "prism/writers/index_writer.py",
+        "tests/unit/test_writers.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.writers.agents_md.written_narrative": {
+      "count": 10,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/hooks/runner.py",
+        "prism/cli.py",
+        "prism/hooks/entry.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.writers.artifacts.build_docs": {
+      "count": 2,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/writers/index_writer.py"
+      ]
+    },
+    "prism.writers.decisions.add_decision": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.writers.decisions.decisions_dir": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.writers.decisions.get_decision": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_phase5.py",
+        "prism/mcp/server.py"
+      ]
+    },
+    "prism.writers.decisions.list_decisions": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.writers.decisions.parse_decision": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_phase5.py"
+      ]
+    },
+    "prism.writers.graph_export.export_diagram": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.writers.graph_export.export_html": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.writers.graph_export.to_dot": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.writers.graph_export.to_graphml": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.writers.graph_export.to_mermaid": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.writers.index_writer.write_index": {
+      "count": 1,
+      "top": [
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.writers.json_writer.dumps": {
+      "count": 17,
+      "top": [
+        "prism/writers/index_writer.py",
+        "tests/unit/test_writers.py",
+        "prism/audit/plan.py",
+        "prism/audit/report.py",
+        "prism/audit/store.py"
+      ]
+    },
+    "prism.writers.json_writer.read_json": {
+      "count": 47,
+      "top": [
+        "prism/viewer/api.py",
+        "prism/writers/manifest.py",
+        "prism/hooks/runner.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py"
+      ]
+    },
+    "prism.writers.json_writer.write_json": {
+      "count": 36,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/report.py",
+        "prism/audit/store.py",
+        "prism/viewer/api.py",
+        "prism/viewer/server.py"
+      ]
+    },
+    "prism.writers.json_writer.write_text": {
+      "count": 53,
+      "top": [
+        "prism/audit/report.py",
+        "prism/consent/registry.py",
+        "prism/hooks/prompt.py",
+        "prism/integrations/base.py",
+        "prism/integrations/global_note.py"
+      ]
+    },
+    "prism.writers.manifest.file_entries": {
+      "count": 2,
+      "top": [
+        "prism/writers/index_writer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.writers.manifest.load_manifest": {
+      "count": 48,
+      "top": [
+        "prism/hooks/runner.py",
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/mcp/server.py",
+        "prism/narrator/refresh.py"
+      ]
+    },
+    "prism.writers.manifest.new_manifest": {
+      "count": 24,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/cli.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/benchmarks/retrieval_eval.py"
+      ]
+    },
+    "prism.writers.manifest.now_iso": {
+      "count": 29,
+      "top": [
+        "prism/audit/plan.py",
+        "prism/audit/record.py",
+        "prism/audit/report.py",
+        "prism/narrator/refresh.py",
+        "prism/writers/index_writer.py"
+      ]
+    },
+    "prism.writers.manifest.text_hash": {
+      "count": 9,
+      "top": [
+        "prism/maintenance.py",
+        "prism/narrator/refresh.py",
+        "prism/writers/decisions.py",
+        "prism/writers/index_writer.py",
+        "prism/cli.py"
+      ]
+    },
+    "prism.writers.manifest.write_manifest": {
+      "count": 29,
+      "top": [
+        "prism/lifecycle.py",
+        "prism/maintenance.py",
+        "prism/narrator/refresh.py",
+        "prism/writers/decisions.py",
+        "prism/writers/index_writer.py"
+      ]
+    },
+    "prism.writers.modules_md.ModuleGroup": {
+      "count": 2,
+      "top": [
+        "prism/writers/index_writer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.writers.modules_md.group_of": {
+      "count": 2,
+      "top": [
+        "prism/writers/index_writer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.writers.modules_md.module_filename": {
+      "count": 2,
+      "top": [
+        "prism/writers/index_writer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.writers.modules_md.module_groups": {
+      "count": 2,
+      "top": [
+        "prism/writers/index_writer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.writers.modules_md.render_facts": {
+      "count": 2,
+      "top": [
+        "prism/writers/index_writer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.writers.modules_md.render_module_md": {
+      "count": 2,
+      "top": [
+        "prism/writers/index_writer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "prism.writers.narrative.replace_narrative": {
+      "count": 4,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_refresh.py"
+      ]
+    },
+    "prism.writers.narrative.write_narrative": {
+      "count": 4,
+      "top": [
+        "prism/narrator/refresh.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_refresh.py"
+      ]
+    },
+    "prism.writers.obsidian.export_obsidian": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.writers.obsidian.note_name": {
+      "count": 2,
+      "top": [
+        "prism/cli.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "tests.benchmarks.agent_collect.mcp_metrics": {
+      "count": 1,
+      "top": [
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests.benchmarks.agent_measure.records": {
+      "count": 2,
+      "top": [
+        "tests/benchmarks/agent_collect.py",
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests.benchmarks.agent_measure.summarise": {
+      "count": 2,
+      "top": [
+        "tests/benchmarks/agent_collect.py",
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests.benchmarks.agent_prepare.hashes": {
+      "count": 1,
+      "top": [
+        "tests/benchmarks/agent_collect.py"
+      ]
+    },
+    "tests.benchmarks.agent_score.matches_primary": {
+      "count": 1,
+      "top": [
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests.benchmarks.agent_score.mentions": {
+      "count": 1,
+      "top": [
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests.benchmarks.agent_score.score": {
+      "count": 1,
+      "top": [
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests.benchmarks.agent_score.sections": {
+      "count": 1,
+      "top": [
+        "tests/test_agent_measure.py"
+      ]
+    },
+    "tests.benchmarks.edit_bench.changed_files": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_edit_bench.py"
+      ]
+    },
+    "tests.benchmarks.edit_bench.hook_context": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_edit_bench.py"
+      ]
+    },
+    "tests.benchmarks.edit_bench.load_tasks": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_edit_bench.py"
+      ]
+    },
+    "tests.benchmarks.edit_bench.measure": {
+      "count": 0,
+      "top": []
+    },
+    "tests.benchmarks.edit_bench.measure_transcript": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_edit_bench.py"
+      ]
+    },
+    "tests.benchmarks.edit_bench.prepare": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_edit_bench.py"
+      ]
+    },
+    "tests.benchmarks.edit_bench.refresh_hooks": {
+      "count": 0,
+      "top": []
+    },
+    "tests.benchmarks.edit_bench.report": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_edit_bench.py"
+      ]
+    },
+    "tests.benchmarks.edit_bench.run_checks": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_edit_bench.py"
+      ]
+    },
+    "tests.benchmarks.edit_bench.verify": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_edit_bench.py"
+      ]
+    },
+    "tests.benchmarks.retrieval_eval.covered": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_retrieval_eval.py"
+      ]
+    },
+    "tests.benchmarks.retrieval_eval.evaluate": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_retrieval_eval.py"
+      ]
+    },
+    "tests.benchmarks.retrieval_eval.index_fixture": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_retrieval_eval.py"
+      ]
+    },
+    "tests.benchmarks.retrieval_eval.load_cases": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_retrieval_eval.py"
+      ]
+    },
+    "tests.benchmarks.retrieval_eval.summarise": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_retrieval_eval.py"
+      ]
+    },
+    "tests.benchmarks.synth.generate": {
+      "count": 2,
+      "top": [
+        "tests/benchmarks/run.py",
+        "tests/integration/test_viewer.py"
+      ]
+    },
+    "tests.benchmarks.tokens.Task": {
+      "count": 0,
+      "top": []
+    },
+    "tests.benchmarks.tokens.TaskResult": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "tests.benchmarks.tokens.benchmark_repo": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "tests.benchmarks.tokens.edit_loop": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "tests.benchmarks.tokens.run_task": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "tests.benchmarks.tokens.workflow": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_navigator.py"
+      ]
+    },
+    "tests.conftest.NetworkBlocked": {
+      "count": 0,
+      "top": []
+    },
+    "tests.conftest.copy_fixture": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_audit.finding": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_cli.run": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_cli.snapshot": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_freshness.edit": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_freshness.snapshot": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_hooks_mcp.payload": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_hooks_mcp.snapshot": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_incremental.content": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_incremental.edit_add_function": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_incremental.strip_ranks": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_integrations.install": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_integrations.snapshot": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_phase5.FakeEmbedder": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_prompt_hook.payload": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_prompt_hook.snapshot": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_scan.content_files": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_scan.init_and_scan": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_scan.load": {
+      "count": 0,
+      "top": []
+    },
+    "tests.integration.test_viewer.Client": {
+      "count": 1,
+      "top": [
+        "viewer/src/data.ts"
+      ]
+    },
+    "tests.integration.test_viewer.Client.json": {
+      "count": 1,
+      "top": [
+        "viewer/src/data.ts"
+      ]
+    },
+    "tests.integration.test_viewer.Client.request": {
+      "count": 1,
+      "top": [
+        "viewer/src/data.ts"
+      ]
+    },
+    "tests.skills.test_skill_templates.implemented_commands": {
+      "count": 0,
+      "top": []
+    },
+    "tests.skills.test_skill_templates.read": {
+      "count": 16,
+      "top": [
+        "prism/discovery/scanner.py",
+        "prism/navigator/graphify.py",
+        "prism/viewer/server.py",
+        "tests/integration/test_viewer.py",
+        "prism/lifecycle.py"
+      ]
+    },
+    "tests.skills.test_skill_templates.resolve": {
+      "count": 0,
+      "top": []
+    },
+    "tests.skills.test_skill_templates.root_group": {
+      "count": 0,
+      "top": []
+    },
+    "tests.unit.test_edit_bench.apply_reference_solutions": {
+      "count": 0,
+      "top": []
+    },
+    "tests.unit.test_graph.edges": {
+      "count": 0,
+      "top": []
+    },
+    "tests.unit.test_graph.make_table": {
+      "count": 0,
+      "top": []
+    },
+    "tests.unit.test_graphify_hints.exported": {
+      "count": 0,
+      "top": []
+    },
+    "tests.unit.test_phase3_extractors.write": {
+      "count": 53,
+      "top": [
+        "prism/hooks/runner.py",
+        "prism/incremental/lock.py",
+        "prism/writers/activity.py",
+        "prism/writers/json_writer.py",
+        "prism/audit/report.py"
+      ]
+    },
+    "tests.unit.test_python_parser.parse": {
+      "count": 0,
+      "top": []
+    },
+    "tests.unit.test_task_disclosure.index": {
+      "count": 0,
+      "top": []
+    },
+    "tests.unit.test_task_retrieval.covered": {
+      "count": 0,
+      "top": []
+    },
+    "tests.unit.test_treesitter.edges": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.app.App": {
+      "count": 67,
+      "top": [
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py",
+        "prism/navigator/session.py",
+        "prism/viewer/server.py"
+      ]
+    },
+    "viewer.src.app.App.centerOn": {
+      "count": 4,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.clearOverlays": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.closeInspector": {
+      "count": 4,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts",
+        "viewer/src/chrome.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.app.App.describe": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.details": {
+      "count": 3,
+      "top": [
+        "viewer/src/inspector.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.app.App.drillInto": {
+      "count": 3,
+      "top": [
+        "viewer/src/inspector.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.emit": {
+      "count": 49,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py"
+      ]
+    },
+    "viewer.src.app.App.encode": {
+      "count": 62,
+      "top": [
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py",
+        "prism/navigator/session.py",
+        "prism/viewer/server.py"
+      ]
+    },
+    "viewer.src.app.App.ensureCommunities": {
+      "count": 4,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts",
+        "viewer/src/chrome.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.app.App.findPath": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.fit": {
+      "count": 4,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts",
+        "viewer/src/chrome.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.app.App.flashSpectrum": {
+      "count": 2,
+      "top": [
+        "viewer/src/live.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.importancePercentile": {
+      "count": 1,
+      "top": [
+        "viewer/src/inspector.ts"
+      ]
+    },
+    "viewer.src.app.App.invalidateDetails": {
+      "count": 2,
+      "top": [
+        "viewer/src/live.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.isOnScreen": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.jumpTo": {
+      "count": 1,
+      "top": [
+        "viewer/src/inspector.ts"
+      ]
+    },
+    "viewer.src.app.App.load": {
+      "count": 5,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts",
+        "viewer/src/main.ts",
+        "viewer/src/inspector.ts"
+      ]
+    },
+    "viewer.src.app.App.mapToNode": {
+      "count": 3,
+      "top": [
+        "viewer/src/inspector.ts",
+        "viewer/src/live.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.moveFocus": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.node": {
+      "count": 5,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.app.App.on": {
+      "count": 7,
+      "top": [
+        "tests/benchmarks/prism_mcp_client.mjs",
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/hovercard.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.openNode": {
+      "count": 3,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.refresh": {
+      "count": 5,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/nodelist.ts",
+        "viewer/src/live.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.rememberFocus": {
+      "count": 3,
+      "top": [
+        "viewer/src/inspector.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.app.App.select": {
+      "count": 5,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/main.ts",
+        "viewer/src/chrome.ts"
+      ]
+    },
+    "viewer.src.app.App.setBusy": {
+      "count": 5,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts",
+        "viewer/src/main.ts",
+        "viewer/src/inspector.ts"
+      ]
+    },
+    "viewer.src.app.App.setFocus": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.setLevel": {
+      "count": 4,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.setRoot": {
+      "count": 4,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.showBlast": {
+      "count": 3,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.showDiff": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.App.zoom": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.emptyFilters": {
+      "count": 3,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.oneOf": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.app.stateFromUrl": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.chrome.bindChrome": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.chrome.renderChrome": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.chrome.renderEmpty": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.chrome.renderLegend": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.chrome.renderScope": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.controls.applyView": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.controls.bindControls": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.controls.input": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.controls.readFilters": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.controls.renderViews": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.controls.syncFilterInputs": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.data.ApiError": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.data.HttpSource": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.data.StaticSource": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.data.StaticSource.views": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.data.createSource": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.data.getJson": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.data.globToRegExp": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.data.neighbourhood": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.data.postJson": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.data.queryString": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.data.request": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.encode.buildContext": {
+      "count": 47,
+      "top": [
+        "viewer/src/app.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py",
+        "prism/navigator/session.py"
+      ]
+    },
+    "viewer.src.encode.categorical": {
+      "count": 13,
+      "top": [
+        "viewer/src/app.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py",
+        "prism/navigator/session.py"
+      ]
+    },
+    "viewer.src.encode.categoricalScale": {
+      "count": 12,
+      "top": [
+        "viewer/src/app.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py",
+        "prism/navigator/session.py"
+      ]
+    },
+    "viewer.src.encode.communityOf": {
+      "count": 13,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/chrome.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py"
+      ]
+    },
+    "viewer.src.encode.hash": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.encode.heat": {
+      "count": 13,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/chrome.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py"
+      ]
+    },
+    "viewer.src.encode.kindColor": {
+      "count": 14,
+      "top": [
+        "viewer/src/search.ts",
+        "viewer/src/app.ts",
+        "viewer/src/chrome.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py"
+      ]
+    },
+    "viewer.src.encode.legend": {
+      "count": 2,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.encode.lerp": {
+      "count": 2,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/chrome.ts"
+      ]
+    },
+    "viewer.src.encode.max": {
+      "count": 20,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/data.ts",
+        "viewer/src/hovercard.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/nodelist.ts"
+      ]
+    },
+    "viewer.src.encode.nodeColor": {
+      "count": 48,
+      "top": [
+        "viewer/src/app.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py",
+        "prism/navigator/session.py"
+      ]
+    },
+    "viewer.src.encode.nodeSize": {
+      "count": 47,
+      "top": [
+        "viewer/src/app.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py",
+        "prism/navigator/session.py"
+      ]
+    },
+    "viewer.src.encode.nodeType": {
+      "count": 47,
+      "top": [
+        "viewer/src/app.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py",
+        "prism/navigator/session.py"
+      ]
+    },
+    "viewer.src.encode.paletteColor": {
+      "count": 14,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/search.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py"
+      ]
+    },
+    "viewer.src.encode.ramp": {
+      "count": 13,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/chrome.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py"
+      ]
+    },
+    "viewer.src.encode.setTheme": {
+      "count": 3,
+      "top": [
+        "viewer/src/theme.ts",
+        "viewer/src/main.ts",
+        "viewer/src/controls.ts"
+      ]
+    },
+    "viewer.src.encode.sizeValue": {
+      "count": 12,
+      "top": [
+        "viewer/src/app.ts",
+        "prism/audit/record.py",
+        "prism/integrations/base.py",
+        "prism/navigator/cache_db.py",
+        "prism/navigator/session.py"
+      ]
+    },
+    "viewer.src.graph_utils.edgeKey": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.graph_utils.hash01": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.hovercard.HoverCard": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.hovercard.HoverCard.hide": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.hovercard.HoverCard.show": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.inspector.actions": {
+      "count": 3,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.inspector.copy": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.inspector.editorLink": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.inspector.enrich": {
+      "count": 3,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.inspector.header": {
+      "count": 3,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.inspector.inView": {
+      "count": 3,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.inspector.linkList": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.inspector.renderInspector": {
+      "count": 4,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/live.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.inspector.section": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.inspector.shortName": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.inspector.stat": {
+      "count": 46,
+      "top": [
+        "prism/discovery/scanner.py",
+        "prism/hooks/prompt.py",
+        "prism/integrations/git_hooks.py",
+        "prism/maintenance.py",
+        "prism/navigator/graphify.py"
+      ]
+    },
+    "viewer.src.layout.LayoutController": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.layout.LayoutController.save": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.layout.LayoutController.start": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.layout.LayoutController.stop": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.layout.checked": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.layout.value": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.live.bindLive": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.nodelist.NodeList": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.nodelist.NodeList.focus": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.nodelist.NodeList.rebuild": {
+      "count": 0,
+      "top": []
+    },
+    "viewer.src.renderer.Animator": {
+      "count": 2,
+      "top": [
+        "viewer/src/live.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.renderer.Animator.kick": {
+      "count": 2,
+      "top": [
+        "viewer/src/live.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.renderer.bindDragging": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.renderer.createRenderer": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.renderer.drawHighlight": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.renderer.drawLabel": {
+      "count": 1,
+      "top": [
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.search.Search": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.search.Search.focus": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.theme.currentTheme": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.theme.initTheme": {
+      "count": 1,
+      "top": [
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.theme.readPalette": {
+      "count": 2,
+      "top": [
+        "viewer/src/main.ts",
+        "viewer/src/controls.ts"
+      ]
+    },
+    "viewer.src.theme.toggleTheme": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.theme.token": {
+      "count": 2,
+      "top": [
+        "viewer/src/main.ts",
+        "viewer/src/controls.ts"
+      ]
+    },
+    "viewer.src.ui.$": {
+      "count": 9,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/layout.ts"
+      ]
+    },
+    "viewer.src.ui.announce": {
+      "count": 4,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/search.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.ui.el": {
+      "count": 27,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/hovercard.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/nodelist.ts"
+      ]
+    },
+    "viewer.src.ui.formatAgo": {
+      "count": 2,
+      "top": [
+        "viewer/src/inspector.ts",
+        "viewer/src/app.ts"
+      ]
+    },
+    "viewer.src.ui.plural": {
+      "count": 9,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/chrome.ts",
+        "viewer/src/hovercard.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/live.ts"
+      ]
+    },
+    "viewer.src.ui.storage": {
+      "count": 5,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/theme.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.ui.store": {
+      "count": 4,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/theme.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.ui.stored": {
+      "count": 5,
+      "top": [
+        "viewer/src/chrome.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/theme.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.ui.toast": {
+      "count": 7,
+      "top": [
+        "viewer/src/app.ts",
+        "viewer/src/controls.ts",
+        "viewer/src/inspector.ts",
+        "viewer/src/live.ts",
+        "viewer/src/main.ts"
+      ]
+    },
+    "viewer.src.views.isNum": {
+      "count": 1,
+      "top": [
+        "viewer/src/controls.ts"
+      ]
+    },
+    "viewer.src.views.parseView": {
+      "count": 2,
+      "top": [
+        "viewer/src/controls.ts",
+        "viewer/src/main.ts"
+      ]
+    }
+  }
+}
