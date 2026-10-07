@@ -10,6 +10,7 @@ recover. If PRISM is not enabled for this user, or paused, only
 from __future__ import annotations
 
 import importlib
+import os
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -19,14 +20,15 @@ from prism import __version__
 from prism.consent import RepoState, repo_state
 from prism.core.errors import PrismError
 from prism.navigator import api as nav
+from prism.navigator.freshness import refresh_if_stale
 from prism.navigator.store import IndexStore
 from prism.status import compute_status
 from prism.writers.manifest import load_manifest
 
 INSTRUCTIONS = (
-    "PRISM indexes this repository. Call prism_brief once, then prism_search / prism_locate "
-    "to find code and prism_context for a budgeted read list. Read only the listed line ranges. "
-    "Call prism_impact before changing a public symbol."
+    "PRISM indexes this repository. Start every task with prism_task(request): one call returns "
+    "the matching code, every exact string match (exhaustive), call sites and tests. Use "
+    "prism_context or prism_impact only for follow-ups."
 )
 
 
@@ -36,8 +38,10 @@ class PrismTools:
     def __init__(self, root: Path) -> None:
         self.root = root.resolve()
         self._store: IndexStore | None = None
+        self._seen: set[tuple[str, int, int]] = set()  # code already returned this session
 
     def store(self) -> IndexStore:
+        refresh_if_stale(self.root)  # answer from the working tree, whether or not hooks ran
         if self._store is None or not self._store.is_current():
             if self._store is not None:
                 self._store.close()
@@ -56,9 +60,9 @@ class PrismTools:
         """Enable state, index freshness, changed files, drift, stale sections, audit summary."""
         return self.call(lambda: compute_status(self.root).to_dict())
 
-    def prism_brief(self) -> dict[str, Any]:
-        """The project brief (AGENTS.md) plus a one-line freshness status."""
-        return self.call(lambda: nav.op_brief(self.root))
+    def prism_brief(self, full: bool = False) -> dict[str, Any]:
+        """The compact session brief (commands and notes) plus freshness; full=true for AGENTS.md."""
+        return self.call(lambda: nav.op_brief(self.root, full=full))
 
     def prism_search(self, query: str, limit: int = 10, semantic: bool = False) -> dict[str, Any]:
         """Ranked search over symbol names, ids, docstrings, paths, routes, and decisions.
@@ -70,6 +74,15 @@ class PrismTools:
     def prism_locate(self, name: str) -> dict[str, Any]:
         """Resolve a name to candidate symbols/files with exact file:lines."""
         return self.call(lambda: nav.op_locate(self.store(), name))
+
+    def prism_task(self, query: str, budget: int = 2000, repeat: bool = False) -> dict[str, Any]:
+        """Start here. For a request, symbol or file: the matching code with line numbers, every
+        exact occurrence of the strings/names/quantities it mentions (exhaustive, so no grep),
+        call sites, tests and impact. Code returned earlier in this session is referenced, not
+        repeated, unless repeat=true. budget is chars/4, 128-32000."""
+        return self.call(
+            lambda: nav.op_task(self.store(), query, budget, None if repeat else self._seen)
+        )
 
     def prism_context(
         self, target: str, budget: int = 2000, depth: int = 1, with_source: bool = False
@@ -178,8 +191,14 @@ class PrismTools:
         return {"running": True, "url": f"http://127.0.0.1:{info['port']}/?{urlencode(params)}"}
 
 
+# Every tool schema is sent to the model on every turn in most agents, so the default profile
+# is the few tools a coding task needs. `prism_task` also resolves names and free text, which is
+# what `prism_search` and `prism_locate` are for; audit, refresh and decision tools are reached
+# through the CLI and their skills, or by choosing the full profile.
+LEAN_TOOLS = ("prism_task", "prism_context", "prism_impact")
 NAVIGATION_TOOLS = (
     "prism_brief",
+    "prism_task",
     "prism_search",
     "prism_locate",
     "prism_context",
@@ -197,14 +216,23 @@ EXTRA_TOOLS: list[str] = [
     "prism_decisions",
     "prism_decision_record",
 ]
+PROFILES = ("lean", "full")
 
 
-def enabled_tools(root: Path) -> list[str]:
+def resolve_profile(profile: str | None = None) -> str:
+    """`lean` unless `full` is asked for (argument, else PRISM_MCP_PROFILE)."""
+    chosen = (profile or os.environ.get("PRISM_MCP_PROFILE") or "lean").lower()
+    return chosen if chosen in PROFILES else "lean"
+
+
+def enabled_tools(root: Path, profile: str | None = None) -> list[str]:
     manifest = load_manifest(root)
     state = repo_state(root, manifest.get("repo_id") if manifest else None)
     if state is not RepoState.ENABLED:
         return ["prism_status"]
-    return ["prism_status", *NAVIGATION_TOOLS, *EXTRA_TOOLS]
+    if resolve_profile(profile) == "full":
+        return ["prism_status", *NAVIGATION_TOOLS, *EXTRA_TOOLS]
+    return ["prism_status", *LEAN_TOOLS]
 
 
 def _server_class() -> Any:
@@ -215,17 +243,17 @@ def _server_class() -> Any:
         return importlib.import_module("mcp.server.fastmcp").FastMCP
 
 
-def build_server(root: Path) -> Any:
+def build_server(root: Path, profile: str | None = None) -> Any:
     server_cls = _server_class()
     tools = PrismTools(root)
     try:
         server = server_cls("prism", instructions=INSTRUCTIONS, version=__version__)
     except TypeError:  # pragma: no cover - SDK without a version argument
         server = server_cls("prism", instructions=INSTRUCTIONS)
-    for name in enabled_tools(tools.root):
+    for name in enabled_tools(tools.root, profile):
         server.tool(name=name)(getattr(tools, name))
     return server
 
 
-def run(root: Path) -> None:
-    build_server(root).run("stdio")
+def run(root: Path, profile: str | None = None) -> None:
+    build_server(root, profile).run("stdio")
