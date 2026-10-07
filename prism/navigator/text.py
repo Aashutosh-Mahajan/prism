@@ -51,11 +51,101 @@ B = 0.75
 _SUFFIXES = ("ations", "ation", "ings", "ing", "ies", "ers", "er", "ed", "es", "s", "e")
 
 
+# Words that carry no search signal in a natural-language request ("make the app show...").
+# They are dropped from query terms and cannot start or end a phrase literal.
+FILLER_WORDS = STOPWORDS | frozenset(
+    [
+        "about",
+        "after",
+        "am",
+        "been",
+        "being",
+        "did",
+        "doing",
+        "he",
+        "her",
+        "him",
+        "his",
+        "i",
+        "let",
+        "me",
+        "my",
+        "she",
+        "us",
+        "was",
+        "we",
+        "were",
+        "what",
+        "why",
+        "all",
+        "also",
+        "any",
+        "app",
+        "application",
+        "because",
+        "before",
+        "can",
+        "change",
+        "could",
+        "do",
+        "does",
+        "each",
+        "every",
+        "field",
+        "fix",
+        "get",
+        "give",
+        "have",
+        "how",
+        "if",
+        "instead",
+        "into",
+        "its",
+        "just",
+        "like",
+        "make",
+        "may",
+        "more",
+        "must",
+        "need",
+        "not",
+        "now",
+        "only",
+        "other",
+        "our",
+        "out",
+        "please",
+        "should",
+        "so",
+        "some",
+        "stay",
+        "than",
+        "then",
+        "there",
+        "these",
+        "they",
+        "when",
+        "where",
+        "which",
+        "who",
+        "will",
+        "would",
+        "you",
+        "your",
+    ]
+)
+
+
 def stem(word: str) -> str:
     """Light, deterministic suffix stripping so "recording" meets `record` and "enabled"
     meets `enable`. Applied identically to indexed text and queries, so it only has to be
     consistent, not linguistically perfect."""
-    if len(word) <= 4 or not word.isalpha():
+    if not word.isalpha():
+        return word
+    if len(word) == 4:
+        # Short plurals: "kpis" meets "KPI", "ids" meets "id". Keep "class", "bonus", "this".
+        return word[:-1] if word.endswith("s") and not word.endswith(("ss", "us", "is")) else word
+    if len(word) <= 4:
         return word
     for suffix in _SUFFIXES:
         if word.endswith(suffix) and len(word) - len(suffix) >= 3:
