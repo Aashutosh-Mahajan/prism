@@ -28,8 +28,8 @@
       "id": "prism.mcp.server.PrismTools.prism_audit_plan",
       "kind": "method",
       "lines": [
-        135,
-        141
+        154,
+        160
       ],
       "reason": "never called, referenced, or imported (public: may be external API)"
     },
@@ -39,8 +39,8 @@
       "id": "prism.mcp.server.PrismTools.prism_audit_record",
       "kind": "method",
       "lines": [
-        143,
-        147
+        162,
+        166
       ],
       "reason": "never called, referenced, or imported (public: may be external API)"
     },
@@ -50,8 +50,8 @@
       "id": "prism.mcp.server.PrismTools.prism_audit_report",
       "kind": "method",
       "lines": [
-        155,
-        159
+        174,
+        178
       ],
       "reason": "never called, referenced, or imported (public: may be external API)"
     },
@@ -61,8 +61,8 @@
       "id": "prism.mcp.server.PrismTools.prism_audit_update",
       "kind": "method",
       "lines": [
-        149,
-        153
+        168,
+        172
       ],
       "reason": "never called, referenced, or imported (public: may be external API)"
     },
@@ -70,6 +70,72 @@
       "confidence": "possible",
       "file": "prism/mcp/server.py",
       "id": "prism.mcp.server.PrismTools.prism_brief",
+      "kind": "method",
+      "lines": [
+        80,
+        82
+      ],
+      "reason": "never called, referenced, or imported (public: may be external API)"
+    },
+    {
+      "confidence": "possible",
+      "file": "prism/mcp/server.py",
+      "id": "prism.mcp.server.PrismTools.prism_context",
+      "kind": "method",
+      "lines": [
+        122,
+        130
+      ],
+      "reason": "never called, referenced, or imported (public: may be external API)"
+    },
+    {
+      "confidence": "possible",
+      "file": "prism/mcp/server.py",
+      "id": "prism.mcp.server.PrismTools.prism_decision_record",
+      "kind": "method",
+      "lines": [
+        192,
+        208
+      ],
+      "reason": "never called, referenced, or imported (public: may be external API)"
+    },
+    {
+      "confidence": "possible",
+      "file": "prism/mcp/server.py",
+      "id": "prism.mcp.server.PrismTools.prism_decisions",
+      "kind": "method",
+      "lines": [
+        180,
+        190
+      ],
+      "reason": "never called, referenced, or imported (public: may be external API)"
+    },
+    {
+      "confidence": "possible",
+      "file": "prism/mcp/server.py",
+      "id": "prism.mcp.server.PrismTools.prism_graph_view_url",
+      "kind": "method",
+      "lines": [
+        210,
+        226
+      ],
+      "reason": "never called, referenced, or imported (public: may be external API)"
+    },
+    {
+      "confidence": "possible",
+      "file": "prism/mcp/server.py",
+      "id": "prism.mcp.server.PrismTools.prism_impact",
+      "kind": "method",
+      "lines": [
+        132,
+        134
+      ],
+      "reason": "never called, referenced, or imported (public: may be external API)"
+    },
+    {
+      "confidence": "possible",
+      "file": "prism/mcp/server.py",
+      "id": "prism.mcp.server.PrismTools.prism_knowledge",
       "kind": "method",
       "lines": [
         76,
@@ -80,66 +146,11 @@
     {
       "confidence": "possible",
       "file": "prism/mcp/server.py",
-      "id": "prism.mcp.server.PrismTools.prism_context",
-      "kind": "method",
-      "lines": [
-        103,
-        111
-      ],
-      "reason": "never called, referenced, or imported (public: may be external API)"
-    },
-    {
-      "confidence": "possible",
-      "file": "prism/mcp/server.py",
-      "id": "prism.mcp.server.PrismTools.prism_decision_record",
-      "kind": "method",
-      "lines": [
-        173,
-        189
-      ],
-      "reason": "never called, referenced, or imported (public: may be external API)"
-    },
-    {
-      "confidence": "possible",
-      "file": "prism/mcp/server.py",
-      "id": "prism.mcp.server.PrismTools.prism_decisions",
-      "kind": "method",
-      "lines": [
-        161,
-        171
-      ],
-      "reason": "never called, referenced, or imported (public: may be external API)"
-    },
-    {
-      "confidence": "possible",
-      "file": "prism/mcp/server.py",
-      "id": "prism.mcp.server.PrismTools.prism_graph_view_url",
-      "kind": "method",
-      "lines": [
-        191,
-        207
-      ],
-      "reason": "never called, referenced, or imported (public: may be external API)"
-    },
-    {
-      "confidence": "possible",
-      "file": "prism/mcp/server.py",
-      "id": "prism.mcp.server.PrismTools.prism_impact",
-      "kind": "method",
-      "lines": [
-        113,
-        115
-      ],
-      "reason": "never called, referenced, or imported (public: may be external API)"
-    },
-    {
-      "confidence": "possible",
-      "file": "prism/mcp/server.py",
       "id": "prism.mcp.server.PrismTools.prism_module",
       "kind": "method",
       "lines": [
-        117,
-        119
+        136,
+        138
       ],
       "reason": "never called, referenced, or imported (public: may be external API)"
     },
@@ -149,8 +160,8 @@
       "id": "prism.mcp.server.PrismTools.prism_refresh_commit",
       "kind": "method",
       "lines": [
-        129,
-        133
+        148,
+        152
       ],
       "reason": "never called, referenced, or imported (public: may be external API)"
     },
@@ -160,8 +171,8 @@
       "id": "prism.mcp.server.PrismTools.prism_refresh_prepare",
       "kind": "method",
       "lines": [
-        123,
-        127
+        142,
+        146
       ],
       "reason": "never called, referenced, or imported (public: may be external API)"
     },
@@ -171,8 +182,8 @@
       "id": "prism.mcp.server.PrismTools.prism_search",
       "kind": "method",
       "lines": [
-        80,
-        85
+        84,
+        89
       ],
       "reason": "never called, referenced, or imported (public: may be external API)"
     },
@@ -289,33 +300,39 @@
     },
     "prism/_vendor/__init__.py": {
       "centrality": 0.045,
-      "churn": 0,
+      "churn": 1,
       "complexity": {
         "max": 1,
         "total": 0
       },
       "coverage": null,
+      "owners": [
+        "Priyanshu Gupta"
+      ],
       "reasons": [],
-      "risk": 0.159,
+      "risk": 0.221,
       "smells": []
     },
     "prism/_vendor/graphify_retrieval.py": {
-      "centrality": 0.063,
-      "churn": 0,
+      "centrality": 0.065,
+      "churn": 1,
       "complexity": {
         "max": 16,
         "total": 28
       },
       "coverage": null,
+      "owners": [
+        "Priyanshu Gupta"
+      ],
       "reasons": [
         "high complexity (cc 16 in pick_seeds)",
         "no mapped tests"
       ],
-      "risk": 0.388,
+      "risk": 0.45,
       "smells": []
     },
     "prism/audit/__init__.py": {
-      "centrality": 0.062,
+      "centrality": 0.06,
       "churn": 1,
       "complexity": {
         "max": 1,
@@ -330,7 +347,7 @@
       "smells": []
     },
     "prism/audit/plan.py": {
-      "centrality": 0.058,
+      "centrality": 0.057,
       "churn": 1,
       "complexity": {
         "max": 68,
@@ -354,7 +371,7 @@
       ]
     },
     "prism/audit/record.py": {
-      "centrality": 0.058,
+      "centrality": 0.057,
       "churn": 1,
       "complexity": {
         "max": 15,
@@ -378,7 +395,7 @@
       ]
     },
     "prism/audit/report.py": {
-      "centrality": 0.058,
+      "centrality": 0.057,
       "churn": 1,
       "complexity": {
         "max": 41,
@@ -402,7 +419,7 @@
       ]
     },
     "prism/audit/store.py": {
-      "centrality": 0.085,
+      "centrality": 0.084,
       "churn": 1,
       "complexity": {
         "max": 4,
@@ -426,7 +443,7 @@
       ]
     },
     "prism/audit/toolchain_detect.py": {
-      "centrality": 0.065,
+      "centrality": 0.064,
       "churn": 2,
       "complexity": {
         "max": 1,
@@ -441,38 +458,39 @@
       "smells": []
     },
     "prism/cli.py": {
-      "centrality": 0.138,
-      "churn": 3,
+      "centrality": 0.14,
+      "churn": 4,
       "complexity": {
         "max": 15,
         "total": 154
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
         "high complexity (cc 15 in init)",
-        "high churn (3 commits)"
+        "high churn (4 commits)"
       ],
-      "risk": 0.475,
+      "risk": 0.538,
       "smells": [
         {
           "detail": "`except Exception`",
           "kind": "broad_except",
-          "line": 98,
+          "line": 101,
           "symbol": "prism.cli.handle_errors"
         },
         {
           "detail": "`init` is 92 lines",
           "kind": "long_function",
-          "line": 130,
+          "line": 136,
           "symbol": "prism.cli.init"
         }
       ]
     },
     "prism/config.py": {
-      "centrality": 0.311,
+      "centrality": 0.335,
       "churn": 1,
       "complexity": {
         "max": 9,
@@ -485,11 +503,11 @@
       "reasons": [
         "central module (top 10% by importance)"
       ],
-      "risk": 0.295,
+      "risk": 0.3,
       "smells": []
     },
     "prism/consent/__init__.py": {
-      "centrality": 0.176,
+      "centrality": 0.174,
       "churn": 1,
       "complexity": {
         "max": 1,
@@ -500,11 +518,11 @@
         "Aashutosh-Mahajan"
       ],
       "reasons": [],
-      "risk": 0.148,
+      "risk": 0.147,
       "smells": []
     },
     "prism/consent/registry.py": {
-      "centrality": 0.213,
+      "centrality": 0.211,
       "churn": 1,
       "complexity": {
         "max": 6,
@@ -536,7 +554,7 @@
       "smells": []
     },
     "prism/core/errors.py": {
-      "centrality": 0.702,
+      "centrality": 0.746,
       "churn": 1,
       "complexity": {
         "max": 1,
@@ -549,11 +567,11 @@
       "reasons": [
         "central module (top 10% by importance)"
       ],
-      "risk": 0.253,
+      "risk": 0.262,
       "smells": []
     },
     "prism/core/markers.py": {
-      "centrality": 0.138,
+      "centrality": 0.137,
       "churn": 1,
       "complexity": {
         "max": 3,
@@ -585,7 +603,7 @@
       "smells": []
     },
     "prism/core/paths.py": {
-      "centrality": 0.593,
+      "centrality": 0.623,
       "churn": 1,
       "complexity": {
         "max": 5,
@@ -599,11 +617,11 @@
         "no mapped tests",
         "central module (top 10% by importance)"
       ],
-      "risk": 0.391,
+      "risk": 0.397,
       "smells": []
     },
     "prism/core/tokens.py": {
-      "centrality": 0.213,
+      "centrality": 0.234,
       "churn": 1,
       "complexity": {
         "max": 1,
@@ -616,7 +634,7 @@
       "reasons": [
         "central module (top 10% by importance)"
       ],
-      "risk": 0.155,
+      "risk": 0.159,
       "smells": []
     },
     "prism/discovery/__init__.py": {
@@ -635,7 +653,7 @@
       "smells": []
     },
     "prism/discovery/language.py": {
-      "centrality": 0.15,
+      "centrality": 0.149,
       "churn": 1,
       "complexity": {
         "max": 9,
@@ -650,7 +668,7 @@
       "smells": []
     },
     "prism/discovery/scanner.py": {
-      "centrality": 0.207,
+      "centrality": 0.205,
       "churn": 4,
       "complexity": {
         "max": 39,
@@ -721,7 +739,7 @@
       "smells": []
     },
     "prism/drift/structural_diff.py": {
-      "centrality": 0.141,
+      "centrality": 0.14,
       "churn": 1,
       "complexity": {
         "max": 32,
@@ -746,7 +764,7 @@
       ]
     },
     "prism/entry.py": {
-      "centrality": 0.083,
+      "centrality": 0.082,
       "churn": 1,
       "complexity": {
         "max": 4,
@@ -763,7 +781,7 @@
       "smells": []
     },
     "prism/extractors/__init__.py": {
-      "centrality": 0.051,
+      "centrality": 0.05,
       "churn": 1,
       "complexity": {
         "max": 1,
@@ -778,7 +796,7 @@
       "smells": []
     },
     "prism/extractors/base.py": {
-      "centrality": 0.217,
+      "centrality": 0.218,
       "churn": 1,
       "complexity": {
         "max": 2,
@@ -796,7 +814,7 @@
       "smells": []
     },
     "prism/extractors/blast_radius.py": {
-      "centrality": 0.051,
+      "centrality": 0.05,
       "churn": 1,
       "complexity": {
         "max": 18,
@@ -814,7 +832,7 @@
       "smells": []
     },
     "prism/extractors/config_keys.py": {
-      "centrality": 0.051,
+      "centrality": 0.05,
       "churn": 1,
       "complexity": {
         "max": 7,
@@ -831,7 +849,7 @@
       "smells": []
     },
     "prism/extractors/dead_code.py": {
-      "centrality": 0.051,
+      "centrality": 0.05,
       "churn": 1,
       "complexity": {
         "max": 34,
@@ -849,7 +867,7 @@
       "smells": []
     },
     "prism/extractors/entry_points.py": {
-      "centrality": 0.056,
+      "centrality": 0.055,
       "churn": 1,
       "complexity": {
         "max": 21,
@@ -867,7 +885,7 @@
       "smells": []
     },
     "prism/extractors/models.py": {
-      "centrality": 0.051,
+      "centrality": 0.05,
       "churn": 1,
       "complexity": {
         "max": 16,
@@ -926,7 +944,7 @@
       "smells": []
     },
     "prism/extractors/tests_map.py": {
-      "centrality": 0.121,
+      "centrality": 0.127,
       "churn": 2,
       "complexity": {
         "max": 21,
@@ -939,11 +957,11 @@
       "reasons": [
         "high complexity (cc 21 in run)"
       ],
-      "risk": 0.499,
+      "risk": 0.5,
       "smells": []
     },
     "prism/extractors/toolchain.py": {
-      "centrality": 0.136,
+      "centrality": 0.135,
       "churn": 1,
       "complexity": {
         "max": 32,
@@ -956,7 +974,7 @@
       "reasons": [
         "high complexity (cc 32 in _python)"
       ],
-      "risk": 0.44,
+      "risk": 0.439,
       "smells": []
     },
     "prism/graph/__init__.py": {
@@ -971,11 +989,11 @@
         "Aashutosh-Mahajan"
       ],
       "reasons": [],
-      "risk": 0.125,
+      "risk": 0.124,
       "smells": []
     },
     "prism/graph/blast.py": {
-      "centrality": 0.081,
+      "centrality": 0.08,
       "churn": 1,
       "complexity": {
         "max": 7,
@@ -992,7 +1010,7 @@
       "smells": []
     },
     "prism/graph/call_graph.py": {
-      "centrality": 0.14,
+      "centrality": 0.141,
       "churn": 1,
       "complexity": {
         "max": 24,
@@ -1026,7 +1044,7 @@
       "smells": []
     },
     "prism/graph/import_graph.py": {
-      "centrality": 0.058,
+      "centrality": 0.057,
       "churn": 1,
       "complexity": {
         "max": 34,
@@ -1060,7 +1078,7 @@
       "smells": []
     },
     "prism/graph/symbol_table.py": {
-      "centrality": 0.185,
+      "centrality": 0.184,
       "churn": 1,
       "complexity": {
         "max": 16,
@@ -1127,7 +1145,7 @@
       "reasons": [
         "high complexity (cc 21 in collect_git)"
       ],
-      "risk": 0.427,
+      "risk": 0.426,
       "smells": []
     },
     "prism/health/risk.py": {
@@ -1156,7 +1174,7 @@
       ]
     },
     "prism/hooks/__init__.py": {
-      "centrality": 0.11,
+      "centrality": 0.109,
       "churn": 2,
       "complexity": {
         "max": 1,
@@ -1171,7 +1189,7 @@
       "smells": []
     },
     "prism/hooks/entry.py": {
-      "centrality": 0.093,
+      "centrality": 0.092,
       "churn": 1,
       "complexity": {
         "max": 8,
@@ -1199,7 +1217,7 @@
       ]
     },
     "prism/hooks/formats.py": {
-      "centrality": 0.088,
+      "centrality": 0.087,
       "churn": 1,
       "complexity": {
         "max": 4,
@@ -1214,43 +1232,44 @@
       "smells": []
     },
     "prism/hooks/prompt.py": {
-      "centrality": 0.096,
-      "churn": 1,
+      "centrality": 0.095,
+      "churn": 2,
       "complexity": {
-        "max": 15,
-        "total": 38
+        "max": 23,
+        "total": 46
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
-        "high complexity (cc 15 in _retrieve)"
+        "high complexity (cc 23 in _retrieve)"
       ],
-      "risk": 0.342,
+      "risk": 0.494,
       "smells": [
         {
           "detail": "exception silently ignored",
           "kind": "swallowed_exception",
-          "line": 66,
+          "line": 67,
           "symbol": "prism.hooks.prompt._claim_warmup"
         },
         {
           "detail": "`except BaseException`",
           "kind": "broad_except",
-          "line": 158,
+          "line": 174,
           "symbol": "prism.hooks.prompt.user_prompt"
         },
         {
           "detail": "`except BaseException`",
           "kind": "broad_except",
-          "line": 168,
+          "line": 184,
           "symbol": "prism.hooks.prompt.user_prompt"
         }
       ]
     },
     "prism/hooks/runner.py": {
-      "centrality": 0.118,
+      "centrality": 0.117,
       "churn": 2,
       "complexity": {
         "max": 12,
@@ -1263,7 +1282,7 @@
       "reasons": [
         "high complexity (cc 12 in edited_paths)"
       ],
-      "risk": 0.364,
+      "risk": 0.363,
       "smells": [
         {
           "detail": "exception silently ignored",
@@ -1361,7 +1380,7 @@
       ]
     },
     "prism/incremental/lock.py": {
-      "centrality": 0.091,
+      "centrality": 0.092,
       "churn": 1,
       "complexity": {
         "max": 5,
@@ -1391,7 +1410,7 @@
       "smells": []
     },
     "prism/integrations/antigravity.py": {
-      "centrality": 0.053,
+      "centrality": 0.052,
       "churn": 1,
       "complexity": {
         "max": 5,
@@ -1426,7 +1445,7 @@
       "smells": []
     },
     "prism/integrations/claude_code.py": {
-      "centrality": 0.053,
+      "centrality": 0.052,
       "churn": 2,
       "complexity": {
         "max": 10,
@@ -1440,11 +1459,11 @@
         "high complexity (cc 10 in plan_removal)",
         "no mapped tests"
       ],
-      "risk": 0.421,
+      "risk": 0.42,
       "smells": []
     },
     "prism/integrations/codex.py": {
-      "centrality": 0.053,
+      "centrality": 0.052,
       "churn": 1,
       "complexity": {
         "max": 7,
@@ -1461,22 +1480,25 @@
       "smells": []
     },
     "prism/integrations/common.py": {
-      "centrality": 0.165,
-      "churn": 2,
+      "centrality": 0.164,
+      "churn": 3,
       "complexity": {
         "max": 3,
         "total": 6
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
-      "reasons": [],
-      "risk": 0.238,
+      "reasons": [
+        "high churn (3 commits)"
+      ],
+      "risk": 0.3,
       "smells": []
     },
     "prism/integrations/gemini.py": {
-      "centrality": 0.053,
+      "centrality": 0.052,
       "churn": 1,
       "complexity": {
         "max": 8,
@@ -1525,7 +1547,7 @@
       "smells": []
     },
     "prism/integrations/hooks_json.py": {
-      "centrality": 0.105,
+      "centrality": 0.104,
       "churn": 1,
       "complexity": {
         "max": 8,
@@ -1542,7 +1564,7 @@
       "smells": []
     },
     "prism/integrations/other_agents.py": {
-      "centrality": 0.053,
+      "centrality": 0.052,
       "churn": 2,
       "complexity": {
         "max": 12,
@@ -1556,11 +1578,11 @@
         "high complexity (cc 12 in plan_removal)",
         "no mapped tests"
       ],
-      "risk": 0.451,
+      "risk": 0.45,
       "smells": []
     },
     "prism/lifecycle.py": {
-      "centrality": 0.287,
+      "centrality": 0.306,
       "churn": 2,
       "complexity": {
         "max": 41,
@@ -1574,7 +1596,7 @@
         "high complexity (cc 41 in _run_index_locked)",
         "central module (top 10% by importance)"
       ],
-      "risk": 0.532,
+      "risk": 0.536,
       "smells": [
         {
           "detail": "`_run_index_locked` is 88 lines",
@@ -1585,7 +1607,7 @@
       ]
     },
     "prism/maintenance.py": {
-      "centrality": 0.055,
+      "centrality": 0.054,
       "churn": 2,
       "complexity": {
         "max": 37,
@@ -1615,7 +1637,7 @@
       ]
     },
     "prism/mcp/__init__.py": {
-      "centrality": 0.049,
+      "centrality": 0.053,
       "churn": 1,
       "complexity": {
         "max": 1,
@@ -1626,26 +1648,29 @@
         "Aashutosh-Mahajan"
       ],
       "reasons": [],
-      "risk": 0.222,
+      "risk": 0.223,
       "smells": []
     },
     "prism/mcp/server.py": {
-      "centrality": 0.082,
-      "churn": 2,
+      "centrality": 0.085,
+      "churn": 3,
       "complexity": {
         "max": 7,
-        "total": 48
+        "total": 55
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
-      "reasons": [],
-      "risk": 0.281,
+      "reasons": [
+        "high churn (3 commits)"
+      ],
+      "risk": 0.344,
       "smells": []
     },
     "prism/narrator/__init__.py": {
-      "centrality": 0.065,
+      "centrality": 0.064,
       "churn": 1,
       "complexity": {
         "max": 1,
@@ -1656,11 +1681,11 @@
         "Aashutosh-Mahajan"
       ],
       "reasons": [],
-      "risk": 0.126,
+      "risk": 0.125,
       "smells": []
     },
     "prism/narrator/refresh.py": {
-      "centrality": 0.1,
+      "centrality": 0.099,
       "churn": 1,
       "complexity": {
         "max": 14,
@@ -1673,29 +1698,31 @@
       "reasons": [
         "high complexity (cc 14 in refresh_prepare)"
       ],
-      "risk": 0.328,
+      "risk": 0.327,
       "smells": []
     },
     "prism/navigator/api.py": {
-      "centrality": 0.195,
-      "churn": 2,
+      "centrality": 0.232,
+      "churn": 3,
       "complexity": {
         "max": 13,
-        "total": 47
+        "total": 57
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
         "high complexity (cc 13 in op_search)",
+        "high churn (3 commits)",
         "central module (top 10% by importance)"
       ],
-      "risk": 0.394,
+      "risk": 0.464,
       "smells": []
     },
     "prism/navigator/cache_db.py": {
-      "centrality": 0.144,
+      "centrality": 0.152,
       "churn": 4,
       "complexity": {
         "max": 16,
@@ -1710,25 +1737,26 @@
         "high churn (4 commits)",
         "no mapped tests"
       ],
-      "risk": 0.654,
+      "risk": 0.655,
       "smells": []
     },
     "prism/navigator/context_pack.py": {
       "centrality": 0.06,
-      "churn": 1,
+      "churn": 2,
       "complexity": {
         "max": 32,
         "total": 64
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
         "high complexity (cc 32 in _symbol_pack)",
         "no mapped tests"
       ],
-      "risk": 0.525,
+      "risk": 0.587,
       "smells": [
         {
           "detail": "`_symbol_pack` is 130 lines",
@@ -1739,7 +1767,7 @@
       ]
     },
     "prism/navigator/freshness.py": {
-      "centrality": 0.094,
+      "centrality": 0.093,
       "churn": 1,
       "complexity": {
         "max": 8,
@@ -1767,33 +1795,39 @@
       ]
     },
     "prism/navigator/fusion.py": {
-      "centrality": 0.055,
-      "churn": 0,
+      "centrality": 0.054,
+      "churn": 1,
       "complexity": {
         "max": 5,
         "total": 5
       },
       "coverage": null,
+      "owners": [
+        "Priyanshu Gupta"
+      ],
       "reasons": [],
-      "risk": 0.121,
+      "risk": 0.183,
       "smells": []
     },
     "prism/navigator/graphify.py": {
-      "centrality": 0.089,
-      "churn": 0,
+      "centrality": 0.102,
+      "churn": 1,
       "complexity": {
         "max": 25,
         "total": 81
       },
       "coverage": null,
+      "owners": [
+        "Priyanshu Gupta"
+      ],
       "reasons": [
         "high complexity (cc 25 in load)"
       ],
-      "risk": 0.368,
+      "risk": 0.433,
       "smells": []
     },
     "prism/navigator/impact.py": {
-      "centrality": 0.076,
+      "centrality": 0.075,
       "churn": 1,
       "complexity": {
         "max": 18,
@@ -1810,43 +1844,68 @@
       "risk": 0.483,
       "smells": []
     },
+    "prism/navigator/knowledge.py": {
+      "centrality": 0.065,
+      "churn": 0,
+      "complexity": {
+        "max": 8,
+        "total": 10
+      },
+      "coverage": null,
+      "reasons": [
+        "no mapped tests"
+      ],
+      "risk": 0.268,
+      "smells": [
+        {
+          "detail": "query built by string formatting in `execute()`",
+          "kind": "sql_string_formatting",
+          "line": 36,
+          "symbol": "prism.navigator.knowledge.knowledge"
+        }
+      ]
+    },
     "prism/navigator/literals.py": {
-      "centrality": 0.055,
-      "churn": 1,
+      "centrality": 0.054,
+      "churn": 2,
       "complexity": {
         "max": 51,
-        "total": 130
+        "total": 133
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
         "high complexity (cc 51 in find_literals)"
       ],
-      "risk": 0.423,
+      "risk": 0.486,
       "smells": [
         {
-          "detail": "`find_literals` is 105 lines",
+          "detail": "`find_literals` is 109 lines",
           "kind": "long_function",
-          "line": 270,
+          "line": 272,
           "symbol": "prism.navigator.literals.find_literals"
         }
       ]
     },
     "prism/navigator/overview.py": {
       "centrality": 0.05,
-      "churn": 0,
+      "churn": 1,
       "complexity": {
         "max": 53,
         "total": 68
       },
       "coverage": null,
+      "owners": [
+        "Priyanshu Gupta"
+      ],
       "reasons": [
         "high complexity (cc 53 in overview_items)",
         "no mapped tests"
       ],
-      "risk": 0.46,
+      "risk": 0.523,
       "smells": [
         {
           "detail": "`overview_items` is 139 lines",
@@ -1857,7 +1916,7 @@
       ]
     },
     "prism/navigator/render.py": {
-      "centrality": 0.061,
+      "centrality": 0.06,
       "churn": 1,
       "complexity": {
         "max": 29,
@@ -1870,21 +1929,22 @@
       "reasons": [
         "high complexity (cc 29 in render_context)"
       ],
-      "risk": 0.425,
+      "risk": 0.424,
       "smells": []
     },
     "prism/navigator/request.py": {
-      "centrality": 0.045,
-      "churn": 0,
+      "centrality": 0.063,
+      "churn": 1,
       "complexity": {
-        "max": 3,
-        "total": 6
+        "max": 4,
+        "total": 7
       },
       "coverage": null,
-      "reasons": [
-        "no mapped tests"
+      "owners": [
+        "Priyanshu Gupta"
       ],
-      "risk": 0.189,
+      "reasons": [],
+      "risk": 0.17,
       "smells": []
     },
     "prism/navigator/resolve.py": {
@@ -1906,7 +1966,7 @@
       "smells": []
     },
     "prism/navigator/semantic.py": {
-      "centrality": 0.065,
+      "centrality": 0.064,
       "churn": 1,
       "complexity": {
         "max": 9,
@@ -1928,20 +1988,21 @@
       ]
     },
     "prism/navigator/session.py": {
-      "centrality": 0.063,
-      "churn": 1,
+      "centrality": 0.071,
+      "churn": 2,
       "complexity": {
         "max": 13,
         "total": 37
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
         "high complexity (cc 13 in save_seen)"
       ],
-      "risk": 0.305,
+      "risk": 0.369,
       "smells": [
         {
           "detail": "exception silently ignored",
@@ -1958,7 +2019,7 @@
       ]
     },
     "prism/navigator/source_index.py": {
-      "centrality": 0.172,
+      "centrality": 0.184,
       "churn": 1,
       "complexity": {
         "max": 10,
@@ -1971,7 +2032,7 @@
       "reasons": [
         "high complexity (cc 10 in ranked)"
       ],
-      "risk": 0.282,
+      "risk": 0.284,
       "smells": [
         {
           "detail": "`except BaseException`",
@@ -1982,21 +2043,23 @@
       ]
     },
     "prism/navigator/store.py": {
-      "centrality": 0.361,
-      "churn": 2,
+      "centrality": 0.421,
+      "churn": 3,
       "complexity": {
         "max": 23,
         "total": 118
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
         "high complexity (cc 23 in search)",
+        "high churn (3 commits)",
         "central module (top 10% by importance)"
       ],
-      "risk": 0.547,
+      "risk": 0.622,
       "smells": [
         {
           "detail": "query built by string formatting in `execute()`",
@@ -2007,63 +2070,73 @@
       ]
     },
     "prism/navigator/support.py": {
-      "centrality": 0.05,
-      "churn": 0,
+      "centrality": 0.054,
+      "churn": 1,
       "complexity": {
         "max": 28,
-        "total": 28
+        "total": 53
       },
       "coverage": null,
-      "reasons": [
-        "high complexity (cc 28 in local_support)",
-        "no mapped tests"
+      "owners": [
+        "Priyanshu Gupta"
       ],
-      "risk": 0.46,
+      "reasons": [
+        "high complexity (cc 28 in local_support)"
+      ],
+      "risk": 0.423,
       "smells": []
     },
     "prism/navigator/synonyms.py": {
       "centrality": 0.05,
-      "churn": 1,
+      "churn": 2,
       "complexity": {
         "max": 6,
         "total": 7
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
         "no mapped tests"
       ],
-      "risk": 0.298,
+      "risk": 0.36,
       "smells": []
     },
     "prism/navigator/task_pack.py": {
-      "centrality": 0.09,
-      "churn": 1,
+      "centrality": 0.098,
+      "churn": 2,
       "complexity": {
-        "max": 95,
-        "total": 489
+        "max": 112,
+        "total": 586
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
-        "high complexity (cc 95 in _fill)"
+        "high complexity (cc 112 in _fill)"
       ],
-      "risk": 0.431,
+      "risk": 0.495,
       "smells": [
         {
-          "detail": "`_fill` is 204 lines",
+          "detail": "`_fill` is 239 lines",
           "kind": "long_function",
-          "line": 430,
+          "line": 438,
           "symbol": "prism.navigator.task_pack._fill"
+        },
+        {
+          "detail": "`_confidence` is 102 lines",
+          "kind": "long_function",
+          "line": 1403,
+          "symbol": "prism.navigator.task_pack._confidence"
         }
       ]
     },
     "prism/navigator/text.py": {
-      "centrality": 0.283,
+      "centrality": 0.35,
       "churn": 3,
       "complexity": {
         "max": 13,
@@ -2078,7 +2151,7 @@
         "high churn (3 commits)",
         "central module (top 10% by importance)"
       ],
-      "risk": 0.474,
+      "risk": 0.488,
       "smells": []
     },
     "prism/parsing/__init__.py": {
@@ -2129,7 +2202,7 @@
       "smells": []
     },
     "prism/parsing/python_ast.py": {
-      "centrality": 0.143,
+      "centrality": 0.142,
       "churn": 1,
       "complexity": {
         "max": 21,
@@ -2190,7 +2263,7 @@
       ]
     },
     "prism/parsing/treesitter.py": {
-      "centrality": 0.094,
+      "centrality": 0.093,
       "churn": 1,
       "complexity": {
         "max": 42,
@@ -2238,7 +2311,7 @@
       ]
     },
     "prism/status.py": {
-      "centrality": 0.133,
+      "centrality": 0.131,
       "churn": 2,
       "complexity": {
         "max": 9,
@@ -2249,11 +2322,11 @@
         "Aashutosh-Mahajan"
       ],
       "reasons": [],
-      "risk": 0.322,
+      "risk": 0.321,
       "smells": []
     },
     "prism/viewer/api.py": {
-      "centrality": 0.06,
+      "centrality": 0.059,
       "churn": 3,
       "complexity": {
         "max": 19,
@@ -2278,7 +2351,7 @@
       ]
     },
     "prism/viewer/model.py": {
-      "centrality": 0.096,
+      "centrality": 0.095,
       "churn": 3,
       "complexity": {
         "max": 54,
@@ -2292,7 +2365,7 @@
         "high complexity (cc 54 in graph)",
         "high churn (3 commits)"
       ],
-      "risk": 0.557,
+      "risk": 0.556,
       "smells": [
         {
           "detail": "`graph` is 89 lines",
@@ -2303,7 +2376,7 @@
       ]
     },
     "prism/viewer/server.py": {
-      "centrality": 0.06,
+      "centrality": 0.059,
       "churn": 3,
       "complexity": {
         "max": 60,
@@ -2317,7 +2390,7 @@
         "high complexity (cc 60 in make_handler)",
         "high churn (3 commits)"
       ],
-      "risk": 0.55,
+      "risk": 0.549,
       "smells": [
         {
           "detail": "exception silently ignored",
@@ -2411,23 +2484,25 @@
     },
     "prism/writers/agents_md.py": {
       "centrality": 0.101,
-      "churn": 2,
+      "churn": 3,
       "complexity": {
         "max": 21,
         "total": 41
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
-        "high complexity (cc 21 in _facts)"
+        "high complexity (cc 21 in _facts)",
+        "high churn (3 commits)"
       ],
-      "risk": 0.495,
+      "risk": 0.558,
       "smells": []
     },
     "prism/writers/artifacts.py": {
-      "centrality": 0.073,
+      "centrality": 0.074,
       "churn": 1,
       "complexity": {
         "max": 6,
@@ -2442,7 +2517,7 @@
       "smells": []
     },
     "prism/writers/decisions.py": {
-      "centrality": 0.06,
+      "centrality": 0.059,
       "churn": 1,
       "complexity": {
         "max": 14,
@@ -2455,11 +2530,11 @@
       "reasons": [
         "high complexity (cc 14 in add_decision)"
       ],
-      "risk": 0.32,
+      "risk": 0.319,
       "smells": []
     },
     "prism/writers/graph_export.py": {
-      "centrality": 0.055,
+      "centrality": 0.054,
       "churn": 1,
       "complexity": {
         "max": 18,
@@ -2508,7 +2583,7 @@
       ]
     },
     "prism/writers/json_writer.py": {
-      "centrality": 0.534,
+      "centrality": 0.549,
       "churn": 2,
       "complexity": {
         "max": 4,
@@ -2521,7 +2596,7 @@
       "reasons": [
         "central module (top 10% by importance)"
       ],
-      "risk": 0.327,
+      "risk": 0.33,
       "smells": [
         {
           "detail": "exception silently ignored",
@@ -2538,7 +2613,7 @@
       ]
     },
     "prism/writers/manifest.py": {
-      "centrality": 0.299,
+      "centrality": 0.307,
       "churn": 1,
       "complexity": {
         "max": 3,
@@ -2551,7 +2626,7 @@
       "reasons": [
         "central module (top 10% by importance)"
       ],
-      "risk": 0.202,
+      "risk": 0.204,
       "smells": []
     },
     "prism/writers/modules_md.py": {
@@ -2590,7 +2665,7 @@
       "smells": []
     },
     "prism/writers/obsidian.py": {
-      "centrality": 0.055,
+      "centrality": 0.054,
       "churn": 1,
       "complexity": {
         "max": 40,
@@ -2613,6 +2688,34 @@
         }
       ]
     },
+    "prism/writers/task_cache.py": {
+      "centrality": 0.06,
+      "churn": 0,
+      "complexity": {
+        "max": 10,
+        "total": 24
+      },
+      "coverage": null,
+      "reasons": [
+        "high complexity (cc 10 in packet_current)",
+        "no mapped tests"
+      ],
+      "risk": 0.297,
+      "smells": [
+        {
+          "detail": "exception silently ignored",
+          "kind": "swallowed_exception",
+          "line": 52,
+          "symbol": "prism.writers.task_cache.load_packet"
+        },
+        {
+          "detail": "exception silently ignored",
+          "kind": "swallowed_exception",
+          "line": 85,
+          "symbol": "prism.writers.task_cache.save_packet"
+        }
+      ]
+    },
     "tests/__init__.py": {
       "centrality": 0.045,
       "churn": 1,
@@ -2629,7 +2732,7 @@
       "smells": []
     },
     "tests/benchmarks/agent_collect.py": {
-      "centrality": 0.058,
+      "centrality": 0.057,
       "churn": 1,
       "complexity": {
         "max": 17,
@@ -2646,7 +2749,7 @@
       "smells": []
     },
     "tests/benchmarks/agent_measure.py": {
-      "centrality": 0.082,
+      "centrality": 0.081,
       "churn": 1,
       "complexity": {
         "max": 34,
@@ -2724,7 +2827,7 @@
       ]
     },
     "tests/benchmarks/agent_score.py": {
-      "centrality": 0.058,
+      "centrality": 0.057,
       "churn": 1,
       "complexity": {
         "max": 22,
@@ -2741,7 +2844,7 @@
       "smells": []
     },
     "tests/benchmarks/edit_bench.py": {
-      "centrality": 0.083,
+      "centrality": 0.082,
       "churn": 1,
       "complexity": {
         "max": 31,
@@ -2778,20 +2881,23 @@
     },
     "tests/benchmarks/retrieval_economics.py": {
       "centrality": 0.045,
-      "churn": 0,
+      "churn": 1,
       "complexity": {
         "max": 14,
         "total": 14
       },
       "coverage": null,
+      "owners": [
+        "Priyanshu Gupta"
+      ],
       "reasons": [
         "high complexity (cc 14 in main)"
       ],
-      "risk": 0.204,
+      "risk": 0.266,
       "smells": []
     },
     "tests/benchmarks/retrieval_eval.py": {
-      "centrality": 0.083,
+      "centrality": 0.082,
       "churn": 1,
       "complexity": {
         "max": 12,
@@ -2840,7 +2946,7 @@
       "smells": []
     },
     "tests/benchmarks/tokens.py": {
-      "centrality": 0.049,
+      "centrality": 0.048,
       "churn": 1,
       "complexity": {
         "max": 13,
@@ -2857,7 +2963,7 @@
       "smells": []
     },
     "tests/conftest.py": {
-      "centrality": 0.058,
+      "centrality": 0.057,
       "churn": 1,
       "complexity": {
         "max": 4,
@@ -2890,17 +2996,18 @@
     },
     "tests/integration/test_cli.py": {
       "centrality": 0.045,
-      "churn": 1,
+      "churn": 2,
       "complexity": {
         "max": 3,
-        "total": 15
+        "total": 20
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [],
-      "risk": 0.101,
+      "risk": 0.164,
       "smells": []
     },
     "tests/integration/test_freshness.py": {
@@ -2991,15 +3098,15 @@
       "centrality": 0.045,
       "churn": 1,
       "complexity": {
-        "max": 4,
-        "total": 25
+        "max": 6,
+        "total": 31
       },
       "coverage": null,
       "owners": [
         "Aashutosh-Mahajan"
       ],
       "reasons": [],
-      "risk": 0.116,
+      "risk": 0.146,
       "smells": []
     },
     "tests/integration/test_refresh.py": {
@@ -3067,19 +3174,20 @@
     },
     "tests/skills/test_skill_templates.py": {
       "centrality": 0.045,
-      "churn": 1,
+      "churn": 2,
       "complexity": {
         "max": 21,
         "total": 41
       },
       "coverage": null,
       "owners": [
-        "Aashutosh-Mahajan"
+        "Aashutosh-Mahajan",
+        "Priyanshu Gupta"
       ],
       "reasons": [
         "high complexity (cc 21 in test_subcommands_and_flags_exist)"
       ],
-      "risk": 0.371,
+      "risk": 0.434,
       "smells": []
     },
     "tests/test_agent_measure.py": {
@@ -3125,6 +3233,18 @@
       ],
       "reasons": [],
       "risk": 0.071,
+      "smells": []
+    },
+    "tests/unit/test_context_engine.py": {
+      "centrality": 0.045,
+      "churn": 0,
+      "complexity": {
+        "max": 7,
+        "total": 40
+      },
+      "coverage": null,
+      "reasons": [],
+      "risk": 0.099,
       "smells": []
     },
     "tests/unit/test_discovery.py": {
@@ -3189,14 +3309,17 @@
     },
     "tests/unit/test_graphify_hints.py": {
       "centrality": 0.045,
-      "churn": 0,
+      "churn": 1,
       "complexity": {
         "max": 4,
         "total": 7
       },
       "coverage": null,
+      "owners": [
+        "Priyanshu Gupta"
+      ],
       "reasons": [],
-      "risk": 0.054,
+      "risk": 0.116,
       "smells": []
     },
     "tests/unit/test_navigator.py": {
@@ -3244,6 +3367,21 @@
       "risk": 0.146,
       "smells": []
     },
+    "tests/unit/test_request_ranking.py": {
+      "centrality": 0.045,
+      "churn": 1,
+      "complexity": {
+        "max": 2,
+        "total": 6
+      },
+      "coverage": null,
+      "owners": [
+        "Priyanshu Gupta"
+      ],
+      "reasons": [],
+      "risk": 0.086,
+      "smells": []
+    },
     "tests/unit/test_retrieval_eval.py": {
       "centrality": 0.045,
       "churn": 1,
@@ -3261,14 +3399,17 @@
     },
     "tests/unit/test_task_disclosure.py": {
       "centrality": 0.045,
-      "churn": 0,
+      "churn": 1,
       "complexity": {
         "max": 8,
         "total": 27
       },
       "coverage": null,
+      "owners": [
+        "Priyanshu Gupta"
+      ],
       "reasons": [],
-      "risk": 0.114,
+      "risk": 0.176,
       "smells": []
     },
     "tests/unit/test_task_pack.py": {
@@ -3343,9 +3484,9 @@
   "smell_counts": {
     "broad_except": 18,
     "dangerous_call": 1,
-    "long_function": 21,
-    "sql_string_formatting": 1,
-    "swallowed_exception": 25,
+    "long_function": 22,
+    "sql_string_formatting": 2,
+    "swallowed_exception": 27,
     "todo": 1
   },
   "symbols": {
@@ -3354,14 +3495,14 @@
       "reasons": [
         "high complexity (cc 16)"
       ],
-      "risk": 0.377
+      "risk": 0.44
     },
     "prism._vendor.graphify_retrieval.walk_graph": {
       "complexity": 12,
       "reasons": [
         "high complexity (cc 12)"
       ],
-      "risk": 0.317
+      "risk": 0.38
     },
     "prism.audit.plan._git_lines": {
       "complexity": 5,
@@ -3371,40 +3512,40 @@
     "prism.audit.plan._in_scope": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.275
+      "risk": 0.274
     },
     "prism.audit.plan._read": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.245
+      "risk": 0.244
     },
     "prism.audit.plan.build_plan": {
       "complexity": 68,
       "reasons": [
         "high complexity (cc 68)"
       ],
-      "risk": 0.42
+      "risk": 0.419
     },
     "prism.audit.plan.changed_files": {
       "complexity": 6,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.29
+      "risk": 0.289
     },
     "prism.audit.plan.default_base": {
       "complexity": 3,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.245
+      "risk": 0.244
     },
     "prism.audit.plan.smell_score": {
       "complexity": 2,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.23
+      "risk": 0.229
     },
     "prism.audit.record._schema": {
       "complexity": 1,
@@ -3414,26 +3555,26 @@
     "prism.audit.record._similar": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.245
+      "risk": 0.244
     },
     "prism.audit.record._words": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.247
+      "risk": 0.246
     },
     "prism.audit.record.fingerprint": {
       "complexity": 2,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.23
+      "risk": 0.229
     },
     "prism.audit.record.record_finding": {
       "complexity": 15,
       "reasons": [
         "high complexity (cc 15)"
       ],
-      "risk": 0.327
+      "risk": 0.326
     },
     "prism.audit.record.update_status": {
       "complexity": 10,
@@ -3448,7 +3589,7 @@
         "high complexity (cc 12)",
         "no direct test coverage"
       ],
-      "risk": 0.38
+      "risk": 0.379
     },
     "prism.audit.report._detail": {
       "complexity": 6,
@@ -3475,7 +3616,7 @@
       "reasons": [
         "high complexity (cc 41)"
       ],
-      "risk": 0.416
+      "risk": 0.415
     },
     "prism.audit.store.audit_dir": {
       "complexity": 1,
@@ -3489,7 +3630,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.217
+      "risk": 0.216
     },
     "prism.audit.store.load_findings": {
       "complexity": 4,
@@ -3503,7 +3644,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.215
+      "risk": 0.214
     },
     "prism.audit.store.write_findings": {
       "complexity": 1,
@@ -3513,351 +3654,358 @@
       "risk": 0.216
     },
     "prism.cli._defaults": {
-      "complexity": 3,
+      "complexity": 2,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.369
+      "risk": 0.422
     },
     "prism.cli._main": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli._output": {
       "complexity": 2,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.357
+      "risk": 0.42
     },
     "prism.cli._print_scan": {
       "complexity": 3,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.37
+      "risk": 0.432
     },
     "prism.cli._root": {
       "complexity": 3,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.381
+      "risk": 0.443
     },
     "prism.cli._run_hook": {
       "complexity": 2,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.359
+      "risk": 0.42
     },
     "prism.cli._status_line": {
       "complexity": 4,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.384
+      "risk": 0.447
     },
     "prism.cli._store": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.342
+      "risk": 0.404
     },
     "prism.cli._version_callback": {
       "complexity": 2,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.354
+      "risk": 0.417
     },
     "prism.cli.audit_plan_cmd": {
       "complexity": 4,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.384
+      "risk": 0.447
     },
     "prism.cli.audit_record_cmd": {
       "complexity": 6,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.414
+      "risk": 0.477
     },
     "prism.cli.audit_report_cmd": {
       "complexity": 4,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.384
+      "risk": 0.447
     },
     "prism.cli.audit_update_cmd": {
       "complexity": 2,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.354
+      "risk": 0.417
     },
     "prism.cli.brief": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.context": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.302
     },
     "prism.cli.decision_add": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.decision_list": {
       "complexity": 7,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.429
+      "risk": 0.492
     },
     "prism.cli.decision_show": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.disable": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.doctor": {
       "complexity": 6,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.414
+      "risk": 0.477
     },
     "prism.cli.emit": {
       "complexity": 1,
       "reasons": [
         "no direct test coverage",
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.346
+      "risk": 0.408
     },
     "prism.cli.emit_json": {
       "complexity": 1,
       "reasons": [
         "no direct test coverage",
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.347
+      "risk": 0.409
     },
     "prism.cli.enable": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.graph_export": {
       "complexity": 7,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.429
+      "risk": 0.492
     },
     "prism.cli.handle_errors": {
       "complexity": 9,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.459
+      "risk": 0.522
     },
     "prism.cli.hook_post_edit": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.hook_session_start": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.hook_user_prompt": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.impact_cmd": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.init": {
       "complexity": 15,
       "reasons": [
         "high complexity (cc 15)",
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.549
+      "risk": 0.612
     },
     "prism.cli.install": {
       "complexity": 4,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.384
+      "risk": 0.447
+    },
+    "prism.cli.knowledge": {
+      "complexity": 1,
+      "reasons": [
+        "file has high churn (4 commits)"
+      ],
+      "risk": 0.402
     },
     "prism.cli.locate_cmd": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.main": {
       "complexity": 3,
       "reasons": [
         "no direct test coverage",
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.37
+      "risk": 0.432
     },
     "prism.cli.mcp_cmd": {
       "complexity": 3,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.369
+      "risk": 0.432
     },
     "prism.cli.migrate": {
       "complexity": 2,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.354
+      "risk": 0.417
     },
     "prism.cli.module": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.pause": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.refresh_commit_cmd": {
       "complexity": 2,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.354
+      "risk": 0.417
     },
     "prism.cli.refresh_prepare_cmd": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.resume": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.scan_cmd": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.search": {
       "complexity": 1,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.402
     },
     "prism.cli.status": {
       "complexity": 9,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.459
+      "risk": 0.522
     },
     "prism.cli.task": {
       "complexity": 5,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.399
+      "risk": 0.462
     },
     "prism.cli.uninstall": {
       "complexity": 4,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.384
+      "risk": 0.447
     },
     "prism.cli.uninstall_integration": {
       "complexity": 8,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.444
+      "risk": 0.507
     },
     "prism.cli.update_cmd": {
       "complexity": 8,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.444
+      "risk": 0.507
     },
     "prism.cli.view": {
       "complexity": 4,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.384
+      "risk": 0.447
     },
     "prism.cli.watch": {
       "complexity": 2,
       "reasons": [
-        "file has high churn (3 commits)"
+        "file has high churn (4 commits)"
       ],
-      "risk": 0.354
+      "risk": 0.417
     },
     "prism.config._read_toml": {
       "complexity": 2,
@@ -3879,34 +4027,34 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.239
+      "risk": 0.238
     },
     "prism.consent.registry.get_entry": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.124
+      "risk": 0.123
     },
     "prism.consent.registry.load_registry": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.182
+      "risk": 0.181
     },
     "prism.consent.registry.registry_path": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.124
+      "risk": 0.123
     },
     "prism.consent.registry.repo_key": {
       "complexity": 1,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.221
+      "risk": 0.22
     },
     "prism.consent.registry.repo_state": {
       "complexity": 6,
       "reasons": [],
-      "risk": 0.195
+      "risk": 0.194
     },
     "prism.consent.registry.save_registry": {
       "complexity": 4,
@@ -3935,19 +4083,19 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.217
+      "risk": 0.216
     },
     "prism.core.markers.open_marker": {
       "complexity": 1,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.217
+      "risk": 0.216
     },
     "prism.core.markers.parse_regions": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.151
+      "risk": 0.15
     },
     "prism.core.markers.render_region": {
       "complexity": 2,
@@ -3964,21 +4112,21 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.23
+      "risk": 0.229
     },
     "prism.core.paths.find_repo_root": {
       "complexity": 5,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.287
+      "risk": 0.281
     },
     "prism.core.paths.manifest_path": {
       "complexity": 1,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.232
+      "risk": 0.231
     },
     "prism.core.tokens.estimate_tokens": {
       "complexity": 1,
@@ -4047,7 +4195,7 @@
         "no direct test coverage",
         "file has high churn (4 commits)"
       ],
-      "risk": 0.418
+      "risk": 0.417
     },
     "prism.drift.scoring.apply_drift": {
       "complexity": 14,
@@ -4062,17 +4210,17 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.23
+      "risk": 0.229
     },
     "prism.drift.structural_diff._group_of": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.261
+      "risk": 0.26
     },
     "prism.drift.structural_diff._module_section": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.215
+      "risk": 0.214
     },
     "prism.drift.structural_diff.diff": {
       "complexity": 32,
@@ -4080,7 +4228,7 @@
         "high complexity (cc 32)",
         "no direct test coverage"
       ],
-      "risk": 0.515
+      "risk": 0.514
     },
     "prism.drift.structural_diff.snapshot": {
       "complexity": 22,
@@ -4088,7 +4236,7 @@
         "high complexity (cc 22)",
         "no direct test coverage"
       ],
-      "risk": 0.516
+      "risk": 0.515
     },
     "prism.entry.main": {
       "complexity": 4,
@@ -4144,7 +4292,7 @@
     "prism.extractors.entry_points._script_tables": {
       "complexity": 7,
       "reasons": [],
-      "risk": 0.305
+      "risk": 0.304
     },
     "prism.extractors.models.ModelsExtractor.run": {
       "complexity": 15,
@@ -4158,7 +4306,7 @@
       "reasons": [
         "high complexity (cc 16)"
       ],
-      "risk": 0.44
+      "risk": 0.439
     },
     "prism.extractors.project.ProjectExtractor.run": {
       "complexity": 5,
@@ -4193,7 +4341,7 @@
     "prism.extractors.routes._methods_kw": {
       "complexity": 7,
       "reasons": [],
-      "risk": 0.306
+      "risk": 0.305
     },
     "prism.extractors.routes.parse_route_decorator": {
       "complexity": 13,
@@ -4252,12 +4400,12 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.264
+      "risk": 0.263
     },
     "prism.extractors.toolchain.detect_toolchain": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.179
+      "risk": 0.178
     },
     "prism.extractors.toolchain.project_dirs": {
       "complexity": 11,
@@ -4288,7 +4436,7 @@
     "prism.graph.call_graph.Resolver._lookup_in_module": {
       "complexity": 6,
       "reasons": [],
-      "risk": 0.314
+      "risk": 0.311
     },
     "prism.graph.call_graph.Resolver.method_in_class": {
       "complexity": 6,
@@ -4318,7 +4466,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.342
+      "risk": 0.339
     },
     "prism.graph.call_graph.build_call_graph": {
       "complexity": 17,
@@ -4419,17 +4567,17 @@
     "prism.health.coverage._from_json": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.246
+      "risk": 0.245
     },
     "prism.health.coverage._from_xml": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.246
+      "risk": 0.245
     },
     "prism.health.coverage._match": {
       "complexity": 6,
       "reasons": [],
-      "risk": 0.292
+      "risk": 0.291
     },
     "prism.health.coverage.read_coverage": {
       "complexity": 5,
@@ -4458,12 +4606,12 @@
     "prism.health.risk._clamp": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.215
+      "risk": 0.214
     },
     "prism.health.risk._innermost": {
       "complexity": 6,
       "reasons": [],
-      "risk": 0.29
+      "risk": 0.289
     },
     "prism.health.risk.compute_health": {
       "complexity": 53,
@@ -4509,7 +4657,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.325
+      "risk": 0.324
     },
     "prism.hooks.entry.use_utf8": {
       "complexity": 3,
@@ -4526,36 +4674,36 @@
     "prism.hooks.prompt._claim_warmup": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.259
+      "risk": 0.322
     },
     "prism.hooks.prompt._enabled": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.23
+      "risk": 0.292
     },
     "prism.hooks.prompt._retrieve": {
-      "complexity": 15,
+      "complexity": 23,
       "reasons": [
-        "high complexity (cc 15)"
+        "high complexity (cc 23)"
       ],
-      "risk": 0.425
+      "risk": 0.477
     },
     "prism.hooks.prompt.should_retrieve": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.178
+      "risk": 0.24
     },
     "prism.hooks.prompt.user_prompt": {
       "complexity": 12,
       "reasons": [
         "high complexity (cc 12)"
       ],
-      "risk": 0.286
+      "risk": 0.348
     },
     "prism.hooks.runner._log": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.296
+      "risk": 0.295
     },
     "prism.hooks.runner._relative_source_paths": {
       "complexity": 10,
@@ -4594,7 +4742,7 @@
       "reasons": [
         "high complexity (cc 12)"
       ],
-      "risk": 0.344
+      "risk": 0.343
     },
     "prism.hooks.runner.parse_payload": {
       "complexity": 4,
@@ -4640,14 +4788,14 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.275
+      "risk": 0.274
     },
     "prism.incremental.hash_cache.StateCache.close": {
       "complexity": 1,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.216
+      "risk": 0.215
     },
     "prism.incremental.hash_cache.StateCache.get": {
       "complexity": 2,
@@ -4661,14 +4809,14 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.215
+      "risk": 0.214
     },
     "prism.incremental.hash_cache.StateCache.store_parses": {
       "complexity": 8,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.32
+      "risk": 0.319
     },
     "prism.incremental.hash_cache._decode": {
       "complexity": 10,
@@ -4700,14 +4848,14 @@
     "prism.incremental.lock.UpdateLock._expired": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.23
+      "risk": 0.229
     },
     "prism.integrations.all_integrations": {
       "complexity": 2,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.295
+      "risk": 0.294
     },
     "prism.integrations.all_removals": {
       "complexity": 4,
@@ -4753,7 +4901,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.308
+      "risk": 0.307
     },
     "prism.integrations.base.FileChange.kind": {
       "complexity": 3,
@@ -4797,12 +4945,12 @@
     "prism.integrations.base._load_ledger": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.323
+      "risk": 0.322
     },
     "prism.integrations.base._sha": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.278
+      "risk": 0.277
     },
     "prism.integrations.base.apply_changes": {
       "complexity": 9,
@@ -4816,14 +4964,14 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.28
+      "risk": 0.279
     },
     "prism.integrations.base.ledger_path": {
       "complexity": 1,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.279
+      "risk": 0.278
     },
     "prism.integrations.base.load_json": {
       "complexity": 5,
@@ -4842,7 +4990,7 @@
     "prism.integrations.base.read_text": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.289
+      "risk": 0.283
     },
     "prism.integrations.base.remove_changes": {
       "complexity": 11,
@@ -4935,28 +5083,31 @@
     "prism.integrations.common.skill_body": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.355
     },
     "prism.integrations.common.skill_description": {
       "complexity": 3,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.307
+      "risk": 0.37
     },
     "prism.integrations.common.skill_text": {
       "complexity": 1,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.282
+      "risk": 0.344
     },
     "prism.integrations.detect_agents": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.225
+      "risk": 0.224
     },
     "prism.integrations.gemini.GeminiIntegration.detect": {
       "complexity": 2,
@@ -4981,7 +5132,7 @@
     "prism.integrations.get_integration": {
       "complexity": 7,
       "reasons": [],
-      "risk": 0.277
+      "risk": 0.276
     },
     "prism.integrations.git_hooks.GitHooksIntegration.detect": {
       "complexity": 1,
@@ -5053,7 +5204,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.323
+      "risk": 0.322
     },
     "prism.integrations.other_agents.AgentsMdIntegration.__init__": {
       "complexity": 1,
@@ -5114,7 +5265,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.278
+      "risk": 0.277
     },
     "prism.lifecycle.InitPlan.is_noop": {
       "complexity": 1,
@@ -5141,7 +5292,7 @@
       "reasons": [
         "high complexity (cc 41)"
       ],
-      "risk": 0.586
+      "risk": 0.585
     },
     "prism.lifecycle._snapshot_from_disk": {
       "complexity": 5,
@@ -5156,7 +5307,7 @@
     "prism.lifecycle.apply_uninstall": {
       "complexity": 6,
       "reasons": [],
-      "risk": 0.256
+      "risk": 0.255
     },
     "prism.lifecycle.is_initialized": {
       "complexity": 1,
@@ -5173,21 +5324,21 @@
     "prism.lifecycle.plan_uninstall": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.181
+      "risk": 0.18
     },
     "prism.lifecycle.require_manifest": {
       "complexity": 2,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.303
+      "risk": 0.302
     },
     "prism.lifecycle.run_index": {
       "complexity": 1,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.308
+      "risk": 0.306
     },
     "prism.lifecycle.scan": {
       "complexity": 2,
@@ -5204,12 +5355,12 @@
     "prism.lifecycle.set_paused": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.225
+      "risk": 0.224
     },
     "prism.lifecycle.update": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.201
+      "risk": 0.2
     },
     "prism.maintenance.Check.to_dict": {
       "complexity": 1,
@@ -5240,144 +5391,198 @@
     },
     "prism.mcp.server.PrismTools.__init__": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.call": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.302
+      "risk": 0.364
     },
     "prism.mcp.server.PrismTools.prism_audit_plan": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_audit_record": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_audit_report": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_audit_update": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_brief": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_context": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_decision_record": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_decisions": {
       "complexity": 4,
-      "reasons": [],
-      "risk": 0.322
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.384
     },
     "prism.mcp.server.PrismTools.prism_graph_view_url": {
       "complexity": 4,
-      "reasons": [],
-      "risk": 0.322
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.384
     },
     "prism.mcp.server.PrismTools.prism_impact": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
+    },
+    "prism.mcp.server.PrismTools.prism_knowledge": {
+      "complexity": 1,
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_locate": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.177
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.239
     },
     "prism.mcp.server.PrismTools.prism_module": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_refresh_commit": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_refresh_prepare": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_search": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_status": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.mcp.server.PrismTools.prism_task": {
-      "complexity": 2,
-      "reasons": [],
-      "risk": 0.192
+      "complexity": 5,
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.301
     },
     "prism.mcp.server.PrismTools.store": {
       "complexity": 7,
-      "reasons": [],
-      "risk": 0.27
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.333
     },
     "prism.mcp.server._server_class": {
       "complexity": 2,
-      "reasons": [],
-      "risk": 0.293
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.355
     },
     "prism.mcp.server.build_server": {
-      "complexity": 3,
-      "reasons": [],
-      "risk": 0.211
+      "complexity": 6,
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.318
     },
     "prism.mcp.server.enabled_tools": {
       "complexity": 4,
-      "reasons": [],
-      "risk": 0.225
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.286
     },
     "prism.mcp.server.resolve_profile": {
       "complexity": 4,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.323
+      "risk": 0.385
     },
     "prism.mcp.server.run": {
       "complexity": 1,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.277
+      "risk": 0.339
     },
     "prism.narrator.refresh._current": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.26
+      "risk": 0.259
     },
     "prism.narrator.refresh._facts_for": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.275
+      "risk": 0.274
     },
     "prism.narrator.refresh._file_and_region": {
       "complexity": 3,
@@ -5410,54 +5615,77 @@
     },
     "prism.navigator.api._has_narrative": {
       "complexity": 2,
-      "reasons": [],
-      "risk": 0.293
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.355
     },
     "prism.navigator.api.freshness_line": {
       "complexity": 7,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.368
+      "risk": 0.431
     },
     "prism.navigator.api.op_brief": {
       "complexity": 3,
-      "reasons": [],
-      "risk": 0.21
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.272
     },
     "prism.navigator.api.op_context": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.188
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.249
     },
     "prism.navigator.api.op_impact": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.18
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.242
+    },
+    "prism.navigator.api.op_knowledge": {
+      "complexity": 1,
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.24
     },
     "prism.navigator.api.op_locate": {
       "complexity": 4,
-      "reasons": [],
-      "risk": 0.224
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.286
     },
     "prism.navigator.api.op_module": {
       "complexity": 13,
       "reasons": [
-        "high complexity (cc 13)"
+        "high complexity (cc 13)",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.359
+      "risk": 0.421
     },
     "prism.navigator.api.op_search": {
       "complexity": 13,
       "reasons": [
-        "high complexity (cc 13)"
+        "high complexity (cc 13)",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.361
+      "risk": 0.423
     },
     "prism.navigator.api.op_task": {
-      "complexity": 3,
-      "reasons": [],
-      "risk": 0.227
+      "complexity": 12,
+      "reasons": [
+        "high complexity (cc 12)",
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.427
     },
     "prism.navigator.cache_db._build": {
       "complexity": 16,
@@ -5465,14 +5693,14 @@
         "high complexity (cc 16)",
         "file has high churn (4 commits)"
       ],
-      "risk": 0.631
+      "risk": 0.63
     },
     "prism.navigator.cache_db._build_file": {
       "complexity": 4,
       "reasons": [
         "file has high churn (4 commits)"
       ],
-      "risk": 0.45
+      "risk": 0.449
     },
     "prism.navigator.cache_db._build_optional": {
       "complexity": 16,
@@ -5503,7 +5731,7 @@
         "no direct test coverage",
         "file has high churn (4 commits)"
       ],
-      "risk": 0.407
+      "risk": 0.406
     },
     "prism.navigator.cache_db.fingerprint": {
       "complexity": 2,
@@ -5511,7 +5739,7 @@
         "no direct test coverage",
         "file has high churn (4 commits)"
       ],
-      "risk": 0.423
+      "risk": 0.422
     },
     "prism.navigator.cache_db.open_cache": {
       "complexity": 3,
@@ -5524,48 +5752,48 @@
     "prism.navigator.context_pack._Item.to_dict": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.229
+      "risk": 0.292
     },
     "prism.navigator.context_pack._file_pack": {
       "complexity": 18,
       "reasons": [
         "high complexity (cc 18)"
       ],
-      "risk": 0.471
+      "risk": 0.534
     },
     "prism.navigator.context_pack._fit": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.245
+      "risk": 0.307
     },
     "prism.navigator.context_pack._norm_rank": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.244
+      "risk": 0.307
     },
     "prism.navigator.context_pack._read_source": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.229
+      "risk": 0.292
     },
     "prism.navigator.context_pack._slice_tokens": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.214
+      "risk": 0.277
     },
     "prism.navigator.context_pack._symbol_pack": {
       "complexity": 32,
       "reasons": [
         "high complexity (cc 32)"
       ],
-      "risk": 0.516
+      "risk": 0.579
     },
     "prism.navigator.context_pack.build_context": {
       "complexity": 3,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.248
+      "risk": 0.31
     },
     "prism.navigator.freshness.caches_ready": {
       "complexity": 4,
@@ -5575,7 +5803,7 @@
     "prism.navigator.freshness.refresh_if_stale": {
       "complexity": 8,
       "reasons": [],
-      "risk": 0.226
+      "risk": 0.225
     },
     "prism.navigator.freshness.warm_caches": {
       "complexity": 2,
@@ -5585,12 +5813,12 @@
     "prism.navigator.fusion.fuse_files": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.113
+      "risk": 0.175
     },
     "prism.navigator.graphify.GraphifyGraph.__init__": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.197
+      "risk": 0.259
     },
     "prism.navigator.graphify.GraphifyGraph.hints": {
       "complexity": 23,
@@ -5598,26 +5826,26 @@
         "high complexity (cc 23)",
         "no direct test coverage"
       ],
-      "risk": 0.452
+      "risk": 0.514
     },
     "prism.navigator.graphify.GraphifyGraph.load": {
       "complexity": 25,
       "reasons": [
         "high complexity (cc 25)"
       ],
-      "risk": 0.352
+      "risk": 0.415
     },
     "prism.navigator.graphify._relative_file": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.212
+      "risk": 0.274
     },
     "prism.navigator.graphify._verified_hint": {
       "complexity": 13,
       "reasons": [
         "high complexity (cc 13)"
       ],
-      "risk": 0.332
+      "risk": 0.394
     },
     "prism.navigator.graphify.graphify_hints": {
       "complexity": 11,
@@ -5625,7 +5853,7 @@
         "high complexity (cc 11)",
         "no direct test coverage"
       ],
-      "risk": 0.302
+      "risk": 0.365
     },
     "prism.navigator.impact._reverse_calls": {
       "complexity": 2,
@@ -5651,115 +5879,131 @@
         "high complexity (cc 18)",
         "no direct test coverage"
       ],
-      "risk": 0.471
+      "risk": 0.47
+    },
+    "prism.navigator.knowledge.knowledge": {
+      "complexity": 8,
+      "reasons": [
+        "no direct test coverage"
+      ],
+      "risk": 0.259
+    },
+    "prism.navigator.knowledge.render_knowledge": {
+      "complexity": 2,
+      "reasons": [
+        "no direct test coverage"
+      ],
+      "risk": 0.167
     },
     "prism.navigator.literals.Evidence.complete": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.229
+      "risk": 0.292
     },
     "prism.navigator.literals.Evidence.line_weight": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.214
+      "risk": 0.277
     },
     "prism.navigator.literals.Evidence.to_dict": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.274
+      "risk": 0.337
     },
     "prism.navigator.literals.EvidenceResult.hit_lines": {
       "complexity": 3,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.244
+      "risk": 0.307
     },
     "prism.navigator.literals.Occurrence.snippet": {
       "complexity": 4,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.261
+      "risk": 0.323
     },
     "prism.navigator.literals.Occurrence.to_dict": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.214
+      "risk": 0.277
     },
     "prism.navigator.literals._Matches.__init__": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.214
+      "risk": 0.277
     },
     "prism.navigator.literals._dedupe": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.217
+      "risk": 0.279
     },
     "prism.navigator.literals._identifier_candidates": {
       "complexity": 7,
       "reasons": [],
-      "risk": 0.304
+      "risk": 0.367
     },
     "prism.navigator.literals._identifier_regex": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.214
+      "risk": 0.277
     },
     "prism.navigator.literals._literal": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.274
+      "risk": 0.337
     },
     "prism.navigator.literals._phrase_regex": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.229
+      "risk": 0.292
     },
     "prism.navigator.literals._phrases": {
       "complexity": 9,
       "reasons": [],
-      "risk": 0.334
+      "risk": 0.397
     },
     "prism.navigator.literals._quantities": {
       "complexity": 9,
       "reasons": [],
-      "risk": 0.334
+      "risk": 0.397
     },
     "prism.navigator.literals._quantity_regex": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.259
+      "risk": 0.322
     },
     "prism.navigator.literals._quoted_spans": {
-      "complexity": 7,
-      "reasons": [],
-      "risk": 0.304
+      "complexity": 10,
+      "reasons": [
+        "high complexity (cc 10)"
+      ],
+      "risk": 0.312
     },
     "prism.navigator.literals._scan": {
       "complexity": 6,
       "reasons": [],
-      "risk": 0.289
+      "risk": 0.352
     },
     "prism.navigator.literals._target_numbers": {
       "complexity": 7,
       "reasons": [],
-      "risk": 0.306
+      "risk": 0.368
     },
     "prism.navigator.literals.find_literals": {
       "complexity": 51,
       "reasons": [
         "high complexity (cc 51)"
       ],
-      "risk": 0.415
+      "risk": 0.477
     },
     "prism.navigator.literals.looks_like_code": {
       "complexity": 4,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.26
+      "risk": 0.322
     },
     "prism.navigator.overview.overview_items": {
       "complexity": 53,
@@ -5767,7 +6011,7 @@
         "high complexity (cc 53)",
         "no direct test coverage"
       ],
-      "risk": 0.453
+      "risk": 0.515
     },
     "prism.navigator.overview.render_overview": {
       "complexity": 13,
@@ -5775,14 +6019,14 @@
         "high complexity (cc 13)",
         "no direct test coverage"
       ],
-      "risk": 0.334
+      "risk": 0.396
     },
     "prism.navigator.overview.wants_overview": {
       "complexity": 2,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.168
+      "risk": 0.229
     },
     "prism.navigator.render._lines": {
       "complexity": 3,
@@ -5819,18 +6063,14 @@
       "risk": 0.189
     },
     "prism.navigator.request.request_focus": {
-      "complexity": 3,
-      "reasons": [
-        "no direct test coverage"
-      ],
-      "risk": 0.182
+      "complexity": 4,
+      "reasons": [],
+      "risk": 0.163
     },
     "prism.navigator.request.request_operations": {
       "complexity": 3,
-      "reasons": [
-        "no direct test coverage"
-      ],
-      "risk": 0.182
+      "reasons": [],
+      "risk": 0.145
     },
     "prism.navigator.resolve.Candidate.to_dict": {
       "complexity": 2,
@@ -5845,7 +6085,7 @@
     "prism.navigator.resolve._suggestions": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.231
+      "risk": 0.23
     },
     "prism.navigator.resolve._sym_candidate": {
       "complexity": 1,
@@ -5858,7 +6098,7 @@
         "high complexity (cc 16)",
         "no direct test coverage"
       ],
-      "risk": 0.441
+      "risk": 0.44
     },
     "prism.navigator.resolve.resolve_target": {
       "complexity": 28,
@@ -5893,7 +6133,7 @@
     "prism.navigator.semantic._vectors": {
       "complexity": 7,
       "reasons": [],
-      "risk": 0.305
+      "risk": 0.304
     },
     "prism.navigator.semantic.get_embedder": {
       "complexity": 2,
@@ -5919,39 +6159,38 @@
     "prism.navigator.session._hashes": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.26
+      "risk": 0.322
     },
     "prism.navigator.session._path": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.215
+      "risk": 0.277
     },
     "prism.navigator.session._prune": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.26
+      "risk": 0.322
     },
     "prism.navigator.session.load_seen": {
       "complexity": 12,
       "reasons": [
         "high complexity (cc 12)"
       ],
-      "risk": 0.28
+      "risk": 0.343
     },
     "prism.navigator.session.save_seen": {
       "complexity": 13,
       "reasons": [
-        "high complexity (cc 13)",
-        "no direct test coverage"
+        "high complexity (cc 13)"
       ],
-      "risk": 0.395
+      "risk": 0.358
     },
     "prism.navigator.session.session_id": {
       "complexity": 3,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.244
+      "risk": 0.307
     },
     "prism.navigator.source_index.SourceIndex.__enter__": {
       "complexity": 1,
@@ -5978,7 +6217,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.216
+      "risk": 0.215
     },
     "prism.navigator.source_index.SourceIndex.df": {
       "complexity": 2,
@@ -5999,7 +6238,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.23
+      "risk": 0.229
     },
     "prism.navigator.source_index.SourceIndex.paths_with": {
       "complexity": 3,
@@ -6045,14 +6284,14 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.275
+      "risk": 0.274
     },
     "prism.navigator.source_index.read_indexed_source": {
       "complexity": 5,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.278
+      "risk": 0.277
     },
     "prism.navigator.source_index.search_sources": {
       "complexity": 1,
@@ -6068,312 +6307,374 @@
     },
     "prism.navigator.store.IndexStore.__init__": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.navigator.store.IndexStore._is_test": {
       "complexity": 2,
-      "reasons": [],
-      "risk": 0.293
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore._mod": {
       "complexity": 3,
-      "reasons": [],
-      "risk": 0.315
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.377
     },
     "prism.navigator.store.IndexStore._sym": {
       "complexity": 2,
-      "reasons": [],
-      "risk": 0.298
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.36
     },
     "prism.navigator.store.IndexStore._syms": {
       "complexity": 2,
-      "reasons": [],
-      "risk": 0.306
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.367
     },
     "prism.navigator.store.IndexStore.all_files": {
       "complexity": 2,
-      "reasons": [],
-      "risk": 0.292
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.354
     },
     "prism.navigator.store.IndexStore.all_symbols": {
       "complexity": 1,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.277
+      "risk": 0.339
     },
     "prism.navigator.store.IndexStore.blast": {
       "complexity": 2,
-      "reasons": [],
-      "risk": 0.292
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.354
     },
     "prism.navigator.store.IndexStore.call_edges": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.293
+      "risk": 0.356
     },
     "prism.navigator.store.IndexStore.callees": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.293
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore.callers": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.293
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore.children": {
       "complexity": 1,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.277
+      "risk": 0.339
     },
     "prism.navigator.store.IndexStore.close": {
       "complexity": 1,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.277
+      "risk": 0.34
     },
     "prism.navigator.store.IndexStore.cochanged": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.354
     },
     "prism.navigator.store.IndexStore.config_reads": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.354
     },
     "prism.navigator.store.IndexStore.externals_of": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.354
     },
     "prism.navigator.store.IndexStore.file_exists": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.178
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.24
     },
     "prism.navigator.store.IndexStore.file_language": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.354
     },
     "prism.navigator.store.IndexStore.files_with_suffix": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.293
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore.findings": {
       "complexity": 5,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.338
+      "risk": 0.4
     },
     "prism.navigator.store.IndexStore.health_file": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore.health_symbol": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.354
     },
     "prism.navigator.store.IndexStore.import_edges": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.293
+      "risk": 0.356
     },
     "prism.navigator.store.IndexStore.importers_of": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore.imports_of": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.293
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore.is_current": {
       "complexity": 2,
-      "reasons": [],
-      "risk": 0.193
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.255
     },
     "prism.navigator.store.IndexStore.model": {
       "complexity": 2,
-      "reasons": [],
-      "risk": 0.292
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.354
     },
     "prism.navigator.store.IndexStore.module": {
       "complexity": 1,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.279
+      "risk": 0.341
     },
     "prism.navigator.store.IndexStore.module_for_file": {
       "complexity": 1,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.278
+      "risk": 0.34
     },
     "prism.navigator.store.IndexStore.modules": {
       "complexity": 4,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.323
+      "risk": 0.385
     },
     "prism.navigator.store.IndexStore.modules_with_prefix": {
       "complexity": 4,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.322
+      "risk": 0.384
     },
     "prism.navigator.store.IndexStore.open": {
       "complexity": 3,
-      "reasons": [],
-      "risk": 0.244
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.306
     },
     "prism.navigator.store.IndexStore.open_findings": {
       "complexity": 7,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.367
+      "risk": 0.429
     },
     "prism.navigator.store.IndexStore.routes": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.354
     },
     "prism.navigator.store.IndexStore.routes_for_handler": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.354
     },
     "prism.navigator.store.IndexStore.search": {
       "complexity": 23,
       "reasons": [
         "high complexity (cc 23)",
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.578
+      "risk": 0.64
     },
     "prism.navigator.store.IndexStore.symbol": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.182
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.244
     },
     "prism.navigator.store.IndexStore.symbol_at": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.293
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore.symbol_names": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.295
+      "risk": 0.357
     },
     "prism.navigator.store.IndexStore.symbols_in_file": {
       "complexity": 1,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.278
+      "risk": 0.34
     },
     "prism.navigator.store.IndexStore.symbols_named": {
       "complexity": 1,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.277
+      "risk": 0.34
     },
     "prism.navigator.store.IndexStore.symbols_with_suffix": {
       "complexity": 1,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.277
+      "risk": 0.34
     },
     "prism.navigator.store.IndexStore.test_files": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore.tests_for_file": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.293
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore.tests_for_symbol": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.292
+      "risk": 0.355
     },
     "prism.navigator.store.IndexStore.top_symbols": {
       "complexity": 2,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.293
+      "risk": 0.355
     },
     "prism.navigator.store.SymbolRow.lines": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.277
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.339
     },
     "prism.navigator.store._escape_like": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.281
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.343
     },
     "prism.navigator.support.local_support": {
       "complexity": 28,
@@ -6381,207 +6682,233 @@
         "high complexity (cc 28)",
         "no direct test coverage"
       ],
-      "risk": 0.452
+      "risk": 0.514
+    },
+    "prism.navigator.support.produces_shape": {
+      "complexity": 25,
+      "reasons": [
+        "high complexity (cc 25)"
+      ],
+      "risk": 0.416
     },
     "prism.navigator.synonyms._build": {
       "complexity": 6,
       "reasons": [],
-      "risk": 0.289
+      "risk": 0.352
     },
     "prism.navigator.synonyms.related_terms": {
       "complexity": 1,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.215
+      "risk": 0.277
     },
     "prism.navigator.task_pack._coherent_classes": {
       "complexity": 22,
       "reasons": [
         "high complexity (cc 22)"
       ],
-      "risk": 0.514
+      "risk": 0.577
     },
     "prism.navigator.task_pack._common_prefix": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.244
+      "risk": 0.307
     },
     "prism.navigator.task_pack._confidence": {
-      "complexity": 39,
+      "complexity": 51,
       "reasons": [
-        "high complexity (cc 39)"
+        "high complexity (cc 51)"
       ],
-      "risk": 0.514
+      "risk": 0.577
+    },
+    "prism.navigator.task_pack._constructions": {
+      "complexity": 16,
+      "reasons": [
+        "high complexity (cc 16)"
+      ],
+      "risk": 0.502
     },
     "prism.navigator.task_pack._definitions": {
       "complexity": 19,
       "reasons": [
         "high complexity (cc 19)"
       ],
-      "risk": 0.484
+      "risk": 0.547
+    },
+    "prism.navigator.task_pack._edit_evidence": {
+      "complexity": 28,
+      "reasons": [
+        "high complexity (cc 28)"
+      ],
+      "risk": 0.577
     },
     "prism.navigator.task_pack._enclosing": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.274
+      "risk": 0.337
     },
     "prism.navigator.task_pack._fill": {
-      "complexity": 95,
+      "complexity": 112,
       "reasons": [
-        "high complexity (cc 95)"
+        "high complexity (cc 112)"
       ],
-      "risk": 0.516
+      "risk": 0.577
     },
     "prism.navigator.task_pack._fit_blocks": {
-      "complexity": 22,
+      "complexity": 24,
       "reasons": [
-        "high complexity (cc 22)"
+        "high complexity (cc 24)"
       ],
-      "risk": 0.515
+      "risk": 0.577
     },
     "prism.navigator.task_pack._flow_blocks": {
       "complexity": 29,
       "reasons": [
         "high complexity (cc 29)"
       ],
-      "risk": 0.514
+      "risk": 0.577
     },
     "prism.navigator.task_pack._graphify_blocks": {
       "complexity": 8,
       "reasons": [],
-      "risk": 0.319
+      "risk": 0.382
     },
     "prism.navigator.task_pack._group_blocks": {
-      "complexity": 18,
+      "complexity": 20,
       "reasons": [
-        "high complexity (cc 18)"
+        "high complexity (cc 20)"
       ],
-      "risk": 0.469
+      "risk": 0.562
     },
     "prism.navigator.task_pack._intent": {
       "complexity": 6,
       "reasons": [],
-      "risk": 0.289
+      "risk": 0.352
     },
     "prism.navigator.task_pack._links": {
-      "complexity": 18,
+      "complexity": 20,
       "reasons": [
-        "high complexity (cc 18)"
+        "high complexity (cc 20)"
       ],
-      "risk": 0.469
+      "risk": 0.562
     },
     "prism.navigator.task_pack._loc": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.246
+      "risk": 0.309
     },
     "prism.navigator.task_pack._margin": {
       "complexity": 6,
       "reasons": [],
-      "risk": 0.29
+      "risk": 0.352
     },
     "prism.navigator.task_pack._named_by_request": {
       "complexity": 7,
       "reasons": [],
-      "risk": 0.305
+      "risk": 0.367
+    },
+    "prism.navigator.task_pack._output_fields": {
+      "complexity": 8,
+      "reasons": [],
+      "risk": 0.382
     },
     "prism.navigator.task_pack._overview": {
       "complexity": 29,
       "reasons": [
         "high complexity (cc 29)"
       ],
-      "risk": 0.516
+      "risk": 0.577
     },
     "prism.navigator.task_pack._partial_block": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.245
+      "risk": 0.307
     },
     "prism.navigator.task_pack._primaries": {
       "complexity": 14,
       "reasons": [
         "high complexity (cc 14)"
       ],
-      "risk": 0.409
+      "risk": 0.472
     },
     "prism.navigator.task_pack._query_terms": {
       "complexity": 13,
       "reasons": [
         "high complexity (cc 13)"
       ],
-      "risk": 0.394
+      "risk": 0.457
     },
     "prism.navigator.task_pack._read_next": {
-      "complexity": 14,
+      "complexity": 20,
       "reasons": [
-        "high complexity (cc 14)"
+        "high complexity (cc 20)"
       ],
-      "risk": 0.409
+      "risk": 0.562
     },
     "prism.navigator.task_pack._reinforce": {
       "complexity": 10,
       "reasons": [
         "high complexity (cc 10)"
       ],
-      "risk": 0.349
+      "risk": 0.412
     },
     "prism.navigator.task_pack._related_tests": {
       "complexity": 9,
       "reasons": [],
-      "risk": 0.334
+      "risk": 0.397
     },
     "prism.navigator.task_pack._render_source": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.23
+      "risk": 0.292
     },
     "prism.navigator.task_pack._select": {
       "complexity": 26,
       "reasons": [
         "high complexity (cc 26)"
       ],
-      "risk": 0.514
+      "risk": 0.577
     },
     "prism.navigator.task_pack._size": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.218
+      "risk": 0.278
     },
     "prism.navigator.task_pack._snippet": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.244
+      "risk": 0.307
     },
     "prism.navigator.task_pack._support_blocks": {
-      "complexity": 5,
+      "complexity": 8,
       "reasons": [],
-      "risk": 0.274
+      "risk": 0.382
     },
     "prism.navigator.task_pack._unseen_ranges": {
       "complexity": 9,
       "reasons": [],
-      "risk": 0.337
+      "risk": 0.399
     },
     "prism.navigator.task_pack._windows": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.259
+      "risk": 0.322
     },
     "prism.navigator.task_pack.build_task": {
-      "complexity": 10,
+      "complexity": 11,
       "reasons": [
-        "high complexity (cc 10)",
+        "high complexity (cc 11)",
         "no direct test coverage"
       ],
-      "risk": 0.359
+      "risk": 0.429
     },
     "prism.navigator.task_pack.render_task": {
       "complexity": 37,
       "reasons": [
         "high complexity (cc 37)"
       ],
-      "risk": 0.42
+      "risk": 0.482
     },
     "prism.navigator.text.bm25": {
       "complexity": 1,
@@ -6605,7 +6932,7 @@
         "no direct test coverage",
         "file has high churn (3 commits)"
       ],
-      "risk": 0.371
+      "risk": 0.37
     },
     "prism.navigator.text.tokenize": {
       "complexity": 9,
@@ -6622,14 +6949,14 @@
     "prism.parsing.base_parser.get_parser": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.172
+      "risk": 0.171
     },
     "prism.parsing.base_parser.register_parser": {
       "complexity": 1,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.217
+      "risk": 0.216
     },
     "prism.parsing.modules.module_name": {
       "complexity": 13,
@@ -6732,7 +7059,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.3
+      "risk": 0.299
     },
     "prism.parsing.python_facts._dotted": {
       "complexity": 1,
@@ -6786,12 +7113,12 @@
     "prism.parsing.smells._Visitor._function": {
       "complexity": 9,
       "reasons": [],
-      "risk": 0.336
+      "risk": 0.335
     },
     "prism.parsing.smells._Visitor.generic_visit": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.278
+      "risk": 0.277
     },
     "prism.parsing.smells._Visitor.visit_Assign": {
       "complexity": 10,
@@ -6842,12 +7169,12 @@
       "reasons": [
         "high complexity (cc 17)"
       ],
-      "risk": 0.455
+      "risk": 0.454
     },
     "prism.parsing.smells._swallows": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.26
+      "risk": 0.259
     },
     "prism.parsing.smells._todos": {
       "complexity": 5,
@@ -6857,7 +7184,7 @@
     "prism.parsing.smells._unreachable": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.249
+      "risk": 0.248
     },
     "prism.parsing.smells._unused_imports": {
       "complexity": 20,
@@ -7014,7 +7341,7 @@
       "reasons": [
         "high complexity (cc 15)"
       ],
-      "risk": 0.426
+      "risk": 0.425
     },
     "prism.parsing.treesitter.JavaScriptParser._dotted": {
       "complexity": 8,
@@ -7065,7 +7392,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.245
+      "risk": 0.244
     },
     "prism.parsing.treesitter.JavaScriptParser.symbol_nodes": {
       "complexity": 4,
@@ -7092,7 +7419,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.216
+      "risk": 0.215
     },
     "prism.parsing.treesitter.TreeSitterParser.add_symbol": {
       "complexity": 16,
@@ -7100,7 +7427,7 @@
         "high complexity (cc 16)",
         "no direct test coverage"
       ],
-      "risk": 0.44
+      "risk": 0.439
     },
     "prism.parsing.treesitter.TreeSitterParser.bases": {
       "complexity": 1,
@@ -7191,7 +7518,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.26
+      "risk": 0.259
     },
     "prism.parsing.treesitter.TreeSitterParser.parse": {
       "complexity": 26,
@@ -7266,26 +7593,26 @@
     "prism.parsing.treesitter._text": {
       "complexity": 2,
       "reasons": [],
-      "risk": 0.265
+      "risk": 0.262
     },
     "prism.parsing.treesitter._walk": {
       "complexity": 5,
       "reasons": [],
-      "risk": 0.284
+      "risk": 0.283
     },
     "prism.parsing.treesitter.available": {
       "complexity": 2,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.232
+      "risk": 0.231
     },
     "prism.parsing.treesitter.parsers": {
       "complexity": 3,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.247
+      "risk": 0.246
     },
     "prism.parsing.treesitter.resolve_js_specifier": {
       "complexity": 11,
@@ -7304,7 +7631,7 @@
       "reasons": [
         "high complexity (cc 19)"
       ],
-      "risk": 0.397
+      "risk": 0.396
     },
     "prism.pipeline.open_finding_counts": {
       "complexity": 7,
@@ -7345,7 +7672,7 @@
     "prism.status.compute_status": {
       "complexity": 9,
       "reasons": [],
-      "risk": 0.303
+      "risk": 0.302
     },
     "prism.status.working_tree_changes": {
       "complexity": 4,
@@ -7450,7 +7777,7 @@
       "reasons": [
         "file has high churn (3 commits)"
       ],
-      "risk": 0.345
+      "risk": 0.344
     },
     "prism.viewer.api.ViewerBackend.save_view": {
       "complexity": 6,
@@ -7497,7 +7824,7 @@
         "no direct test coverage",
         "file has high churn (3 commits)"
       ],
-      "risk": 0.505
+      "risk": 0.504
     },
     "prism.viewer.model.GraphModel.__init__": {
       "complexity": 19,
@@ -7534,7 +7861,7 @@
       "reasons": [
         "file has high churn (3 commits)"
       ],
-      "risk": 0.415
+      "risk": 0.414
     },
     "prism.viewer.model.GraphModel._package_nodes": {
       "complexity": 9,
@@ -7555,7 +7882,7 @@
       "reasons": [
         "file has high churn (3 commits)"
       ],
-      "risk": 0.43
+      "risk": 0.429
     },
     "prism.viewer.model.GraphModel._symbol_node": {
       "complexity": 3,
@@ -7596,7 +7923,7 @@
         "high complexity (cc 54)",
         "file has high churn (3 commits)"
       ],
-      "risk": 0.543
+      "risk": 0.542
     },
     "prism.viewer.model.GraphModel.node_id_at": {
       "complexity": 14,
@@ -7613,7 +7940,7 @@
         "no direct test coverage",
         "file has high churn (3 commits)"
       ],
-      "risk": 0.37
+      "risk": 0.369
     },
     "prism.viewer.model.GraphModel.path": {
       "complexity": 15,
@@ -7716,7 +8043,7 @@
       "reasons": [
         "file has high churn (3 commits)"
       ],
-      "risk": 0.24
+      "risk": 0.239
     },
     "prism.viewer.server.ViewerServer.url": {
       "complexity": 4,
@@ -7762,7 +8089,7 @@
         "no direct test coverage",
         "file has high churn (3 commits)"
       ],
-      "risk": 0.64
+      "risk": 0.639
     },
     "prism.viewer.server.running_viewer": {
       "complexity": 3,
@@ -7783,55 +8110,62 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.218
+      "risk": 0.216
     },
     "prism.writers.activity.read_activity": {
       "complexity": 6,
       "reasons": [],
-      "risk": 0.19
+      "risk": 0.189
     },
     "prism.writers.activity.record_activity": {
       "complexity": 4,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.277
+      "risk": 0.269
     },
     "prism.writers.agents_md._facts": {
       "complexity": 21,
       "reasons": [
-        "high complexity (cc 21)"
+        "high complexity (cc 21)",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.577
+      "risk": 0.64
     },
     "prism.writers.agents_md.brief_tokens": {
       "complexity": 1,
-      "reasons": [],
-      "risk": 0.177
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.239
     },
     "prism.writers.agents_md.compact_brief": {
       "complexity": 8,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.383
+      "risk": 0.446
     },
     "prism.writers.agents_md.render_agents_md": {
       "complexity": 6,
-      "reasons": [],
-      "risk": 0.254
+      "reasons": [
+        "file has high churn (3 commits)"
+      ],
+      "risk": 0.316
     },
     "prism.writers.agents_md.written_narrative": {
       "complexity": 5,
       "reasons": [
-        "no direct test coverage"
+        "no direct test coverage",
+        "file has high churn (3 commits)"
       ],
-      "risk": 0.339
+      "risk": 0.401
     },
     "prism.writers.artifacts._symbol_entry": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.216
+      "risk": 0.215
     },
     "prism.writers.artifacts.blast_doc": {
       "complexity": 5,
@@ -7900,7 +8234,7 @@
       "reasons": [
         "high complexity (cc 14)"
       ],
-      "risk": 0.311
+      "risk": 0.31
     },
     "prism.writers.decisions.decisions_dir": {
       "complexity": 1,
@@ -7944,7 +8278,7 @@
     "prism.writers.graph_export._payload": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.215
+      "risk": 0.214
     },
     "prism.writers.graph_export._static_details": {
       "complexity": 18,
@@ -7972,21 +8306,21 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.305
+      "risk": 0.304
     },
     "prism.writers.graph_export.to_graphml": {
       "complexity": 6,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.29
+      "risk": 0.289
     },
     "prism.writers.graph_export.to_mermaid": {
       "complexity": 8,
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.32
+      "risk": 0.319
     },
     "prism.writers.index_writer._remove_stale_temp_files": {
       "complexity": 4,
@@ -7999,12 +8333,12 @@
         "high complexity (cc 20)",
         "no direct test coverage"
       ],
-      "risk": 0.5
+      "risk": 0.499
     },
     "prism.writers.json_writer._replace": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.341
+      "risk": 0.34
     },
     "prism.writers.json_writer.dumps": {
       "complexity": 1,
@@ -8016,17 +8350,17 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.291
+      "risk": 0.29
     },
     "prism.writers.json_writer.write_json": {
       "complexity": 1,
       "reasons": [],
-      "risk": 0.183
+      "risk": 0.184
     },
     "prism.writers.json_writer.write_text": {
       "complexity": 4,
       "reasons": [],
-      "risk": 0.288
+      "risk": 0.284
     },
     "prism.writers.manifest.file_entries": {
       "complexity": 3,
@@ -8038,7 +8372,7 @@
     "prism.writers.manifest.load_manifest": {
       "complexity": 3,
       "reasons": [],
-      "risk": 0.173
+      "risk": 0.172
     },
     "prism.writers.manifest.new_manifest": {
       "complexity": 1,
@@ -8083,7 +8417,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.261
+      "risk": 0.26
     },
     "prism.writers.modules_md.module_filename": {
       "complexity": 1,
@@ -8097,7 +8431,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.276
+      "risk": 0.275
     },
     "prism.writers.modules_md.render_facts": {
       "complexity": 35,
@@ -8105,7 +8439,7 @@
         "high complexity (cc 35)",
         "no direct test coverage"
       ],
-      "risk": 0.515
+      "risk": 0.514
     },
     "prism.writers.modules_md.render_module_md": {
       "complexity": 4,
@@ -8126,7 +8460,7 @@
       "reasons": [
         "no direct test coverage"
       ],
-      "risk": 0.215
+      "risk": 0.214
     },
     "prism.writers.obsidian._frontmatter": {
       "complexity": 7,
@@ -8156,6 +8490,42 @@
         "no direct test coverage"
       ],
       "risk": 0.214
+    },
+    "prism.writers.task_cache.load_packet": {
+      "complexity": 4,
+      "reasons": [
+        "no direct test coverage"
+      ],
+      "risk": 0.199
+    },
+    "prism.writers.task_cache.packet_current": {
+      "complexity": 10,
+      "reasons": [
+        "high complexity (cc 10)",
+        "no direct test coverage"
+      ],
+      "risk": 0.289
+    },
+    "prism.writers.task_cache.packet_path": {
+      "complexity": 1,
+      "reasons": [
+        "no direct test coverage"
+      ],
+      "risk": 0.154
+    },
+    "prism.writers.task_cache.save_packet": {
+      "complexity": 3,
+      "reasons": [
+        "no direct test coverage"
+      ],
+      "risk": 0.184
+    },
+    "prism.writers.task_cache.source_stamp": {
+      "complexity": 6,
+      "reasons": [
+        "no direct test coverage"
+      ],
+      "risk": 0.229
     }
   }
 }

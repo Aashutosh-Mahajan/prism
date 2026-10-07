@@ -3,13 +3,15 @@
   "churn": {
     "prism/__init__.py": 1,
     "prism/__main__.py": 2,
+    "prism/_vendor/__init__.py": 1,
+    "prism/_vendor/graphify_retrieval.py": 1,
     "prism/audit/__init__.py": 1,
     "prism/audit/plan.py": 1,
     "prism/audit/record.py": 1,
     "prism/audit/report.py": 1,
     "prism/audit/store.py": 1,
     "prism/audit/toolchain_detect.py": 2,
-    "prism/cli.py": 3,
+    "prism/cli.py": 4,
     "prism/config.py": 1,
     "prism/consent/__init__.py": 1,
     "prism/consent/registry.py": 1,
@@ -51,7 +53,7 @@
     "prism/hooks/__init__.py": 2,
     "prism/hooks/entry.py": 1,
     "prism/hooks/formats.py": 1,
-    "prism/hooks/prompt.py": 1,
+    "prism/hooks/prompt.py": 2,
     "prism/hooks/runner.py": 2,
     "prism/hooks/update_job.py": 1,
     "prism/incremental/__init__.py": 1,
@@ -62,7 +64,7 @@
     "prism/integrations/base.py": 2,
     "prism/integrations/claude_code.py": 2,
     "prism/integrations/codex.py": 1,
-    "prism/integrations/common.py": 2,
+    "prism/integrations/common.py": 3,
     "prism/integrations/gemini.py": 1,
     "prism/integrations/git_hooks.py": 1,
     "prism/integrations/global_note.py": 1,
@@ -71,23 +73,28 @@
     "prism/lifecycle.py": 2,
     "prism/maintenance.py": 2,
     "prism/mcp/__init__.py": 1,
-    "prism/mcp/server.py": 2,
+    "prism/mcp/server.py": 3,
     "prism/narrator/__init__.py": 1,
     "prism/narrator/refresh.py": 1,
-    "prism/navigator/api.py": 2,
+    "prism/navigator/api.py": 3,
     "prism/navigator/cache_db.py": 4,
-    "prism/navigator/context_pack.py": 1,
+    "prism/navigator/context_pack.py": 2,
     "prism/navigator/freshness.py": 1,
+    "prism/navigator/fusion.py": 1,
+    "prism/navigator/graphify.py": 1,
     "prism/navigator/impact.py": 1,
-    "prism/navigator/literals.py": 1,
+    "prism/navigator/literals.py": 2,
+    "prism/navigator/overview.py": 1,
     "prism/navigator/render.py": 1,
+    "prism/navigator/request.py": 1,
     "prism/navigator/resolve.py": 1,
     "prism/navigator/semantic.py": 1,
-    "prism/navigator/session.py": 1,
+    "prism/navigator/session.py": 2,
     "prism/navigator/source_index.py": 1,
-    "prism/navigator/store.py": 2,
-    "prism/navigator/synonyms.py": 1,
-    "prism/navigator/task_pack.py": 1,
+    "prism/navigator/store.py": 3,
+    "prism/navigator/support.py": 1,
+    "prism/navigator/synonyms.py": 2,
+    "prism/navigator/task_pack.py": 2,
     "prism/navigator/text.py": 3,
     "prism/parsing/__init__.py": 1,
     "prism/parsing/base_parser.py": 1,
@@ -103,7 +110,7 @@
     "prism/viewer/server.py": 3,
     "prism/writers/__init__.py": 3,
     "prism/writers/activity.py": 1,
-    "prism/writers/agents_md.py": 2,
+    "prism/writers/agents_md.py": 3,
     "prism/writers/artifacts.py": 1,
     "prism/writers/decisions.py": 1,
     "prism/writers/graph_export.py": 1,
@@ -121,13 +128,14 @@
     "tests/benchmarks/agent_score.py": 1,
     "tests/benchmarks/edit_bench.py": 1,
     "tests/benchmarks/prism_mcp_client.mjs": 1,
+    "tests/benchmarks/retrieval_economics.py": 1,
     "tests/benchmarks/retrieval_eval.py": 1,
     "tests/benchmarks/run.py": 1,
     "tests/benchmarks/synth.py": 1,
     "tests/benchmarks/tokens.py": 1,
     "tests/conftest.py": 1,
     "tests/integration/test_audit.py": 2,
-    "tests/integration/test_cli.py": 1,
+    "tests/integration/test_cli.py": 2,
     "tests/integration/test_freshness.py": 1,
     "tests/integration/test_hooks_mcp.py": 2,
     "tests/integration/test_incremental.py": 1,
@@ -138,7 +146,7 @@
     "tests/integration/test_scan.py": 1,
     "tests/integration/test_update_paths.py": 1,
     "tests/integration/test_viewer.py": 3,
-    "tests/skills/test_skill_templates.py": 1,
+    "tests/skills/test_skill_templates.py": 2,
     "tests/test_agent_measure.py": 1,
     "tests/unit/test_config.py": 1,
     "tests/unit/test_consent.py": 1,
@@ -146,10 +154,13 @@
     "tests/unit/test_edit_bench.py": 1,
     "tests/unit/test_extractors.py": 2,
     "tests/unit/test_graph.py": 1,
+    "tests/unit/test_graphify_hints.py": 1,
     "tests/unit/test_navigator.py": 2,
     "tests/unit/test_phase3_extractors.py": 1,
     "tests/unit/test_python_parser.py": 1,
+    "tests/unit/test_request_ranking.py": 1,
     "tests/unit/test_retrieval_eval.py": 1,
+    "tests/unit/test_task_disclosure.py": 1,
     "tests/unit/test_task_pack.py": 1,
     "tests/unit/test_task_retrieval.py": 1,
     "tests/unit/test_treesitter.py": 1,
@@ -178,10 +189,28 @@
   },
   "co_change": [
     {
+      "a": "prism/navigator/api.py",
+      "b": "prism/navigator/context_pack.py",
+      "count": 2,
+      "strength": 0.667
+    },
+    {
+      "a": "prism/navigator/api.py",
+      "b": "prism/navigator/store.py",
+      "count": 2,
+      "strength": 0.5
+    },
+    {
       "a": "prism/navigator/cache_db.py",
       "b": "prism/navigator/text.py",
       "count": 2,
       "strength": 0.4
+    },
+    {
+      "a": "prism/navigator/context_pack.py",
+      "b": "prism/navigator/store.py",
+      "count": 2,
+      "strength": 0.667
     },
     {
       "a": "prism/viewer/api.py",
@@ -234,6 +263,12 @@
     {
       "a": "tests/integration/test_audit.py",
       "b": "tests/unit/test_extractors.py",
+      "count": 2,
+      "strength": 1.0
+    },
+    {
+      "a": "tests/integration/test_cli.py",
+      "b": "tests/skills/test_skill_templates.py",
       "count": 2,
       "strength": 1.0
     },
@@ -310,18 +345,20 @@
       "strength": 1.0
     }
   ],
-  "commits_analyzed": 110,
-  "head": "45971b8ed11870750c9effc03cd341a585c85bcc",
+  "commits_analyzed": 114,
+  "head": "ee790d852448a75d50d61bc3eccd4a3705e4dca4",
   "last_changed": {
     "prism/__init__.py": 1790506328,
     "prism/__main__.py": 1791348196,
+    "prism/_vendor/__init__.py": 1791393490,
+    "prism/_vendor/graphify_retrieval.py": 1791393490,
     "prism/audit/__init__.py": 1790506330,
     "prism/audit/plan.py": 1790506330,
     "prism/audit/record.py": 1790506330,
     "prism/audit/report.py": 1790506330,
     "prism/audit/store.py": 1790506330,
     "prism/audit/toolchain_detect.py": 1790522342,
-    "prism/cli.py": 1791348196,
+    "prism/cli.py": 1791393494,
     "prism/config.py": 1790506328,
     "prism/consent/__init__.py": 1790506329,
     "prism/consent/registry.py": 1790506329,
@@ -363,7 +400,7 @@
     "prism/hooks/__init__.py": 1791348196,
     "prism/hooks/entry.py": 1791348195,
     "prism/hooks/formats.py": 1791348195,
-    "prism/hooks/prompt.py": 1791348196,
+    "prism/hooks/prompt.py": 1791393494,
     "prism/hooks/runner.py": 1791348196,
     "prism/hooks/update_job.py": 1791348195,
     "prism/incremental/__init__.py": 1790506329,
@@ -374,7 +411,7 @@
     "prism/integrations/base.py": 1791348197,
     "prism/integrations/claude_code.py": 1791348197,
     "prism/integrations/codex.py": 1791348197,
-    "prism/integrations/common.py": 1791348195,
+    "prism/integrations/common.py": 1791393494,
     "prism/integrations/gemini.py": 1791348197,
     "prism/integrations/git_hooks.py": 1790506329,
     "prism/integrations/global_note.py": 1790506329,
@@ -383,23 +420,28 @@
     "prism/lifecycle.py": 1791348194,
     "prism/maintenance.py": 1791348198,
     "prism/mcp/__init__.py": 1790506329,
-    "prism/mcp/server.py": 1791348196,
+    "prism/mcp/server.py": 1791393494,
     "prism/narrator/__init__.py": 1790506330,
     "prism/narrator/refresh.py": 1790506330,
-    "prism/navigator/api.py": 1791348193,
+    "prism/navigator/api.py": 1791393485,
     "prism/navigator/cache_db.py": 1791348193,
-    "prism/navigator/context_pack.py": 1790506329,
+    "prism/navigator/context_pack.py": 1791393485,
     "prism/navigator/freshness.py": 1791348193,
+    "prism/navigator/fusion.py": 1791393490,
+    "prism/navigator/graphify.py": 1791393490,
     "prism/navigator/impact.py": 1790506329,
-    "prism/navigator/literals.py": 1791348192,
+    "prism/navigator/literals.py": 1791393485,
+    "prism/navigator/overview.py": 1791393490,
     "prism/navigator/render.py": 1790506329,
+    "prism/navigator/request.py": 1791393485,
     "prism/navigator/resolve.py": 1790506329,
     "prism/navigator/semantic.py": 1790506329,
-    "prism/navigator/session.py": 1791348192,
+    "prism/navigator/session.py": 1791393485,
     "prism/navigator/source_index.py": 1791348192,
-    "prism/navigator/store.py": 1790522342,
-    "prism/navigator/synonyms.py": 1791348192,
-    "prism/navigator/task_pack.py": 1791348193,
+    "prism/navigator/store.py": 1791393485,
+    "prism/navigator/support.py": 1791393485,
+    "prism/navigator/synonyms.py": 1791393485,
+    "prism/navigator/task_pack.py": 1791393485,
     "prism/navigator/text.py": 1791348192,
     "prism/parsing/__init__.py": 1790506328,
     "prism/parsing/base_parser.py": 1790506328,
@@ -415,7 +457,7 @@
     "prism/viewer/server.py": 1790522361,
     "prism/writers/__init__.py": 1791348194,
     "prism/writers/activity.py": 1790506329,
-    "prism/writers/agents_md.py": 1791348194,
+    "prism/writers/agents_md.py": 1791393494,
     "prism/writers/artifacts.py": 1790506329,
     "prism/writers/decisions.py": 1790506330,
     "prism/writers/graph_export.py": 1790506330,
@@ -433,13 +475,14 @@
     "tests/benchmarks/agent_score.py": 1791303418,
     "tests/benchmarks/edit_bench.py": 1791348201,
     "tests/benchmarks/prism_mcp_client.mjs": 1791303418,
+    "tests/benchmarks/retrieval_economics.py": 1791393500,
     "tests/benchmarks/retrieval_eval.py": 1791348201,
     "tests/benchmarks/run.py": 1790509125,
     "tests/benchmarks/synth.py": 1790506331,
     "tests/benchmarks/tokens.py": 1790522349,
     "tests/conftest.py": 1790506331,
     "tests/integration/test_audit.py": 1790522342,
-    "tests/integration/test_cli.py": 1790506331,
+    "tests/integration/test_cli.py": 1791393500,
     "tests/integration/test_freshness.py": 1791348200,
     "tests/integration/test_hooks_mcp.py": 1791348200,
     "tests/integration/test_incremental.py": 1790506331,
@@ -450,7 +493,7 @@
     "tests/integration/test_scan.py": 1790506331,
     "tests/integration/test_update_paths.py": 1791348199,
     "tests/integration/test_viewer.py": 1790522328,
-    "tests/skills/test_skill_templates.py": 1790506331,
+    "tests/skills/test_skill_templates.py": 1791393500,
     "tests/test_agent_measure.py": 1791303418,
     "tests/unit/test_config.py": 1790506331,
     "tests/unit/test_consent.py": 1790506331,
@@ -458,10 +501,13 @@
     "tests/unit/test_edit_bench.py": 1791348201,
     "tests/unit/test_extractors.py": 1790522342,
     "tests/unit/test_graph.py": 1790506331,
+    "tests/unit/test_graphify_hints.py": 1791393500,
     "tests/unit/test_navigator.py": 1790522349,
     "tests/unit/test_phase3_extractors.py": 1790506331,
     "tests/unit/test_python_parser.py": 1790506331,
+    "tests/unit/test_request_ranking.py": 1791393500,
     "tests/unit/test_retrieval_eval.py": 1791348201,
+    "tests/unit/test_task_disclosure.py": 1791393500,
     "tests/unit/test_task_pack.py": 1791348199,
     "tests/unit/test_task_retrieval.py": 1791348199,
     "tests/unit/test_treesitter.py": 1790506331,
@@ -499,6 +545,18 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 2
+      }
+    ],
+    "prism/_vendor/__init__.py": [
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
+      }
+    ],
+    "prism/_vendor/graphify_retrieval.py": [
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/audit/__init__.py": [
@@ -541,6 +599,10 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 3
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/config.py": [
@@ -793,6 +855,10 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 1
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/hooks/runner.py": [
@@ -859,6 +925,10 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 2
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/integrations/gemini.py": [
@@ -913,6 +983,10 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 2
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/narrator/__init__.py": [
@@ -931,6 +1005,10 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 2
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/navigator/cache_db.py": [
@@ -943,11 +1021,27 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 1
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/navigator/freshness.py": [
       {
         "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/fusion.py": [
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/graphify.py": [
+      {
+        "author": "Priyanshu Gupta",
         "commits": 1
       }
     ],
@@ -961,11 +1055,27 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 1
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/overview.py": [
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/navigator/render.py": [
       {
         "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/request.py": [
+      {
+        "author": "Priyanshu Gupta",
         "commits": 1
       }
     ],
@@ -985,6 +1095,10 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 1
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/navigator/source_index.py": [
@@ -997,17 +1111,35 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 2
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
+      }
+    ],
+    "prism/navigator/support.py": [
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/navigator/synonyms.py": [
       {
         "author": "Aashutosh-Mahajan",
         "commits": 1
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/navigator/task_pack.py": [
       {
         "author": "Aashutosh-Mahajan",
+        "commits": 1
+      },
+      {
+        "author": "Priyanshu Gupta",
         "commits": 1
       }
     ],
@@ -1105,6 +1237,10 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 2
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "prism/writers/artifacts.py": [
@@ -1209,6 +1345,12 @@
         "commits": 1
       }
     ],
+    "tests/benchmarks/retrieval_economics.py": [
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
+      }
+    ],
     "tests/benchmarks/retrieval_eval.py": [
       {
         "author": "Aashutosh-Mahajan",
@@ -1248,6 +1390,10 @@
     "tests/integration/test_cli.py": [
       {
         "author": "Aashutosh-Mahajan",
+        "commits": 1
+      },
+      {
+        "author": "Priyanshu Gupta",
         "commits": 1
       }
     ],
@@ -1315,6 +1461,10 @@
       {
         "author": "Aashutosh-Mahajan",
         "commits": 1
+      },
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
       }
     ],
     "tests/test_agent_measure.py": [
@@ -1359,6 +1509,12 @@
         "commits": 1
       }
     ],
+    "tests/unit/test_graphify_hints.py": [
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
+      }
+    ],
     "tests/unit/test_navigator.py": [
       {
         "author": "Aashutosh-Mahajan",
@@ -1377,9 +1533,21 @@
         "commits": 1
       }
     ],
+    "tests/unit/test_request_ranking.py": [
+      {
+        "author": "Priyanshu Gupta",
+        "commits": 1
+      }
+    ],
     "tests/unit/test_retrieval_eval.py": [
       {
         "author": "Aashutosh-Mahajan",
+        "commits": 1
+      }
+    ],
+    "tests/unit/test_task_disclosure.py": [
+      {
+        "author": "Priyanshu Gupta",
         "commits": 1
       }
     ],

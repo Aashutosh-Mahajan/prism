@@ -14,8 +14,8 @@
   - `sizeValue(n: GNode, by: SizeBy, ctx: EncodeContext) -> number` (viewer/src/encode.ts:179)
   - `lerp(a: number, b: number, t: number) -> number` (viewer/src/encode.ts:87)
   - `hash(text: string) -> number` (viewer/src/encode.ts:49)
-  - `kindColor(kind: string) -> string` (viewer/src/encode.ts:103)
   - `categoricalScale(keys: Iterable<string>, counts?: Map<string, number>) -> Map<string, string>` — Stable colours for a set of categories: sorted by size so the biggest groups get the (viewer/src/encode.ts:65)
+  - `kindColor(kind: string) -> string` (viewer/src/encode.ts:103)
   - … 7 more
 - Depends on: `viewer.src.types`
 - Used by: `viewer.src.app`, `viewer.src.chrome`, `viewer.src.controls`, `viewer.src.search`, `viewer.src.theme`, `viewer.src.views`

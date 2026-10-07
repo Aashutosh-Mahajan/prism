@@ -5,13 +5,13 @@
 - Docstring: Per-user, per-repo consent flags (CLAUDE.md Section 12.1).
 - Public API (by importance):
   - `get_entry(root: Path) -> RepoEntry | None` (prism/consent/registry.py:84)
-  - `config_home() -> Path` (prism/consent/registry.py:38)
   - `registry_path() -> Path` (prism/consent/registry.py:43)
+  - `config_home() -> Path` (prism/consent/registry.py:38)
   - `load_registry() -> dict[str, RepoEntry]` (prism/consent/registry.py:51)
   - `repo_key(root: Path) -> str` (prism/consent/registry.py:47)
   - `class RepoEntry` (prism/consent/registry.py:31)
-  - `repo_state(root: Path, repo_id: str | None) -> RepoState` — Consent state for this user. `repo_id` comes from the manifest (None if absent). (prism/consent/registry.py:98)
   - `set_entry(root: Path, entry: RepoEntry | None) -> None` (prism/consent/registry.py:88)
+  - `repo_state(root: Path, repo_id: str | None) -> RepoState` — Consent state for this user. `repo_id` comes from the manifest (None if absent). (prism/consent/registry.py:98)
   - `save_registry(entries: dict[str, RepoEntry]) -> None` (prism/consent/registry.py:71)
   - `class RepoState(str, Enum)` (prism/consent/registry.py:24)
 - Depends on: `prism.writers`

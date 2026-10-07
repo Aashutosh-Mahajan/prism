@@ -69,8 +69,8 @@ include = ["prism*"]
 prism = ["schemas/*.json", "templates/**/*", "viewer_dist/**/*", "py.typed", "_vendor/licenses/graphify/*"]
 
 [tool.prism]
-# Fixture repos are test data, not part of PRISM itself.
-ignore = ["tests/fixtures/", "tests/golden/"]
+# Fixture repos and local benchmark outputs are not part of PRISM itself.
+ignore = ["tests/fixtures/", "tests/golden/", "tmp/", "output/"]
 
 [tool.ruff]
 line-length = 100

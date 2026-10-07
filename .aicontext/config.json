@@ -140,7 +140,7 @@
       "reads": [
         {
           "file": "prism/mcp/server.py",
-          "line": 240,
+          "line": 260,
           "symbol": "prism.mcp.server.resolve_profile"
         }
       ]
@@ -151,7 +151,7 @@
       "reads": [
         {
           "file": "prism/hooks/prompt.py",
-          "line": 52,
+          "line": 53,
           "symbol": "prism.hooks.prompt._enabled"
         }
       ]

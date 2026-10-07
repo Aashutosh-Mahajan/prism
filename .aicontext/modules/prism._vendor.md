@@ -8,5 +8,5 @@
 
 ## Summary
 <!-- prism:narrative:summary -->
-_Not written yet. Run the prism-refresh skill to fill this section._
+Contains attributed local Graphify retrieval algorithms used by graph hints and task retrieval. No upstream runtime dependency is required; source verification and output budgets remain Prism responsibilities.
 <!-- /prism:narrative:summary -->

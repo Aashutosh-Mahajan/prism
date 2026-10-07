@@ -17,5 +17,5 @@
 
 ## Summary
 <!-- prism:narrative:summary -->
-_Not written yet. Run the prism-refresh skill to fill this section._
+Maintains persistent source postings from manifest revisions for body search. SourceReader verifies source hashes and reads each file once per request. Synchronization processes changed files rather than scanning every source body on each query.
 <!-- /prism:narrative:summary -->

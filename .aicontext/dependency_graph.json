@@ -158,6 +158,10 @@
     },
     {
       "from": "prism.cli",
+      "to": "prism.navigator.knowledge"
+    },
+    {
+      "from": "prism.cli",
       "to": "prism.navigator.render"
     },
     {
@@ -818,6 +822,10 @@
     },
     {
       "from": "prism.mcp.server",
+      "to": "prism.mcp"
+    },
+    {
+      "from": "prism.mcp.server",
       "to": "prism.narrator"
     },
     {
@@ -830,7 +838,15 @@
     },
     {
       "from": "prism.mcp.server",
+      "to": "prism.navigator.session"
+    },
+    {
+      "from": "prism.mcp.server",
       "to": "prism.navigator.store"
+    },
+    {
+      "from": "prism.mcp.server",
+      "to": "prism.navigator.task_pack"
     },
     {
       "from": "prism.mcp.server",
@@ -906,6 +922,10 @@
     },
     {
       "from": "prism.navigator.api",
+      "to": "prism.navigator.knowledge"
+    },
+    {
+      "from": "prism.navigator.api",
       "to": "prism.navigator.resolve"
     },
     {
@@ -931,6 +951,10 @@
     {
       "from": "prism.navigator.api",
       "to": "prism.writers.agents_md"
+    },
+    {
+      "from": "prism.navigator.api",
+      "to": "prism.writers.task_cache"
     },
     {
       "from": "prism.navigator.cache_db",
@@ -1026,6 +1050,18 @@
     },
     {
       "from": "prism.navigator.impact",
+      "to": "prism.navigator.store"
+    },
+    {
+      "from": "prism.navigator.knowledge",
+      "to": "prism.core.errors"
+    },
+    {
+      "from": "prism.navigator.knowledge",
+      "to": "prism.core.tokens"
+    },
+    {
+      "from": "prism.navigator.knowledge",
       "to": "prism.navigator.store"
     },
     {
@@ -1549,6 +1585,18 @@
       "to": "prism.writers.json_writer"
     },
     {
+      "from": "prism.writers.task_cache",
+      "to": "prism.config"
+    },
+    {
+      "from": "prism.writers.task_cache",
+      "to": "prism.core.paths"
+    },
+    {
+      "from": "prism.writers.task_cache",
+      "to": "prism.writers.json_writer"
+    },
+    {
       "from": "tests.benchmarks.agent_collect",
       "to": "tests.benchmarks.agent_measure"
     },
@@ -1849,6 +1897,10 @@
       "to": "prism.navigator.session"
     },
     {
+      "from": "tests.integration.test_prompt_hook",
+      "to": "prism.writers.manifest"
+    },
+    {
       "from": "tests.integration.test_refresh",
       "to": "prism.core.errors"
     },
@@ -1959,6 +2011,50 @@
     {
       "from": "tests.unit.test_consent",
       "to": "prism.consent.registry"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.cli"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.core.tokens"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.lifecycle"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.mcp.server"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.navigator.api"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.navigator.literals"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.navigator.request"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.navigator.session"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.navigator.store"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.navigator.support"
+    },
+    {
+      "from": "tests.unit.test_context_engine",
+      "to": "prism.navigator.task_pack"
     },
     {
       "from": "tests.unit.test_discovery",
@@ -2083,6 +2179,22 @@
     {
       "from": "tests.unit.test_python_parser",
       "to": "prism.parsing"
+    },
+    {
+      "from": "tests.unit.test_request_ranking",
+      "to": "prism.lifecycle"
+    },
+    {
+      "from": "tests.unit.test_request_ranking",
+      "to": "prism.navigator.api"
+    },
+    {
+      "from": "tests.unit.test_request_ranking",
+      "to": "prism.navigator.request"
+    },
+    {
+      "from": "tests.unit.test_request_ranking",
+      "to": "prism.navigator.store"
     },
     {
       "from": "tests.unit.test_retrieval_eval",
@@ -2572,7 +2684,6 @@
   ],
   "external": {
     "@sigma": 1,
-    "click": 1,
     "graphology": 1,
     "graphology-communities-louvain": 1,
     "graphology-layout-forceatlas2": 1,
@@ -2583,7 +2694,7 @@
     "node:readline": 1,
     "node:test": 2,
     "pathspec": 1,
-    "pytest": 24,
+    "pytest": 26,
     "rich": 1,
     "sentence_transformers": 1,
     "sigma": 2,
@@ -2593,7 +2704,7 @@
     "tree_sitter_java": 1,
     "tree_sitter_javascript": 1,
     "tree_sitter_typescript": 1,
-    "typer": 7,
+    "typer": 8,
     "viewer": 7,
     "vite": 1
   },
@@ -2620,7 +2731,7 @@
       "imports": [],
       "is_package": true,
       "loc": 6,
-      "rank": 0.012136
+      "rank": 0.011692
     },
     {
       "community": 0,
@@ -2635,7 +2746,7 @@
       ],
       "is_package": false,
       "loc": 4,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": 6,
@@ -2648,7 +2759,7 @@
       "imports": [],
       "is_package": true,
       "loc": 1,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": 2,
@@ -2664,7 +2775,7 @@
       "imports": [],
       "is_package": false,
       "loc": 94,
-      "rank": 0.003454
+      "rank": 0.003417
     },
     {
       "community": 3,
@@ -2686,7 +2797,7 @@
       ],
       "is_package": true,
       "loc": 6,
-      "rank": 0.003398
+      "rank": 0.003196
     },
     {
       "community": 3,
@@ -2709,7 +2820,7 @@
       ],
       "is_package": false,
       "loc": 294,
-      "rank": 0.003187
+      "rank": 0.003035
     },
     {
       "community": 3,
@@ -2730,7 +2841,7 @@
       ],
       "is_package": false,
       "loc": 178,
-      "rank": 0.003187
+      "rank": 0.003035
     },
     {
       "community": 3,
@@ -2749,7 +2860,7 @@
       ],
       "is_package": false,
       "loc": 156,
-      "rank": 0.003187
+      "rank": 0.003035
     },
     {
       "community": 3,
@@ -2770,7 +2881,7 @@
       ],
       "is_package": false,
       "loc": 54,
-      "rank": 0.004657
+      "rank": 0.004445
     },
     {
       "community": 3,
@@ -2788,14 +2899,13 @@
       ],
       "is_package": false,
       "loc": 10,
-      "rank": 0.003573
+      "rank": 0.003404
     },
     {
       "community": 0,
       "doc": "`prism` command-line interface. Thin wrappers over library functions.",
       "entry_point": "main_function",
       "external": [
-        "click",
         "rich",
         "typer"
       ],
@@ -2808,6 +2918,7 @@
         "tests.integration.test_hooks_mcp",
         "tests.integration.test_update_paths",
         "tests.skills.test_skill_templates",
+        "tests.unit.test_context_engine",
         "tests.unit.test_task_pack"
       ],
       "imports": [
@@ -2826,6 +2937,7 @@
         "prism.narrator",
         "prism.navigator.api",
         "prism.navigator.freshness",
+        "prism.navigator.knowledge",
         "prism.navigator.render",
         "prism.navigator.session",
         "prism.navigator.store",
@@ -2837,8 +2949,8 @@
         "prism.writers.obsidian"
       ],
       "is_package": false,
-      "loc": 1040,
-      "rank": 0.007544
+      "loc": 1064,
+      "rank": 0.007414
     },
     {
       "community": 2,
@@ -2859,6 +2971,7 @@
         "prism.navigator.store",
         "prism.pipeline",
         "prism.status",
+        "prism.writers.task_cache",
         "tests.unit.test_config",
         "tests.unit.test_discovery"
       ],
@@ -2867,7 +2980,7 @@
       ],
       "is_package": false,
       "loc": 72,
-      "rank": 0.017043
+      "rank": 0.017724
     },
     {
       "community": 0,
@@ -2897,7 +3010,7 @@
       ],
       "is_package": true,
       "loc": 10,
-      "rank": 0.009632
+      "rank": 0.009193
     },
     {
       "community": 0,
@@ -2917,7 +3030,7 @@
       ],
       "is_package": false,
       "loc": 105,
-      "rank": 0.011699
+      "rank": 0.011171
     },
     {
       "community": 7,
@@ -2930,7 +3043,7 @@
       "imports": [],
       "is_package": true,
       "loc": 0,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": 3,
@@ -2952,6 +3065,7 @@
         "prism.narrator.refresh",
         "prism.navigator.api",
         "prism.navigator.graphify",
+        "prism.navigator.knowledge",
         "prism.navigator.resolve",
         "prism.navigator.semantic",
         "prism.navigator.store",
@@ -2974,7 +3088,7 @@
       "imports": [],
       "is_package": false,
       "loc": 50,
-      "rank": 0.038507
+      "rank": 0.039483
     },
     {
       "community": 0,
@@ -2993,7 +3107,7 @@
       "imports": [],
       "is_package": false,
       "loc": 53,
-      "rank": 0.007562
+      "rank": 0.00723
     },
     {
       "community": 1,
@@ -3037,7 +3151,7 @@
       "imports": [],
       "is_package": false,
       "loc": 296,
-      "rank": 0.054857
+      "rank": 0.052896
     },
     {
       "community": 0,
@@ -3069,12 +3183,13 @@
         "prism.writers.activity",
         "prism.writers.decisions",
         "prism.writers.index_writer",
-        "prism.writers.manifest"
+        "prism.writers.manifest",
+        "prism.writers.task_cache"
       ],
       "imports": [],
       "is_package": false,
       "loc": 29,
-      "rank": 0.032519
+      "rank": 0.032937
     },
     {
       "community": 0,
@@ -3087,6 +3202,7 @@
         "prism.hooks.prompt",
         "prism.narrator.refresh",
         "prism.navigator.context_pack",
+        "prism.navigator.knowledge",
         "prism.navigator.task_pack",
         "prism.parsing.python_ast",
         "prism.parsing.treesitter",
@@ -3096,6 +3212,7 @@
         "tests.integration.test_hooks_mcp",
         "tests.integration.test_prompt_hook",
         "tests.integration.test_refresh",
+        "tests.unit.test_context_engine",
         "tests.unit.test_navigator",
         "tests.unit.test_task_disclosure",
         "tests.unit.test_task_pack",
@@ -3104,7 +3221,7 @@
       "imports": [],
       "is_package": false,
       "loc": 11,
-      "rank": 0.011701
+      "rank": 0.012357
     },
     {
       "community": 1,
@@ -3126,7 +3243,7 @@
       ],
       "is_package": true,
       "loc": 4,
-      "rank": 0.005967
+      "rank": 0.005745
     },
     {
       "community": 1,
@@ -3142,7 +3259,7 @@
       "imports": [],
       "is_package": false,
       "loc": 58,
-      "rank": 0.008218
+      "rank": 0.007876
     },
     {
       "community": 1,
@@ -3164,7 +3281,7 @@
       ],
       "is_package": false,
       "loc": 236,
-      "rank": 0.011355
+      "rank": 0.010864
     },
     {
       "community": 0,
@@ -3184,7 +3301,7 @@
       ],
       "is_package": true,
       "loc": 4,
-      "rank": 0.004014
+      "rank": 0.003882
     },
     {
       "community": 0,
@@ -3201,7 +3318,7 @@
       ],
       "is_package": false,
       "loc": 43,
-      "rank": 0.004171
+      "rank": 0.004006
     },
     {
       "community": 0,
@@ -3217,7 +3334,7 @@
       "imports": [],
       "is_package": false,
       "loc": 210,
-      "rank": 0.007716
+      "rank": 0.007412
     },
     {
       "community": 0,
@@ -3235,7 +3352,7 @@
       ],
       "is_package": false,
       "loc": 27,
-      "rank": 0.004559
+      "rank": 0.004359
     },
     {
       "community": 1,
@@ -3255,7 +3372,7 @@
       ],
       "is_package": true,
       "loc": 20,
-      "rank": 0.002779
+      "rank": 0.002659
     },
     {
       "community": 1,
@@ -3282,7 +3399,7 @@
       ],
       "is_package": false,
       "loc": 49,
-      "rank": 0.011927
+      "rank": 0.011508
     },
     {
       "community": 1,
@@ -3301,7 +3418,7 @@
       ],
       "is_package": false,
       "loc": 64,
-      "rank": 0.002779
+      "rank": 0.002659
     },
     {
       "community": 1,
@@ -3319,7 +3436,7 @@
       ],
       "is_package": false,
       "loc": 27,
-      "rank": 0.002779
+      "rank": 0.002659
     },
     {
       "community": 1,
@@ -3338,7 +3455,7 @@
       ],
       "is_package": false,
       "loc": 83,
-      "rank": 0.002779
+      "rank": 0.002659
     },
     {
       "community": 1,
@@ -3357,7 +3474,7 @@
       ],
       "is_package": false,
       "loc": 71,
-      "rank": 0.003055
+      "rank": 0.002921
     },
     {
       "community": 1,
@@ -3376,7 +3493,7 @@
       ],
       "is_package": false,
       "loc": 71,
-      "rank": 0.002779
+      "rank": 0.002659
     },
     {
       "community": 1,
@@ -3395,7 +3512,7 @@
       ],
       "is_package": false,
       "loc": 77,
-      "rank": 0.003753
+      "rank": 0.003589
     },
     {
       "community": 1,
@@ -3415,7 +3532,7 @@
       ],
       "is_package": false,
       "loc": 93,
-      "rank": 0.003477
+      "rank": 0.003327
     },
     {
       "community": 1,
@@ -3437,7 +3554,7 @@
       ],
       "is_package": false,
       "loc": 101,
-      "rank": 0.006646
+      "rank": 0.006707
     },
     {
       "community": 3,
@@ -3458,7 +3575,7 @@
       ],
       "is_package": false,
       "loc": 180,
-      "rank": 0.007476
+      "rank": 0.007137
     },
     {
       "community": 1,
@@ -3479,10 +3596,10 @@
       ],
       "is_package": true,
       "loc": 12,
-      "rank": 0.003302
+      "rank": 0.00316
     },
     {
-      "community": 1,
+      "community": 2,
       "doc": "Reverse-dependency traversal shared by `impact`, context packs, and `blast_radius.json`.",
       "entry_point": null,
       "external": [],
@@ -3495,7 +3612,7 @@
       "imports": [],
       "is_package": false,
       "loc": 36,
-      "rank": 0.004428
+      "rank": 0.004241
     },
     {
       "community": 1,
@@ -3518,7 +3635,7 @@
       ],
       "is_package": false,
       "loc": 197,
-      "rank": 0.007687
+      "rank": 0.007452
     },
     {
       "community": 1,
@@ -3534,7 +3651,7 @@
       "imports": [],
       "is_package": false,
       "loc": 82,
-      "rank": 0.003041
+      "rank": 0.00291
     },
     {
       "community": 1,
@@ -3553,7 +3670,7 @@
       ],
       "is_package": false,
       "loc": 66,
-      "rank": 0.003166
+      "rank": 0.003028
     },
     {
       "community": 1,
@@ -3572,7 +3689,7 @@
       "imports": [],
       "is_package": false,
       "loc": 84,
-      "rank": 0.007194
+      "rank": 0.006955
     },
     {
       "community": 1,
@@ -3593,7 +3710,7 @@
       ],
       "is_package": false,
       "loc": 149,
-      "rank": 0.010144
+      "rank": 0.009758
     },
     {
       "community": 1,
@@ -3614,7 +3731,7 @@
       ],
       "is_package": true,
       "loc": 5,
-      "rank": 0.004115
+      "rank": 0.003982
     },
     {
       "community": 1,
@@ -3629,7 +3746,7 @@
       "imports": [],
       "is_package": false,
       "loc": 56,
-      "rank": 0.00363
+      "rank": 0.003484
     },
     {
       "community": 1,
@@ -3647,7 +3764,7 @@
       ],
       "is_package": false,
       "loc": 112,
-      "rank": 0.003843
+      "rank": 0.003687
     },
     {
       "community": 1,
@@ -3664,7 +3781,7 @@
       ],
       "is_package": false,
       "loc": 157,
-      "rank": 0.00363
+      "rank": 0.003484
     },
     {
       "community": 0,
@@ -3685,7 +3802,7 @@
       ],
       "is_package": true,
       "loc": 4,
-      "rank": 0.006038
+      "rank": 0.005772
     },
     {
       "community": 0,
@@ -3705,7 +3822,7 @@
       ],
       "is_package": false,
       "loc": 102,
-      "rank": 0.005088
+      "rank": 0.004862
     },
     {
       "community": 0,
@@ -3721,7 +3838,7 @@
       "imports": [],
       "is_package": false,
       "loc": 24,
-      "rank": 0.004836
+      "rank": 0.004623
     },
     {
       "community": 0,
@@ -3746,8 +3863,8 @@
         "prism.navigator.task_pack"
       ],
       "is_package": false,
-      "loc": 170,
-      "rank": 0.00524
+      "loc": 186,
+      "rank": 0.00501
     },
     {
       "community": 0,
@@ -3776,7 +3893,7 @@
       ],
       "is_package": false,
       "loc": 224,
-      "rank": 0.006491
+      "rank": 0.006206
     },
     {
       "community": 0,
@@ -3794,7 +3911,7 @@
       ],
       "is_package": false,
       "loc": 42,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": 8,
@@ -3807,7 +3924,7 @@
       "imports": [],
       "is_package": true,
       "loc": 0,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": 3,
@@ -3826,7 +3943,7 @@
       ],
       "is_package": false,
       "loc": 118,
-      "rank": 0.003103
+      "rank": 0.003011
     },
     {
       "community": 0,
@@ -3848,7 +3965,7 @@
       ],
       "is_package": false,
       "loc": 70,
-      "rank": 0.005019
+      "rank": 0.004842
     },
     {
       "community": 5,
@@ -3875,7 +3992,7 @@
       ],
       "is_package": true,
       "loc": 72,
-      "rank": 0.004001
+      "rank": 0.003866
     },
     {
       "community": 5,
@@ -3893,7 +4010,7 @@
       ],
       "is_package": false,
       "loc": 61,
-      "rank": 0.00289
+      "rank": 0.002767
     },
     {
       "community": 5,
@@ -3920,7 +4037,7 @@
       ],
       "is_package": false,
       "loc": 241,
-      "rank": 0.012149
+      "rank": 0.011709
     },
     {
       "community": 5,
@@ -3939,7 +4056,7 @@
       ],
       "is_package": false,
       "loc": 136,
-      "rank": 0.00289
+      "rank": 0.002767
     },
     {
       "community": 5,
@@ -3958,7 +4075,7 @@
       ],
       "is_package": false,
       "loc": 149,
-      "rank": 0.00289
+      "rank": 0.002767
     },
     {
       "community": 5,
@@ -3980,7 +4097,7 @@
       "imports": [],
       "is_package": false,
       "loc": 59,
-      "rank": 0.009041
+      "rank": 0.00865
     },
     {
       "community": 5,
@@ -3999,7 +4116,7 @@
       ],
       "is_package": false,
       "loc": 136,
-      "rank": 0.00289
+      "rank": 0.002767
     },
     {
       "community": 5,
@@ -4018,7 +4135,7 @@
       ],
       "is_package": false,
       "loc": 103,
-      "rank": 0.003795
+      "rank": 0.003674
     },
     {
       "community": 5,
@@ -4038,7 +4155,7 @@
       ],
       "is_package": false,
       "loc": 49,
-      "rank": 0.003151
+      "rank": 0.003009
     },
     {
       "community": 5,
@@ -4056,7 +4173,7 @@
       "imports": [],
       "is_package": false,
       "loc": 57,
-      "rank": 0.005739
+      "rank": 0.005492
     },
     {
       "community": 5,
@@ -4075,7 +4192,7 @@
       ],
       "is_package": false,
       "loc": 163,
-      "rank": 0.00289
+      "rank": 0.002767
     },
     {
       "community": 0,
@@ -4106,8 +4223,10 @@
         "tests.integration.test_scan",
         "tests.integration.test_update_paths",
         "tests.integration.test_viewer",
+        "tests.unit.test_context_engine",
         "tests.unit.test_graphify_hints",
         "tests.unit.test_navigator",
+        "tests.unit.test_request_ranking",
         "tests.unit.test_task_disclosure",
         "tests.unit.test_task_pack",
         "tests.unit.test_task_retrieval"
@@ -4137,7 +4256,7 @@
       ],
       "is_package": false,
       "loc": 366,
-      "rank": 0.015771
+      "rank": 0.016176
     },
     {
       "community": 0,
@@ -4168,7 +4287,7 @@
       ],
       "is_package": false,
       "loc": 259,
-      "rank": 0.002994
+      "rank": 0.002859
     },
     {
       "community": 0,
@@ -4178,12 +4297,13 @@
       "file": "prism/mcp/__init__.py",
       "id": "prism.mcp",
       "imported_by": [
-        "prism.maintenance"
+        "prism.maintenance",
+        "prism.mcp.server"
       ],
       "imports": [],
       "is_package": true,
       "loc": 0,
-      "rank": 0.002677
+      "rank": 0.002813
     },
     {
       "community": 0,
@@ -4197,6 +4317,7 @@
         "tests.integration.test_freshness",
         "tests.integration.test_hooks_mcp",
         "tests.skills.test_skill_templates",
+        "tests.unit.test_context_engine",
         "tests.unit.test_task_pack"
       ],
       "imports": [
@@ -4204,18 +4325,21 @@
         "prism.audit",
         "prism.consent",
         "prism.core.errors",
+        "prism.mcp",
         "prism.narrator",
         "prism.navigator.api",
         "prism.navigator.freshness",
+        "prism.navigator.session",
         "prism.navigator.store",
+        "prism.navigator.task_pack",
         "prism.status",
         "prism.viewer.server",
         "prism.writers.decisions",
         "prism.writers.manifest"
       ],
       "is_package": false,
-      "loc": 275,
-      "rank": 0.004477
+      "loc": 331,
+      "rank": 0.004478
     },
     {
       "community": 0,
@@ -4234,7 +4358,7 @@
       ],
       "is_package": true,
       "loc": 3,
-      "rank": 0.003572
+      "rank": 0.003363
     },
     {
       "community": 0,
@@ -4259,7 +4383,7 @@
       ],
       "is_package": false,
       "loc": 189,
-      "rank": 0.005501
+      "rank": 0.005215
     },
     {
       "community": 2,
@@ -4283,8 +4407,10 @@
         "tests.integration.test_audit",
         "tests.integration.test_phase5",
         "tests.integration.test_prompt_hook",
+        "tests.unit.test_context_engine",
         "tests.unit.test_graphify_hints",
         "tests.unit.test_navigator",
+        "tests.unit.test_request_ranking",
         "tests.unit.test_task_disclosure",
         "tests.unit.test_task_pack",
         "tests.unit.test_task_retrieval"
@@ -4294,17 +4420,19 @@
         "prism.core.paths",
         "prism.navigator.context_pack",
         "prism.navigator.impact",
+        "prism.navigator.knowledge",
         "prism.navigator.resolve",
         "prism.navigator.semantic",
         "prism.navigator.store",
         "prism.navigator.task_pack",
         "prism.status",
         "prism.writers.activity",
-        "prism.writers.agents_md"
+        "prism.writers.agents_md",
+        "prism.writers.task_cache"
       ],
       "is_package": false,
-      "loc": 177,
-      "rank": 0.010713
+      "loc": 203,
+      "rank": 0.012292
     },
     {
       "community": 2,
@@ -4325,7 +4453,7 @@
       ],
       "is_package": false,
       "loc": 301,
-      "rank": 0.007876
+      "rank": 0.008032
     },
     {
       "community": 2,
@@ -4346,7 +4474,7 @@
       ],
       "is_package": false,
       "loc": 269,
-      "rank": 0.003292
+      "rank": 0.00316
     },
     {
       "community": 0,
@@ -4376,7 +4504,7 @@
       ],
       "is_package": false,
       "loc": 81,
-      "rank": 0.005148
+      "rank": 0.004913
     },
     {
       "community": 2,
@@ -4392,7 +4520,7 @@
       "imports": [],
       "is_package": false,
       "loc": 29,
-      "rank": 0.002997
+      "rank": 0.002873
     },
     {
       "community": 2,
@@ -4416,7 +4544,7 @@
       ],
       "is_package": false,
       "loc": 248,
-      "rank": 0.00487
+      "rank": 0.005415
     },
     {
       "community": 2,
@@ -4437,7 +4565,27 @@
       ],
       "is_package": false,
       "loc": 103,
-      "rank": 0.004152
+      "rank": 0.003991
+    },
+    {
+      "community": 0,
+      "doc": "A bounded inspection of the persistent project knowledge, not a source dump.",
+      "entry_point": null,
+      "external": [],
+      "file": "prism/navigator/knowledge.py",
+      "id": "prism.navigator.knowledge",
+      "imported_by": [
+        "prism.cli",
+        "prism.navigator.api"
+      ],
+      "imports": [
+        "prism.core.errors",
+        "prism.core.tokens",
+        "prism.navigator.store"
+      ],
+      "is_package": false,
+      "loc": 66,
+      "rank": 0.003412
     },
     {
       "community": 2,
@@ -4448,6 +4596,7 @@
       "id": "prism.navigator.literals",
       "imported_by": [
         "prism.navigator.task_pack",
+        "tests.unit.test_context_engine",
         "tests.unit.test_task_disclosure"
       ],
       "imports": [
@@ -4455,8 +4604,8 @@
         "prism.navigator.text"
       ],
       "is_package": false,
-      "loc": 374,
-      "rank": 0.002997
+      "loc": 380,
+      "rank": 0.002873
     },
     {
       "community": 2,
@@ -4475,7 +4624,7 @@
       ],
       "is_package": false,
       "loc": 227,
-      "rank": 0.002764
+      "rank": 0.00265
     },
     {
       "community": 3,
@@ -4492,7 +4641,7 @@
       "imports": [],
       "is_package": false,
       "loc": 131,
-      "rank": 0.00332
+      "rank": 0.003171
     },
     {
       "community": 2,
@@ -4502,14 +4651,16 @@
       "file": "prism/navigator/request.py",
       "id": "prism.navigator.request",
       "imported_by": [
-        "prism.navigator.task_pack"
+        "prism.navigator.task_pack",
+        "tests.unit.test_context_engine",
+        "tests.unit.test_request_ranking"
       ],
       "imports": [
         "prism.navigator.text"
       ],
       "is_package": false,
-      "loc": 36,
-      "rank": 0.002464
+      "loc": 52,
+      "rank": 0.003351
     },
     {
       "community": 2,
@@ -4530,7 +4681,7 @@
       ],
       "is_package": false,
       "loc": 173,
-      "rank": 0.005328
+      "rank": 0.005122
     },
     {
       "community": 2,
@@ -4553,7 +4704,7 @@
       ],
       "is_package": false,
       "loc": 114,
-      "rank": 0.003554
+      "rank": 0.00341
     },
     {
       "community": 0,
@@ -4565,7 +4716,9 @@
       "imported_by": [
         "prism.cli",
         "prism.hooks.prompt",
-        "tests.integration.test_prompt_hook"
+        "prism.mcp.server",
+        "tests.integration.test_prompt_hook",
+        "tests.unit.test_context_engine"
       ],
       "imports": [
         "prism.core.paths",
@@ -4573,7 +4726,7 @@
       ],
       "is_package": false,
       "loc": 107,
-      "rank": 0.003436
+      "rank": 0.003736
     },
     {
       "community": 2,
@@ -4602,7 +4755,7 @@
       ],
       "is_package": false,
       "loc": 235,
-      "rank": 0.009433
+      "rank": 0.009717
     },
     {
       "community": 2,
@@ -4621,6 +4774,7 @@
         "prism.navigator.freshness",
         "prism.navigator.graphify",
         "prism.navigator.impact",
+        "prism.navigator.knowledge",
         "prism.navigator.overview",
         "prism.navigator.resolve",
         "prism.navigator.semantic",
@@ -4636,8 +4790,10 @@
         "tests.integration.test_freshness",
         "tests.integration.test_hooks_mcp",
         "tests.integration.test_phase5",
+        "tests.unit.test_context_engine",
         "tests.unit.test_graphify_hints",
         "tests.unit.test_navigator",
+        "tests.unit.test_request_ranking",
         "tests.unit.test_task_disclosure",
         "tests.unit.test_task_pack",
         "tests.unit.test_task_retrieval"
@@ -4654,7 +4810,7 @@
       ],
       "is_package": false,
       "loc": 400,
-      "rank": 0.019814
+      "rank": 0.022255
     },
     {
       "community": 2,
@@ -4664,14 +4820,15 @@
       "file": "prism/navigator/support.py",
       "id": "prism.navigator.support",
       "imported_by": [
-        "prism.navigator.task_pack"
+        "prism.navigator.task_pack",
+        "tests.unit.test_context_engine"
       ],
       "imports": [
         "prism.navigator.source_index"
       ],
       "is_package": false,
-      "loc": 79,
-      "rank": 0.002764
+      "loc": 141,
+      "rank": 0.00285
     },
     {
       "community": 2,
@@ -4688,7 +4845,7 @@
       ],
       "is_package": false,
       "loc": 71,
-      "rank": 0.002764
+      "rank": 0.00265
     },
     {
       "community": 2,
@@ -4700,7 +4857,9 @@
       "imported_by": [
         "prism.cli",
         "prism.hooks.prompt",
+        "prism.mcp.server",
         "prism.navigator.api",
+        "tests.unit.test_context_engine",
         "tests.unit.test_task_disclosure",
         "tests.unit.test_task_pack",
         "tests.unit.test_task_retrieval"
@@ -4723,8 +4882,8 @@
         "prism.navigator.text"
       ],
       "is_package": false,
-      "loc": 1289,
-      "rank": 0.004939
+      "loc": 1504,
+      "rank": 0.005185
     },
     {
       "community": 2,
@@ -4748,7 +4907,7 @@
       "imports": [],
       "is_package": false,
       "loc": 188,
-      "rank": 0.015528
+      "rank": 0.018533
     },
     {
       "community": 1,
@@ -4769,7 +4928,7 @@
       ],
       "is_package": true,
       "loc": 4,
-      "rank": 0.004988
+      "rank": 0.004816
     },
     {
       "community": 1,
@@ -4791,7 +4950,7 @@
       ],
       "is_package": false,
       "loc": 36,
-      "rank": 0.007585
+      "rank": 0.007275
     },
     {
       "community": 1,
@@ -4807,7 +4966,7 @@
       "imports": [],
       "is_package": false,
       "loc": 40,
-      "rank": 0.005108
+      "rank": 0.004904
     },
     {
       "community": 1,
@@ -4830,7 +4989,7 @@
       ],
       "is_package": false,
       "loc": 325,
-      "rank": 0.007841
+      "rank": 0.007505
     },
     {
       "community": 1,
@@ -4848,7 +5007,7 @@
       ],
       "is_package": false,
       "loc": 126,
-      "rank": 0.003798
+      "rank": 0.003632
     },
     {
       "community": 1,
@@ -4866,7 +5025,7 @@
       ],
       "is_package": false,
       "loc": 279,
-      "rank": 0.003798
+      "rank": 0.003632
     },
     {
       "community": 1,
@@ -4892,7 +5051,7 @@
       ],
       "is_package": false,
       "loc": 1001,
-      "rank": 0.005137
+      "rank": 0.004918
     },
     {
       "community": 1,
@@ -4929,7 +5088,7 @@
       ],
       "is_package": false,
       "loc": 197,
-      "rank": 0.005547
+      "rank": 0.005348
     },
     {
       "community": 0,
@@ -4960,7 +5119,7 @@
       ],
       "is_package": false,
       "loc": 115,
-      "rank": 0.007285
+      "rank": 0.006924
     },
     {
       "community": 3,
@@ -4984,7 +5143,7 @@
       ],
       "is_package": false,
       "loc": 282,
-      "rank": 0.003289
+      "rank": 0.003136
     },
     {
       "community": 3,
@@ -5006,7 +5165,7 @@
       ],
       "is_package": false,
       "loc": 704,
-      "rank": 0.005246
+      "rank": 0.005012
     },
     {
       "community": 3,
@@ -5029,7 +5188,7 @@
       ],
       "is_package": false,
       "loc": 430,
-      "rank": 0.003311
+      "rank": 0.003112
     },
     {
       "community": 0,
@@ -5045,7 +5204,7 @@
       ],
       "is_package": true,
       "loc": 31,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": 2,
@@ -5064,7 +5223,7 @@
       ],
       "is_package": false,
       "loc": 53,
-      "rank": 0.004065
+      "rank": 0.003889
     },
     {
       "community": 0,
@@ -5088,7 +5247,7 @@
       ],
       "is_package": false,
       "loc": 134,
-      "rank": 0.00555
+      "rank": 0.005319
     },
     {
       "community": 0,
@@ -5108,7 +5267,7 @@
       ],
       "is_package": false,
       "loc": 236,
-      "rank": 0.004018
+      "rank": 0.003891
     },
     {
       "community": 0,
@@ -5131,7 +5290,7 @@
       ],
       "is_package": false,
       "loc": 122,
-      "rank": 0.003311
+      "rank": 0.003112
     },
     {
       "community": 3,
@@ -5151,7 +5310,7 @@
       ],
       "is_package": false,
       "loc": 285,
-      "rank": 0.002994
+      "rank": 0.002859
     },
     {
       "community": 0,
@@ -5177,7 +5336,7 @@
       ],
       "is_package": false,
       "loc": 130,
-      "rank": 0.00415
+      "rank": 0.004012
     },
     {
       "community": 3,
@@ -5202,12 +5361,13 @@
         "prism.writers.manifest",
         "prism.writers.narrative",
         "prism.writers.obsidian",
+        "prism.writers.task_cache",
         "tests.unit.test_writers"
       ],
       "imports": [],
       "is_package": false,
       "loc": 59,
-      "rank": 0.029312
+      "rank": 0.029061
     },
     {
       "community": 0,
@@ -5234,7 +5394,8 @@
         "prism.writers",
         "prism.writers.decisions",
         "prism.writers.index_writer",
-        "tests.integration.test_freshness"
+        "tests.integration.test_freshness",
+        "tests.integration.test_prompt_hook"
       ],
       "imports": [
         "prism",
@@ -5244,7 +5405,7 @@
       ],
       "is_package": false,
       "loc": 66,
-      "rank": 0.016429
+      "rank": 0.016219
     },
     {
       "community": 0,
@@ -5262,7 +5423,7 @@
       ],
       "is_package": false,
       "loc": 127,
-      "rank": 0.002856
+      "rank": 0.002735
     },
     {
       "community": 0,
@@ -5280,7 +5441,7 @@
       ],
       "is_package": false,
       "loc": 25,
-      "rank": 0.002984
+      "rank": 0.002849
     },
     {
       "community": 3,
@@ -5299,7 +5460,26 @@
       ],
       "is_package": false,
       "loc": 201,
-      "rank": 0.002994
+      "rank": 0.002859
+    },
+    {
+      "community": 2,
+      "doc": "Bounded, disposable task packets keyed by source revision and presentation budget.",
+      "entry_point": null,
+      "external": [],
+      "file": "prism/writers/task_cache.py",
+      "id": "prism.writers.task_cache",
+      "imported_by": [
+        "prism.navigator.api"
+      ],
+      "imports": [
+        "prism.config",
+        "prism.core.paths",
+        "prism.writers.json_writer"
+      ],
+      "is_package": false,
+      "loc": 86,
+      "rank": 0.00316
     },
     {
       "community": -1,
@@ -5312,7 +5492,7 @@
       "imports": [],
       "is_package": true,
       "loc": 0,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5330,7 +5510,7 @@
       ],
       "is_package": false,
       "loc": 102,
-      "rank": 0.003163
+      "rank": 0.003024
     },
     {
       "community": -1,
@@ -5346,7 +5526,7 @@
       "imports": [],
       "is_package": false,
       "loc": 133,
-      "rank": 0.004507
+      "rank": 0.004309
     },
     {
       "community": -1,
@@ -5365,7 +5545,7 @@
       ],
       "is_package": false,
       "loc": 146,
-      "rank": 0.003809
+      "rank": 0.003641
     },
     {
       "community": -1,
@@ -5378,7 +5558,7 @@
       "imports": [],
       "is_package": false,
       "loc": 336,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5393,7 +5573,7 @@
       "imports": [],
       "is_package": false,
       "loc": 116,
-      "rank": 0.003163
+      "rank": 0.003024
     },
     {
       "community": -1,
@@ -5413,7 +5593,7 @@
       ],
       "is_package": false,
       "loc": 478,
-      "rank": 0.004559
+      "rank": 0.004359
     },
     {
       "community": -1,
@@ -5430,7 +5610,7 @@
       "imports": [],
       "is_package": false,
       "loc": 105,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5445,8 +5625,8 @@
         "prism.navigator.store"
       ],
       "is_package": false,
-      "loc": 54,
-      "rank": 0.002464
+      "loc": 106,
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5465,7 +5645,7 @@
       ],
       "is_package": false,
       "loc": 145,
-      "rank": 0.004559
+      "rank": 0.004359
     },
     {
       "community": -1,
@@ -5483,7 +5663,7 @@
       ],
       "is_package": false,
       "loc": 86,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5499,7 +5679,7 @@
       "imports": [],
       "is_package": false,
       "loc": 109,
-      "rank": 0.00325
+      "rank": 0.003107
     },
     {
       "community": -1,
@@ -5521,7 +5701,7 @@
       ],
       "is_package": false,
       "loc": 392,
-      "rank": 0.002674
+      "rank": 0.002557
     },
     {
       "community": -1,
@@ -5538,7 +5718,7 @@
       "imports": [],
       "is_package": false,
       "loc": 81,
-      "rank": 0.003163
+      "rank": 0.003024
     },
     {
       "community": -1,
@@ -5561,7 +5741,7 @@
       ],
       "is_package": false,
       "loc": 236,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5579,8 +5759,8 @@
         "prism.consent"
       ],
       "is_package": false,
-      "loc": 98,
-      "rank": 0.002464
+      "loc": 134,
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5606,7 +5786,7 @@
       ],
       "is_package": false,
       "loc": 205,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5632,7 +5812,7 @@
       ],
       "is_package": false,
       "loc": 210,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5649,7 +5829,7 @@
       ],
       "is_package": false,
       "loc": 231,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5671,7 +5851,7 @@
       ],
       "is_package": false,
       "loc": 349,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5695,7 +5875,7 @@
       ],
       "is_package": false,
       "loc": 168,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5717,11 +5897,12 @@
         "prism.lifecycle",
         "prism.navigator.api",
         "prism.navigator.freshness",
-        "prism.navigator.session"
+        "prism.navigator.session",
+        "prism.writers.manifest"
       ],
       "is_package": false,
-      "loc": 247,
-      "rank": 0.002464
+      "loc": 276,
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5741,7 +5922,7 @@
       ],
       "is_package": false,
       "loc": 91,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5762,7 +5943,7 @@
       ],
       "is_package": false,
       "loc": 146,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5782,7 +5963,7 @@
       ],
       "is_package": false,
       "loc": 56,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5806,7 +5987,7 @@
       ],
       "is_package": false,
       "loc": 422,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5825,7 +6006,7 @@
       ],
       "is_package": false,
       "loc": 159,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5842,7 +6023,7 @@
       ],
       "is_package": false,
       "loc": 157,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5860,7 +6041,7 @@
       ],
       "is_package": false,
       "loc": 37,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5876,7 +6057,35 @@
       ],
       "is_package": false,
       "loc": 37,
-      "rank": 0.002464
+      "rank": 0.002356
+    },
+    {
+      "community": -1,
+      "doc": "",
+      "entry_point": null,
+      "external": [
+        "pytest",
+        "typer"
+      ],
+      "file": "tests/unit/test_context_engine.py",
+      "id": "tests.unit.test_context_engine",
+      "imported_by": [],
+      "imports": [
+        "prism.cli",
+        "prism.core.tokens",
+        "prism.lifecycle",
+        "prism.mcp.server",
+        "prism.navigator.api",
+        "prism.navigator.literals",
+        "prism.navigator.request",
+        "prism.navigator.session",
+        "prism.navigator.store",
+        "prism.navigator.support",
+        "prism.navigator.task_pack"
+      ],
+      "is_package": false,
+      "loc": 285,
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5895,7 +6104,7 @@
       ],
       "is_package": false,
       "loc": 118,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5912,7 +6121,7 @@
       ],
       "is_package": false,
       "loc": 175,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5929,7 +6138,7 @@
       ],
       "is_package": false,
       "loc": 92,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5947,7 +6156,7 @@
       ],
       "is_package": false,
       "loc": 167,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5968,7 +6177,7 @@
       ],
       "is_package": false,
       "loc": 89,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -5994,7 +6203,7 @@
       ],
       "is_package": false,
       "loc": 200,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -6013,7 +6222,7 @@
       ],
       "is_package": false,
       "loc": 211,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -6029,7 +6238,27 @@
       ],
       "is_package": false,
       "loc": 190,
-      "rank": 0.002464
+      "rank": 0.002356
+    },
+    {
+      "community": -1,
+      "doc": "",
+      "entry_point": null,
+      "external": [
+        "pytest"
+      ],
+      "file": "tests/unit/test_request_ranking.py",
+      "id": "tests.unit.test_request_ranking",
+      "imported_by": [],
+      "imports": [
+        "prism.lifecycle",
+        "prism.navigator.api",
+        "prism.navigator.request",
+        "prism.navigator.store"
+      ],
+      "is_package": false,
+      "loc": 80,
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -6046,7 +6275,7 @@
       ],
       "is_package": false,
       "loc": 52,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -6071,7 +6300,7 @@
       ],
       "is_package": false,
       "loc": 160,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -6097,7 +6326,7 @@
       ],
       "is_package": false,
       "loc": 143,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -6118,7 +6347,7 @@
       ],
       "is_package": false,
       "loc": 190,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -6138,7 +6367,7 @@
       ],
       "is_package": false,
       "loc": 119,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -6156,7 +6385,7 @@
       ],
       "is_package": false,
       "loc": 70,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": 4,
@@ -6194,7 +6423,7 @@
       ],
       "is_package": false,
       "loc": 552,
-      "rank": 0.011199
+      "rank": 0.010708
     },
     {
       "community": 4,
@@ -6213,7 +6442,7 @@
       ],
       "is_package": false,
       "loc": 136,
-      "rank": 0.002655
+      "rank": 0.002538
     },
     {
       "community": 4,
@@ -6240,7 +6469,7 @@
       ],
       "is_package": false,
       "loc": 355,
-      "rank": 0.002655
+      "rank": 0.002538
     },
     {
       "community": 4,
@@ -6259,7 +6488,7 @@
       ],
       "is_package": false,
       "loc": 341,
-      "rank": 0.004296
+      "rank": 0.004108
     },
     {
       "community": 4,
@@ -6281,7 +6510,7 @@
       ],
       "is_package": false,
       "loc": 242,
-      "rank": 0.008991
+      "rank": 0.008596
     },
     {
       "community": 3,
@@ -6296,7 +6525,7 @@
       ],
       "is_package": false,
       "loc": 130,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": 4,
@@ -6314,7 +6543,7 @@
       ],
       "is_package": false,
       "loc": 74,
-      "rank": 0.002655
+      "rank": 0.002538
     },
     {
       "community": 4,
@@ -6333,7 +6562,7 @@
       ],
       "is_package": false,
       "loc": 267,
-      "rank": 0.003654
+      "rank": 0.003494
     },
     {
       "community": 4,
@@ -6353,7 +6582,7 @@
       ],
       "is_package": false,
       "loc": 112,
-      "rank": 0.003654
+      "rank": 0.003494
     },
     {
       "community": 4,
@@ -6374,7 +6603,7 @@
       ],
       "is_package": false,
       "loc": 82,
-      "rank": 0.002655
+      "rank": 0.002538
     },
     {
       "community": 4,
@@ -6401,7 +6630,7 @@
       ],
       "is_package": false,
       "loc": 65,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": 4,
@@ -6421,7 +6650,7 @@
       ],
       "is_package": false,
       "loc": 194,
-      "rank": 0.002906
+      "rank": 0.002778
     },
     {
       "community": 4,
@@ -6446,7 +6675,7 @@
       ],
       "is_package": false,
       "loc": 238,
-      "rank": 0.004547
+      "rank": 0.004347
     },
     {
       "community": 4,
@@ -6469,7 +6698,7 @@
       ],
       "is_package": false,
       "loc": 124,
-      "rank": 0.002906
+      "rank": 0.002778
     },
     {
       "community": 4,
@@ -6490,7 +6719,7 @@
       ],
       "is_package": false,
       "loc": 62,
-      "rank": 0.006028
+      "rank": 0.005763
     },
     {
       "community": 4,
@@ -6516,7 +6745,7 @@
       "imports": [],
       "is_package": false,
       "loc": 115,
-      "rank": 0.025513
+      "rank": 0.02456
     },
     {
       "community": 4,
@@ -6541,7 +6770,7 @@
       "imports": [],
       "is_package": false,
       "loc": 82,
-      "rank": 0.013019
+      "rank": 0.012447
     },
     {
       "community": 4,
@@ -6559,7 +6788,7 @@
       ],
       "is_package": false,
       "loc": 58,
-      "rank": 0.002715
+      "rank": 0.002596
     },
     {
       "community": -1,
@@ -6576,7 +6805,7 @@
       "imports": [],
       "is_package": false,
       "loc": 118,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": -1,
@@ -6593,7 +6822,7 @@
       "imports": [],
       "is_package": false,
       "loc": 26,
-      "rank": 0.002464
+      "rank": 0.002356
     },
     {
       "community": 9,
@@ -6608,7 +6837,7 @@
       "imports": [],
       "is_package": false,
       "loc": 21,
-      "rank": 0.002464
+      "rank": 0.002356
     }
   ],
   "schema_version": "1.0"

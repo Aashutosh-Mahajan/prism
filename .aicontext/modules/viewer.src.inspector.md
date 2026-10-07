@@ -18,6 +18,7 @@
   - `interface LinkItem` (viewer/src/inspector.ts:19)
 - Depends on: `viewer.src.app`, `viewer.src.types`, `viewer.src.ui`
 - Used by: `viewer.src.app`
+- Tests: tests/unit/test_context_engine.py
 <!-- /prism:generated:facts -->
 
 ## Summary

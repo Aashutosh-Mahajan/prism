@@ -21,6 +21,7 @@
       "tests/integration/test_hooks_mcp.py",
       "tests/integration/test_update_paths.py",
       "tests/skills/test_skill_templates.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_task_pack.py"
     ],
     "prism/config.py": [
@@ -67,6 +68,7 @@
       "tests/integration/test_hooks_mcp.py",
       "tests/integration/test_prompt_hook.py",
       "tests/integration/test_refresh.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_navigator.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
@@ -150,9 +152,11 @@
       "tests/benchmarks/retrieval_economics.py",
       "tests/benchmarks/retrieval_eval.py",
       "tests/benchmarks/tokens.py",
+      "tests/integration/test_cli.py",
       "tests/integration/test_freshness.py",
       "tests/integration/test_integrations.py",
       "tests/integration/test_viewer.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_retrieval.py",
       "viewer/tests/graph.test.mjs"
@@ -177,6 +181,7 @@
       "tests/integration/test_scan.py",
       "tests/integration/test_update_paths.py",
       "tests/integration/test_viewer.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_edit_bench.py",
       "tests/unit/test_graphify_hints.py",
       "tests/unit/test_task_pack.py"
@@ -206,8 +211,10 @@
       "tests/integration/test_scan.py",
       "tests/integration/test_update_paths.py",
       "tests/integration/test_viewer.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_graphify_hints.py",
       "tests/unit/test_navigator.py",
+      "tests/unit/test_request_ranking.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
       "tests/unit/test_task_retrieval.py"
@@ -219,6 +226,7 @@
       "tests/integration/test_freshness.py",
       "tests/integration/test_hooks_mcp.py",
       "tests/skills/test_skill_templates.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_task_pack.py"
     ],
     "prism/narrator/__init__.py": [
@@ -237,8 +245,10 @@
       "tests/integration/test_audit.py",
       "tests/integration/test_phase5.py",
       "tests/integration/test_prompt_hook.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_graphify_hints.py",
       "tests/unit/test_navigator.py",
+      "tests/unit/test_request_ranking.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
       "tests/unit/test_task_retrieval.py"
@@ -254,17 +264,23 @@
       "tests/unit/test_graphify_hints.py"
     ],
     "prism/navigator/literals.py": [
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_task_disclosure.py"
     ],
     "prism/navigator/render.py": [
       "tests/benchmarks/tokens.py",
       "tests/unit/test_navigator.py"
     ],
+    "prism/navigator/request.py": [
+      "tests/unit/test_context_engine.py",
+      "tests/unit/test_request_ranking.py"
+    ],
     "prism/navigator/semantic.py": [
       "tests/integration/test_phase5.py"
     ],
     "prism/navigator/session.py": [
-      "tests/integration/test_prompt_hook.py"
+      "tests/integration/test_prompt_hook.py",
+      "tests/unit/test_context_engine.py"
     ],
     "prism/navigator/source_index.py": [
       "tests/unit/test_graphify_hints.py",
@@ -282,13 +298,19 @@
       "tests/integration/test_freshness.py",
       "tests/integration/test_hooks_mcp.py",
       "tests/integration/test_phase5.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_graphify_hints.py",
       "tests/unit/test_navigator.py",
+      "tests/unit/test_request_ranking.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
       "tests/unit/test_task_retrieval.py"
     ],
+    "prism/navigator/support.py": [
+      "tests/unit/test_context_engine.py"
+    ],
     "prism/navigator/task_pack.py": [
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
       "tests/unit/test_task_retrieval.py"
@@ -363,6 +385,7 @@
       "tests/integration/test_update_paths.py",
       "tests/integration/test_viewer.py",
       "tests/test_agent_measure.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_discovery.py",
       "tests/unit/test_edit_bench.py",
       "tests/unit/test_graphify_hints.py",
@@ -372,7 +395,8 @@
       "tests/unit/test_writers.py"
     ],
     "prism/writers/manifest.py": [
-      "tests/integration/test_freshness.py"
+      "tests/integration/test_freshness.py",
+      "tests/integration/test_prompt_hook.py"
     ],
     "prism/writers/obsidian.py": [
       "tests/integration/test_viewer.py"
@@ -386,6 +410,9 @@
     ],
     "viewer/src/graph-utils.ts": [
       "viewer/tests/graph.test.mjs"
+    ],
+    "viewer/src/inspector.ts": [
+      "tests/unit/test_context_engine.py"
     ]
   },
   "by_symbol": {
@@ -400,6 +427,9 @@
     ],
     "prism.audit.report.build_report": [
       "tests/integration/test_audit.py"
+    ],
+    "prism.cli.context": [
+      "tests/unit/test_context_engine.py"
     ],
     "prism.config.PrismConfig": [
       "tests/unit/test_config.py",
@@ -448,6 +478,7 @@
       "tests/integration/test_hooks_mcp.py",
       "tests/integration/test_prompt_hook.py",
       "tests/integration/test_refresh.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_navigator.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
@@ -507,6 +538,9 @@
     "prism.hooks.formats.render_context": [
       "tests/integration/test_prompt_hook.py"
     ],
+    "prism.hooks.prompt._retrieve": [
+      "tests/integration/test_prompt_hook.py"
+    ],
     "prism.hooks.prompt.should_retrieve": [
       "tests/integration/test_prompt_hook.py"
     ],
@@ -533,9 +567,11 @@
       "tests/benchmarks/retrieval_economics.py",
       "tests/benchmarks/retrieval_eval.py",
       "tests/benchmarks/tokens.py",
+      "tests/integration/test_cli.py",
       "tests/integration/test_freshness.py",
       "tests/integration/test_integrations.py",
       "tests/integration/test_viewer.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_retrieval.py",
       "viewer/tests/graph.test.mjs"
@@ -560,6 +596,7 @@
       "tests/integration/test_scan.py",
       "tests/integration/test_update_paths.py",
       "tests/integration/test_viewer.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_edit_bench.py",
       "tests/unit/test_graphify_hints.py",
       "tests/unit/test_task_pack.py"
@@ -593,8 +630,10 @@
       "tests/integration/test_scan.py",
       "tests/integration/test_update_paths.py",
       "tests/integration/test_viewer.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_graphify_hints.py",
       "tests/unit/test_navigator.py",
+      "tests/unit/test_request_ranking.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
       "tests/unit/test_task_retrieval.py"
@@ -619,8 +658,10 @@
       "tests/integration/test_scan.py",
       "tests/integration/test_update_paths.py",
       "tests/integration/test_viewer.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_graphify_hints.py",
       "tests/unit/test_navigator.py",
+      "tests/unit/test_request_ranking.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
       "tests/unit/test_task_retrieval.py"
@@ -644,8 +685,10 @@
       "tests/integration/test_scan.py",
       "tests/integration/test_update_paths.py",
       "tests/integration/test_viewer.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_graphify_hints.py",
       "tests/unit/test_navigator.py",
+      "tests/unit/test_request_ranking.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
       "tests/unit/test_task_retrieval.py"
@@ -666,6 +709,7 @@
       "tests/integration/test_incremental.py",
       "tests/integration/test_refresh.py",
       "tests/integration/test_viewer.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_task_pack.py"
     ],
     "prism.maintenance.doctor": [
@@ -680,6 +724,7 @@
     "prism.mcp.server.PrismTools": [
       "tests/integration/test_freshness.py",
       "tests/integration/test_hooks_mcp.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_task_pack.py"
     ],
     "prism.mcp.server.PrismTools.prism_locate": [
@@ -687,13 +732,15 @@
     ],
     "prism.mcp.server.PrismTools.prism_task": [
       "tests/integration/test_freshness.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_task_pack.py"
     ],
     "prism.mcp.server.PrismTools.store": [
       "tests/unit/test_task_pack.py"
     ],
     "prism.mcp.server.build_server": [
-      "tests/integration/test_hooks_mcp.py"
+      "tests/integration/test_hooks_mcp.py",
+      "tests/unit/test_context_engine.py"
     ],
     "prism.mcp.server.enabled_tools": [
       "tests/integration/test_hooks_mcp.py",
@@ -722,6 +769,9 @@
       "tests/benchmarks/tokens.py",
       "tests/unit/test_navigator.py"
     ],
+    "prism.navigator.api.op_knowledge": [
+      "tests/unit/test_context_engine.py"
+    ],
     "prism.navigator.api.op_locate": [
       "tests/unit/test_navigator.py"
     ],
@@ -736,7 +786,9 @@
     "prism.navigator.api.op_task": [
       "tests/benchmarks/retrieval_economics.py",
       "tests/benchmarks/retrieval_eval.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_graphify_hints.py",
+      "tests/unit/test_request_ranking.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
       "tests/unit/test_task_retrieval.py"
@@ -756,6 +808,9 @@
     "prism.navigator.graphify.GraphifyGraph.load": [
       "tests/unit/test_graphify_hints.py"
     ],
+    "prism.navigator.literals._quoted_spans": [
+      "tests/unit/test_context_engine.py"
+    ],
     "prism.navigator.literals.find_literals": [
       "tests/unit/test_task_disclosure.py"
     ],
@@ -773,8 +828,18 @@
     "prism.navigator.render.render_search": [
       "tests/benchmarks/tokens.py"
     ],
+    "prism.navigator.request.request_focus": [
+      "tests/unit/test_context_engine.py",
+      "tests/unit/test_request_ranking.py"
+    ],
+    "prism.navigator.request.request_operations": [
+      "tests/unit/test_request_ranking.py"
+    ],
     "prism.navigator.session.load_seen": [
       "tests/integration/test_prompt_hook.py"
+    ],
+    "prism.navigator.session.save_seen": [
+      "tests/unit/test_context_engine.py"
     ],
     "prism.navigator.source_index.SourceIndex": [
       "tests/unit/test_task_disclosure.py"
@@ -804,8 +869,10 @@
       "tests/integration/test_freshness.py",
       "tests/integration/test_hooks_mcp.py",
       "tests/integration/test_phase5.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_graphify_hints.py",
       "tests/unit/test_navigator.py",
+      "tests/unit/test_request_ranking.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
       "tests/unit/test_task_retrieval.py"
@@ -817,7 +884,11 @@
       "tests/integration/test_hooks_mcp.py",
       "tests/unit/test_navigator.py"
     ],
+    "prism.navigator.support.produces_shape": [
+      "tests/unit/test_context_engine.py"
+    ],
     "prism.navigator.task_pack.render_task": [
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_task_disclosure.py",
       "tests/unit/test_task_pack.py",
       "tests/unit/test_task_retrieval.py"
@@ -935,6 +1006,7 @@
       "tests/integration/test_update_paths.py",
       "tests/integration/test_viewer.py",
       "tests/test_agent_measure.py",
+      "tests/unit/test_context_engine.py",
       "tests/unit/test_discovery.py",
       "tests/unit/test_edit_bench.py",
       "tests/unit/test_graphify_hints.py",
@@ -944,7 +1016,8 @@
       "tests/unit/test_writers.py"
     ],
     "prism.writers.manifest.load_manifest": [
-      "tests/integration/test_freshness.py"
+      "tests/integration/test_freshness.py",
+      "tests/integration/test_prompt_hook.py"
     ],
     "prism.writers.obsidian.export_obsidian": [
       "tests/integration/test_viewer.py"
@@ -963,6 +1036,9 @@
     ],
     "viewer.src.graph_utils.RequestGeneration.next": [
       "viewer/tests/graph.test.mjs"
+    ],
+    "viewer.src.inspector.stat": [
+      "tests/unit/test_context_engine.py"
     ]
   },
   "schema_version": "1.0",
@@ -997,6 +1073,7 @@
     "tests/test_agent_measure.py",
     "tests/unit/test_config.py",
     "tests/unit/test_consent.py",
+    "tests/unit/test_context_engine.py",
     "tests/unit/test_discovery.py",
     "tests/unit/test_edit_bench.py",
     "tests/unit/test_extractors.py",
@@ -1005,6 +1082,7 @@
     "tests/unit/test_navigator.py",
     "tests/unit/test_phase3_extractors.py",
     "tests/unit/test_python_parser.py",
+    "tests/unit/test_request_ranking.py",
     "tests/unit/test_retrieval_eval.py",
     "tests/unit/test_task_disclosure.py",
     "tests/unit/test_task_pack.py",

@@ -15,5 +15,5 @@
 
 ## Summary
 <!-- prism:narrative:summary -->
-_Not written yet. Run the prism-refresh skill to fill this section._
+Uses optional local Graphify exports as advisory retrieval hints. Prism verifies source locations and controls budgets. Configured external graphs bypass whole task-packet reuse so existing export verification stays active.
 <!-- /prism:narrative:summary -->

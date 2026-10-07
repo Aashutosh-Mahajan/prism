@@ -4,13 +4,14 @@
 - Files: prism/navigator/request.py
 - Docstring: Separate an edit's leading operation from its acceptance criteria.
 - Public API (by importance):
-  - `request_focus(query: str) -> str` — Prefer the requested change over lengthy examples and rejection rules. (prism/navigator/request.py:27)
-  - `request_operations(query: str) -> set[str]` — Name-level operation evidence, independent of later error examples. (prism/navigator/request.py:21)
+  - `request_focus(query: str) -> str` — Prefer the requested change over lengthy examples and rejection rules. (prism/navigator/request.py:38)
+  - `request_operations(query: str) -> set[str]` — Name-level operation evidence, independent of later error examples. (prism/navigator/request.py:26)
 - Depends on: `prism.navigator.text`
 - Used by: `prism.navigator.task_pack`
+- Tests: tests/unit/test_context_engine.py, tests/unit/test_request_ranking.py
 <!-- /prism:generated:facts -->
 
 ## Summary
 <!-- prism:narrative:summary -->
-_Not written yet. Run the prism-refresh skill to fill this section._
+Separates a leading requested edit from later acceptance criteria for ranking. request_focus handles imperative and noun-first modal requests; request_operations provides operation-name evidence.
 <!-- /prism:narrative:summary -->

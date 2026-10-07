@@ -14,5 +14,5 @@
 
 ## Summary
 <!-- prism:narrative:summary -->
-_Not written yet. Run the prism-refresh skill to fill this section._
+Checks indexed working-tree revisions before retrieval and performs bounded incremental refresh in enabled repositories. Query caches can be warmed separately; stale or unavailable source must not be presented as verified current evidence.
 <!-- /prism:narrative:summary -->

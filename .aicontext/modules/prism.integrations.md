@@ -19,10 +19,10 @@
   - … 27 more
 - Depends on: `prism.core`, `prism.writers`
 - Used by: `prism`
-- Tests: tests/benchmarks/agent_prepare.py, tests/benchmarks/agent_score.py, tests/benchmarks/edit_bench.py, tests/benchmarks/retrieval_eval.py, tests/benchmarks/run.py, tests/benchmarks/tokens.py, tests/integration/test_freshness.py, tests/integration/test_hooks_mcp.py, tests/integration/test_incremental.py, tests/integration/test_integrations.py, tests/integration/test_scan.py, tests/integration/test_update_paths.py, tests/integration/test_viewer.py, tests/unit/test_edit_bench.py, tests/unit/test_graphify_hints.py, tests/unit/test_task_pack.py
+- Tests: tests/benchmarks/agent_prepare.py, tests/benchmarks/agent_score.py, tests/benchmarks/edit_bench.py, tests/benchmarks/retrieval_eval.py, tests/benchmarks/run.py, tests/benchmarks/tokens.py, tests/integration/test_freshness.py, tests/integration/test_hooks_mcp.py, tests/integration/test_incremental.py, tests/integration/test_integrations.py, tests/integration/test_scan.py, tests/integration/test_update_paths.py, tests/integration/test_viewer.py, tests/unit/test_context_engine.py, tests/unit/test_edit_bench.py, tests/unit/test_graphify_hints.py, tests/unit/test_task_pack.py
 <!-- /prism:generated:facts -->
 
 ## Summary
 <!-- prism:narrative:summary -->
-_Not written yet. Run the prism-refresh skill to fill this section._
+Plans agent instruction, skill, MCP and hook configuration files. init applies those plans; uninstall removes managed blocks. The core does not import agent integrations. Existing user configuration must be preserved.
 <!-- /prism:narrative:summary -->

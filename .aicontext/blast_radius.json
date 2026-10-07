@@ -1,7 +1,7 @@
 {
   "files": {
     "prism/__init__.py": {
-      "count": 65,
+      "count": 68,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/store.py",
@@ -11,17 +11,17 @@
       ]
     },
     "prism/_vendor/graphify_retrieval.py": {
-      "count": 38,
+      "count": 41,
       "top": [
         "prism/navigator/graphify.py",
         "prism/navigator/task_pack.py",
         "prism/cli.py",
         "prism/hooks/prompt.py",
-        "prism/navigator/api.py"
+        "prism/mcp/server.py"
       ]
     },
     "prism/audit/__init__.py": {
-      "count": 11,
+      "count": 12,
       "top": [
         "prism/cli.py",
         "prism/mcp/server.py",
@@ -31,7 +31,7 @@
       ]
     },
     "prism/audit/plan.py": {
-      "count": 11,
+      "count": 12,
       "top": [
         "prism/audit/__init__.py",
         "prism/cli.py",
@@ -41,7 +41,7 @@
       ]
     },
     "prism/audit/record.py": {
-      "count": 11,
+      "count": 12,
       "top": [
         "prism/audit/__init__.py",
         "prism/cli.py",
@@ -51,7 +51,7 @@
       ]
     },
     "prism/audit/report.py": {
-      "count": 11,
+      "count": 12,
       "top": [
         "prism/audit/__init__.py",
         "prism/cli.py",
@@ -71,7 +71,7 @@
       ]
     },
     "prism/audit/toolchain_detect.py": {
-      "count": 12,
+      "count": 13,
       "top": [
         "prism/audit/__init__.py",
         "prism/audit/plan.py",
@@ -81,7 +81,7 @@
       ]
     },
     "prism/cli.py": {
-      "count": 8,
+      "count": 9,
       "top": [
         "prism/entry.py",
         "tests/integration/test_cli.py",
@@ -91,7 +91,7 @@
       ]
     },
     "prism/config.py": {
-      "count": 76,
+      "count": 80,
       "top": [
         "prism/discovery/scanner.py",
         "prism/extractors/base.py",
@@ -101,7 +101,7 @@
       ]
     },
     "prism/consent/__init__.py": {
-      "count": 43,
+      "count": 45,
       "top": [
         "prism/cli.py",
         "prism/hooks/prompt.py",
@@ -111,7 +111,7 @@
       ]
     },
     "prism/consent/registry.py": {
-      "count": 39,
+      "count": 41,
       "top": [
         "prism/consent/__init__.py",
         "prism/hooks/runner.py",
@@ -121,7 +121,7 @@
       ]
     },
     "prism/core/errors.py": {
-      "count": 96,
+      "count": 99,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/record.py",
@@ -131,7 +131,7 @@
       ]
     },
     "prism/core/markers.py": {
-      "count": 34,
+      "count": 36,
       "top": [
         "prism/narrator/refresh.py",
         "prism/writers/agents_md.py",
@@ -141,7 +141,7 @@
       ]
     },
     "prism/core/models.py": {
-      "count": 103,
+      "count": 106,
       "top": [
         "prism/discovery/scanner.py",
         "prism/extractors/base.py",
@@ -151,7 +151,7 @@
       ]
     },
     "prism/core/paths.py": {
-      "count": 92,
+      "count": 96,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/store.py",
@@ -161,17 +161,17 @@
       ]
     },
     "prism/core/tokens.py": {
-      "count": 48,
+      "count": 51,
       "top": [
         "prism/hooks/prompt.py",
         "prism/narrator/refresh.py",
         "prism/navigator/context_pack.py",
-        "prism/navigator/task_pack.py",
-        "prism/parsing/python_ast.py"
+        "prism/navigator/knowledge.py",
+        "prism/navigator/task_pack.py"
       ]
     },
     "prism/discovery/__init__.py": {
-      "count": 47,
+      "count": 49,
       "top": [
         "prism/hooks/runner.py",
         "prism/lifecycle.py",
@@ -181,7 +181,7 @@
       ]
     },
     "prism/discovery/language.py": {
-      "count": 44,
+      "count": 46,
       "top": [
         "prism/discovery/__init__.py",
         "prism/discovery/scanner.py",
@@ -191,7 +191,7 @@
       ]
     },
     "prism/discovery/scanner.py": {
-      "count": 45,
+      "count": 47,
       "top": [
         "prism/discovery/__init__.py",
         "prism/extractors/toolchain.py",
@@ -201,7 +201,7 @@
       ]
     },
     "prism/drift/__init__.py": {
-      "count": 40,
+      "count": 42,
       "top": [
         "prism/lifecycle.py",
         "prism/narrator/refresh.py",
@@ -211,7 +211,7 @@
       ]
     },
     "prism/drift/scoring.py": {
-      "count": 33,
+      "count": 35,
       "top": [
         "prism/drift/__init__.py",
         "prism/narrator/refresh.py",
@@ -221,7 +221,7 @@
       ]
     },
     "prism/drift/structural_diff.py": {
-      "count": 33,
+      "count": 35,
       "top": [
         "prism/drift/__init__.py",
         "prism/drift/scoring.py",
@@ -237,7 +237,7 @@
       ]
     },
     "prism/extractors/__init__.py": {
-      "count": 32,
+      "count": 34,
       "top": [
         "prism/pipeline.py",
         "prism/lifecycle.py",
@@ -247,7 +247,7 @@
       ]
     },
     "prism/extractors/base.py": {
-      "count": 45,
+      "count": 48,
       "top": [
         "prism/extractors/__init__.py",
         "prism/extractors/blast_radius.py",
@@ -257,7 +257,7 @@
       ]
     },
     "prism/extractors/blast_radius.py": {
-      "count": 32,
+      "count": 34,
       "top": [
         "prism/pipeline.py",
         "prism/lifecycle.py",
@@ -267,7 +267,7 @@
       ]
     },
     "prism/extractors/config_keys.py": {
-      "count": 32,
+      "count": 34,
       "top": [
         "prism/pipeline.py",
         "prism/lifecycle.py",
@@ -277,7 +277,7 @@
       ]
     },
     "prism/extractors/dead_code.py": {
-      "count": 32,
+      "count": 34,
       "top": [
         "prism/pipeline.py",
         "prism/lifecycle.py",
@@ -297,7 +297,7 @@
       ]
     },
     "prism/extractors/models.py": {
-      "count": 32,
+      "count": 34,
       "top": [
         "prism/pipeline.py",
         "prism/lifecycle.py",
@@ -317,7 +317,7 @@
       ]
     },
     "prism/extractors/routes.py": {
-      "count": 32,
+      "count": 34,
       "top": [
         "prism/pipeline.py",
         "tests/unit/test_phase3_extractors.py",
@@ -327,7 +327,7 @@
       ]
     },
     "prism/extractors/tests_map.py": {
-      "count": 54,
+      "count": 57,
       "top": [
         "prism/extractors/__init__.py",
         "prism/extractors/dead_code.py",
@@ -347,7 +347,7 @@
       ]
     },
     "prism/graph/__init__.py": {
-      "count": 33,
+      "count": 35,
       "top": [
         "prism/pipeline.py",
         "tests/unit/test_graph.py",
@@ -357,7 +357,7 @@
       ]
     },
     "prism/graph/blast.py": {
-      "count": 30,
+      "count": 32,
       "top": [
         "prism/extractors/blast_radius.py",
         "prism/navigator/impact.py",
@@ -367,7 +367,7 @@
       ]
     },
     "prism/graph/call_graph.py": {
-      "count": 44,
+      "count": 47,
       "top": [
         "prism/extractors/entry_points.py",
         "prism/extractors/models.py",
@@ -377,7 +377,7 @@
       ]
     },
     "prism/graph/communities.py": {
-      "count": 32,
+      "count": 34,
       "top": [
         "prism/pipeline.py",
         "tests/integration/test_phase5.py",
@@ -397,7 +397,7 @@
       ]
     },
     "prism/graph/ranking.py": {
-      "count": 52,
+      "count": 54,
       "top": [
         "prism/graph/__init__.py",
         "prism/graph/call_graph.py",
@@ -417,7 +417,7 @@
       ]
     },
     "prism/health/__init__.py": {
-      "count": 41,
+      "count": 43,
       "top": [
         "prism/lifecycle.py",
         "prism/pipeline.py",
@@ -427,7 +427,7 @@
       ]
     },
     "prism/health/coverage.py": {
-      "count": 33,
+      "count": 35,
       "top": [
         "prism/health/__init__.py",
         "prism/pipeline.py",
@@ -437,7 +437,7 @@
       ]
     },
     "prism/health/git_intel.py": {
-      "count": 36,
+      "count": 38,
       "top": [
         "prism/health/__init__.py",
         "prism/lifecycle.py",
@@ -447,7 +447,7 @@
       ]
     },
     "prism/health/risk.py": {
-      "count": 33,
+      "count": 35,
       "top": [
         "prism/health/__init__.py",
         "prism/pipeline.py",
@@ -457,7 +457,7 @@
       ]
     },
     "prism/hooks/__init__.py": {
-      "count": 14,
+      "count": 15,
       "top": [
         "prism/hooks/entry.py",
         "tests/benchmarks/edit_bench.py",
@@ -467,7 +467,7 @@
       ]
     },
     "prism/hooks/entry.py": {
-      "count": 10,
+      "count": 11,
       "top": [
         "prism/cli.py",
         "prism/entry.py",
@@ -477,7 +477,7 @@
       ]
     },
     "prism/hooks/formats.py": {
-      "count": 12,
+      "count": 13,
       "top": [
         "prism/hooks/entry.py",
         "tests/integration/test_prompt_hook.py",
@@ -507,7 +507,7 @@
       ]
     },
     "prism/incremental/hash_cache.py": {
-      "count": 107,
+      "count": 112,
       "top": [
         "prism/_vendor/graphify_retrieval.py",
         "prism/audit/plan.py",
@@ -517,7 +517,7 @@
       ]
     },
     "prism/incremental/lock.py": {
-      "count": 54,
+      "count": 57,
       "top": [
         "prism/hooks/runner.py",
         "prism/hooks/update_job.py",
@@ -527,7 +527,7 @@
       ]
     },
     "prism/integrations/__init__.py": {
-      "count": 37,
+      "count": 39,
       "top": [
         "prism/cli.py",
         "prism/lifecycle.py",
@@ -537,7 +537,7 @@
       ]
     },
     "prism/integrations/antigravity.py": {
-      "count": 31,
+      "count": 33,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -547,7 +547,7 @@
       ]
     },
     "prism/integrations/base.py": {
-      "count": 73,
+      "count": 75,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/record.py",
@@ -557,7 +557,7 @@
       ]
     },
     "prism/integrations/claude_code.py": {
-      "count": 31,
+      "count": 33,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -567,7 +567,7 @@
       ]
     },
     "prism/integrations/codex.py": {
-      "count": 31,
+      "count": 33,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -577,7 +577,7 @@
       ]
     },
     "prism/integrations/common.py": {
-      "count": 21,
+      "count": 22,
       "top": [
         "prism/integrations/antigravity.py",
         "prism/integrations/claude_code.py",
@@ -587,7 +587,7 @@
       ]
     },
     "prism/integrations/gemini.py": {
-      "count": 31,
+      "count": 33,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -597,7 +597,7 @@
       ]
     },
     "prism/integrations/git_hooks.py": {
-      "count": 38,
+      "count": 40,
       "top": [
         "prism/cli.py",
         "prism/integrations/__init__.py",
@@ -607,7 +607,7 @@
       ]
     },
     "prism/integrations/global_note.py": {
-      "count": 10,
+      "count": 11,
       "top": [
         "prism/cli.py",
         "tests/integration/test_integrations.py",
@@ -627,7 +627,7 @@
       ]
     },
     "prism/integrations/other_agents.py": {
-      "count": 31,
+      "count": 33,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -637,7 +637,7 @@
       ]
     },
     "prism/lifecycle.py": {
-      "count": 65,
+      "count": 67,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/record.py",
@@ -647,7 +647,7 @@
       ]
     },
     "prism/maintenance.py": {
-      "count": 10,
+      "count": 11,
       "top": [
         "prism/cli.py",
         "tests/integration/test_phase5.py",
@@ -657,27 +657,27 @@
       ]
     },
     "prism/mcp/__init__.py": {
-      "count": 10,
+      "count": 12,
       "top": [
         "prism/maintenance.py",
+        "prism/mcp/server.py",
         "prism/cli.py",
-        "tests/integration/test_phase5.py",
-        "prism/entry.py",
-        "tests/integration/test_cli.py"
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_hooks_mcp.py"
       ]
     },
     "prism/mcp/server.py": {
-      "count": 9,
+      "count": 10,
       "top": [
         "prism/cli.py",
         "tests/integration/test_freshness.py",
         "tests/integration/test_hooks_mcp.py",
         "tests/skills/test_skill_templates.py",
-        "tests/unit/test_task_pack.py"
+        "tests/unit/test_context_engine.py"
       ]
     },
     "prism/narrator/__init__.py": {
-      "count": 11,
+      "count": 12,
       "top": [
         "prism/cli.py",
         "prism/mcp/server.py",
@@ -687,7 +687,7 @@
       ]
     },
     "prism/narrator/refresh.py": {
-      "count": 11,
+      "count": 12,
       "top": [
         "prism/cli.py",
         "prism/mcp/server.py",
@@ -697,7 +697,7 @@
       ]
     },
     "prism/navigator/api.py": {
-      "count": 35,
+      "count": 37,
       "top": [
         "prism/cli.py",
         "prism/hooks/prompt.py",
@@ -707,7 +707,7 @@
       ]
     },
     "prism/navigator/cache_db.py": {
-      "count": 62,
+      "count": 65,
       "top": [
         "prism/navigator/freshness.py",
         "prism/navigator/semantic.py",
@@ -717,7 +717,7 @@
       ]
     },
     "prism/navigator/context_pack.py": {
-      "count": 33,
+      "count": 35,
       "top": [
         "prism/navigator/api.py",
         "prism/cli.py",
@@ -727,7 +727,7 @@
       ]
     },
     "prism/navigator/freshness.py": {
-      "count": 37,
+      "count": 39,
       "top": [
         "prism/cli.py",
         "prism/hooks/prompt.py",
@@ -737,17 +737,17 @@
       ]
     },
     "prism/navigator/fusion.py": {
-      "count": 28,
+      "count": 30,
       "top": [
         "prism/navigator/task_pack.py",
         "tests/unit/test_task_disclosure.py",
         "prism/cli.py",
         "prism/hooks/prompt.py",
-        "prism/navigator/api.py"
+        "prism/mcp/server.py"
       ]
     },
     "prism/navigator/graphify.py": {
-      "count": 46,
+      "count": 49,
       "top": [
         "prism/navigator/store.py",
         "prism/navigator/task_pack.py",
@@ -757,7 +757,7 @@
       ]
     },
     "prism/navigator/impact.py": {
-      "count": 35,
+      "count": 37,
       "top": [
         "prism/navigator/api.py",
         "prism/navigator/context_pack.py",
@@ -766,28 +766,38 @@
         "prism/hooks/prompt.py"
       ]
     },
+    "prism/navigator/knowledge.py": {
+      "count": 36,
+      "top": [
+        "prism/cli.py",
+        "prism/navigator/api.py",
+        "prism/entry.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/runner.py"
+      ]
+    },
     "prism/navigator/literals.py": {
-      "count": 28,
+      "count": 30,
       "top": [
         "prism/navigator/task_pack.py",
+        "tests/unit/test_context_engine.py",
         "tests/unit/test_task_disclosure.py",
         "prism/cli.py",
-        "prism/hooks/prompt.py",
-        "prism/navigator/api.py"
+        "prism/hooks/prompt.py"
       ]
     },
     "prism/navigator/overview.py": {
-      "count": 28,
+      "count": 30,
       "top": [
         "prism/navigator/task_pack.py",
         "prism/cli.py",
         "prism/hooks/prompt.py",
-        "prism/navigator/api.py",
-        "tests/unit/test_task_disclosure.py"
+        "prism/mcp/server.py",
+        "prism/navigator/api.py"
       ]
     },
     "prism/navigator/render.py": {
-      "count": 11,
+      "count": 12,
       "top": [
         "prism/cli.py",
         "tests/benchmarks/tokens.py",
@@ -797,17 +807,17 @@
       ]
     },
     "prism/navigator/request.py": {
-      "count": 28,
+      "count": 30,
       "top": [
         "prism/navigator/task_pack.py",
+        "tests/unit/test_context_engine.py",
+        "tests/unit/test_request_ranking.py",
         "prism/cli.py",
-        "prism/hooks/prompt.py",
-        "prism/navigator/api.py",
-        "tests/unit/test_task_disclosure.py"
+        "prism/hooks/prompt.py"
       ]
     },
     "prism/navigator/resolve.py": {
-      "count": 36,
+      "count": 38,
       "top": [
         "prism/navigator/api.py",
         "prism/navigator/context_pack.py",
@@ -817,7 +827,7 @@
       ]
     },
     "prism/navigator/semantic.py": {
-      "count": 33,
+      "count": 35,
       "top": [
         "prism/navigator/api.py",
         "tests/integration/test_phase5.py",
@@ -827,17 +837,17 @@
       ]
     },
     "prism/navigator/session.py": {
-      "count": 14,
+      "count": 16,
       "top": [
         "prism/cli.py",
         "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
         "tests/integration/test_prompt_hook.py",
-        "prism/entry.py",
-        "prism/hooks/__init__.py"
+        "tests/unit/test_context_engine.py"
       ]
     },
     "prism/navigator/source_index.py": {
-      "count": 47,
+      "count": 50,
       "top": [
         "prism/navigator/context_pack.py",
         "prism/navigator/freshness.py",
@@ -847,7 +857,7 @@
       ]
     },
     "prism/navigator/store.py": {
-      "count": 70,
+      "count": 74,
       "top": [
         "prism/cli.py",
         "prism/config.py",
@@ -857,37 +867,37 @@
       ]
     },
     "prism/navigator/support.py": {
-      "count": 28,
+      "count": 30,
       "top": [
         "prism/navigator/task_pack.py",
+        "tests/unit/test_context_engine.py",
         "prism/cli.py",
         "prism/hooks/prompt.py",
-        "prism/navigator/api.py",
-        "tests/unit/test_task_disclosure.py"
+        "prism/mcp/server.py"
       ]
     },
     "prism/navigator/synonyms.py": {
-      "count": 28,
+      "count": 30,
       "top": [
         "prism/navigator/task_pack.py",
         "prism/cli.py",
         "prism/hooks/prompt.py",
-        "prism/navigator/api.py",
-        "tests/unit/test_task_disclosure.py"
+        "prism/mcp/server.py",
+        "prism/navigator/api.py"
       ]
     },
     "prism/navigator/task_pack.py": {
-      "count": 35,
+      "count": 37,
       "top": [
         "prism/cli.py",
         "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
         "prism/navigator/api.py",
-        "tests/unit/test_task_disclosure.py",
-        "tests/unit/test_task_pack.py"
+        "tests/unit/test_context_engine.py"
       ]
     },
     "prism/navigator/text.py": {
-      "count": 50,
+      "count": 53,
       "top": [
         "prism/navigator/cache_db.py",
         "prism/navigator/graphify.py",
@@ -897,7 +907,7 @@
       ]
     },
     "prism/parsing/__init__.py": {
-      "count": 43,
+      "count": 45,
       "top": [
         "prism/lifecycle.py",
         "prism/pipeline.py",
@@ -907,7 +917,7 @@
       ]
     },
     "prism/parsing/base_parser.py": {
-      "count": 42,
+      "count": 44,
       "top": [
         "prism/lifecycle.py",
         "prism/maintenance.py",
@@ -917,7 +927,7 @@
       ]
     },
     "prism/parsing/modules.py": {
-      "count": 35,
+      "count": 37,
       "top": [
         "prism/parsing/__init__.py",
         "prism/pipeline.py",
@@ -967,7 +977,7 @@
       ]
     },
     "prism/pipeline.py": {
-      "count": 40,
+      "count": 42,
       "top": [
         "prism/lifecycle.py",
         "tests/unit/test_extractors.py",
@@ -977,7 +987,7 @@
       ]
     },
     "prism/status.py": {
-      "count": 42,
+      "count": 44,
       "top": [
         "prism/cli.py",
         "prism/hooks/runner.py",
@@ -987,7 +997,7 @@
       ]
     },
     "prism/viewer/api.py": {
-      "count": 11,
+      "count": 12,
       "top": [
         "prism/viewer/server.py",
         "tests/integration/test_viewer.py",
@@ -997,7 +1007,7 @@
       ]
     },
     "prism/viewer/model.py": {
-      "count": 14,
+      "count": 15,
       "top": [
         "prism/viewer/api.py",
         "prism/writers/graph_export.py",
@@ -1007,7 +1017,7 @@
       ]
     },
     "prism/viewer/server.py": {
-      "count": 11,
+      "count": 12,
       "top": [
         "prism/cli.py",
         "prism/mcp/server.py",
@@ -1017,7 +1027,7 @@
       ]
     },
     "prism/writers/activity.py": {
-      "count": 33,
+      "count": 35,
       "top": [
         "prism/navigator/api.py",
         "prism/viewer/server.py",
@@ -1027,7 +1037,7 @@
       ]
     },
     "prism/writers/agents_md.py": {
-      "count": 46,
+      "count": 48,
       "top": [
         "prism/hooks/runner.py",
         "prism/narrator/refresh.py",
@@ -1037,7 +1047,7 @@
       ]
     },
     "prism/writers/artifacts.py": {
-      "count": 38,
+      "count": 40,
       "top": [
         "prism/lifecycle.py",
         "prism/writers/index_writer.py",
@@ -1047,7 +1057,7 @@
       ]
     },
     "prism/writers/decisions.py": {
-      "count": 11,
+      "count": 12,
       "top": [
         "prism/cli.py",
         "prism/mcp/server.py",
@@ -1057,7 +1067,7 @@
       ]
     },
     "prism/writers/graph_export.py": {
-      "count": 10,
+      "count": 11,
       "top": [
         "prism/cli.py",
         "tests/integration/test_viewer.py",
@@ -1067,7 +1077,7 @@
       ]
     },
     "prism/writers/index_writer.py": {
-      "count": 37,
+      "count": 39,
       "top": [
         "prism/lifecycle.py",
         "prism/writers/__init__.py",
@@ -1077,7 +1087,7 @@
       ]
     },
     "prism/writers/json_writer.py": {
-      "count": 85,
+      "count": 89,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/report.py",
@@ -1087,7 +1097,7 @@
       ]
     },
     "prism/writers/manifest.py": {
-      "count": 73,
+      "count": 76,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/record.py",
@@ -1097,7 +1107,7 @@
       ]
     },
     "prism/writers/modules_md.py": {
-      "count": 29,
+      "count": 31,
       "top": [
         "prism/writers/index_writer.py",
         "prism/lifecycle.py",
@@ -1117,13 +1127,23 @@
       ]
     },
     "prism/writers/obsidian.py": {
-      "count": 10,
+      "count": 11,
       "top": [
         "prism/cli.py",
         "tests/integration/test_viewer.py",
         "prism/entry.py",
         "tests/integration/test_cli.py",
         "tests/integration/test_freshness.py"
+      ]
+    },
+    "prism/writers/task_cache.py": {
+      "count": 35,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/runner.py",
+        "prism/mcp/server.py"
       ]
     },
     "tests/benchmarks/agent_collect.py": {
@@ -1200,7 +1220,7 @@
       ]
     },
     "tests/unit/test_phase3_extractors.py": {
-      "count": 55,
+      "count": 52,
       "top": [
         "prism/hooks/runner.py",
         "prism/incremental/lock.py",
@@ -1210,7 +1230,7 @@
       ]
     },
     "viewer/src/app.ts": {
-      "count": 69,
+      "count": 72,
       "top": [
         "prism/audit/record.py",
         "prism/integrations/base.py",
@@ -1242,7 +1262,7 @@
       ]
     },
     "viewer/src/encode.ts": {
-      "count": 58,
+      "count": 61,
       "top": [
         "viewer/src/app.ts",
         "viewer/src/chrome.ts",
@@ -1258,7 +1278,7 @@
       ]
     },
     "viewer/src/inspector.ts": {
-      "count": 55,
+      "count": 58,
       "top": [
         "prism/discovery/scanner.py",
         "prism/hooks/prompt.py",
@@ -1318,7 +1338,7 @@
       ]
     },
     "viewer/src/types.ts": {
-      "count": 56,
+      "count": 58,
       "top": [
         "prism/incremental/lock.py",
         "prism/navigator/source_index.py",
@@ -1328,7 +1348,7 @@
       ]
     },
     "viewer/src/ui.ts": {
-      "count": 30,
+      "count": 33,
       "top": [
         "viewer/src/app.ts",
         "viewer/src/chrome.ts",
@@ -1468,13 +1488,23 @@
         "prism/mcp/server.py"
       ]
     },
+    "prism.cli.context": {
+      "count": 1,
+      "top": [
+        "tests/unit/test_context_engine.py"
+      ]
+    },
     "prism.cli.emit": {
-      "count": 0,
-      "top": []
+      "count": 1,
+      "top": [
+        "tests/unit/test_context_engine.py"
+      ]
     },
     "prism.cli.emit_json": {
-      "count": 0,
-      "top": []
+      "count": 1,
+      "top": [
+        "tests/unit/test_context_engine.py"
+      ]
     },
     "prism.cli.main": {
       "count": 1,
@@ -1483,7 +1513,7 @@
       ]
     },
     "prism.config.PrismConfig": {
-      "count": 20,
+      "count": 21,
       "top": [
         "tests/unit/test_config.py",
         "tests/unit/test_discovery.py",
@@ -1493,7 +1523,7 @@
       ]
     },
     "prism.config.load_config": {
-      "count": 33,
+      "count": 42,
       "top": [
         "prism/hooks/prompt.py",
         "prism/lifecycle.py",
@@ -1503,7 +1533,7 @@
       ]
     },
     "prism.consent.registry.RepoEntry": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/lifecycle.py",
         "tests/unit/test_consent.py",
@@ -1513,7 +1543,7 @@
       ]
     },
     "prism.consent.registry.config_home": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/lifecycle.py",
         "tests/integration/test_cli.py",
@@ -1523,7 +1553,7 @@
       ]
     },
     "prism.consent.registry.get_entry": {
-      "count": 32,
+      "count": 34,
       "top": [
         "prism/lifecycle.py",
         "tests/integration/test_integrations.py",
@@ -1533,7 +1563,7 @@
       ]
     },
     "prism.consent.registry.load_registry": {
-      "count": 29,
+      "count": 31,
       "top": [
         "tests/unit/test_consent.py",
         "prism/lifecycle.py",
@@ -1543,7 +1573,7 @@
       ]
     },
     "prism.consent.registry.registry_path": {
-      "count": 26,
+      "count": 28,
       "top": [
         "prism/lifecycle.py",
         "tests/integration/test_cli.py",
@@ -1553,7 +1583,7 @@
       ]
     },
     "prism.consent.registry.repo_key": {
-      "count": 29,
+      "count": 31,
       "top": [
         "prism/lifecycle.py",
         "tests/integration/test_integrations.py",
@@ -1563,7 +1593,7 @@
       ]
     },
     "prism.consent.registry.repo_state": {
-      "count": 19,
+      "count": 20,
       "top": [
         "prism/hooks/runner.py",
         "prism/maintenance.py",
@@ -1573,7 +1603,7 @@
       ]
     },
     "prism.consent.registry.save_registry": {
-      "count": 24,
+      "count": 26,
       "top": [
         "prism/lifecycle.py",
         "tests/unit/test_consent.py",
@@ -1583,7 +1613,7 @@
       ]
     },
     "prism.consent.registry.set_entry": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/lifecycle.py",
         "tests/unit/test_consent.py",
@@ -1603,7 +1633,7 @@
       ]
     },
     "prism.core.errors.IndexMissingError": {
-      "count": 43,
+      "count": 45,
       "top": [
         "prism/audit/plan.py",
         "prism/navigator/store.py",
@@ -1633,7 +1663,7 @@
       ]
     },
     "prism.core.errors.UserError": {
-      "count": 57,
+      "count": 61,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/record.py",
@@ -1898,7 +1928,7 @@
       ]
     },
     "prism.core.paths.aicontext_dir": {
-      "count": 16,
+      "count": 17,
       "top": [
         "prism/lifecycle.py",
         "prism/viewer/server.py",
@@ -1918,7 +1948,7 @@
       ]
     },
     "prism.core.paths.manifest_path": {
-      "count": 48,
+      "count": 50,
       "top": [
         "prism/lifecycle.py",
         "prism/viewer/server.py",
@@ -1928,13 +1958,13 @@
       ]
     },
     "prism.core.tokens.estimate_tokens": {
-      "count": 23,
+      "count": 25,
       "top": [
         "prism/hooks/prompt.py",
         "prism/narrator/refresh.py",
         "prism/navigator/context_pack.py",
-        "prism/navigator/task_pack.py",
-        "prism/parsing/python_ast.py"
+        "prism/navigator/knowledge.py",
+        "prism/navigator/task_pack.py"
       ]
     },
     "prism.discovery.language.detect_language": {
@@ -2482,7 +2512,7 @@
       ]
     },
     "prism.incremental.hash_cache.StateCache": {
-      "count": 88,
+      "count": 92,
       "top": [
         "prism/_vendor/graphify_retrieval.py",
         "prism/audit/plan.py",
@@ -2502,7 +2532,7 @@
       "top": []
     },
     "prism.incremental.hash_cache.StateCache.get": {
-      "count": 88,
+      "count": 92,
       "top": [
         "prism/_vendor/graphify_retrieval.py",
         "prism/audit/plan.py",
@@ -2528,7 +2558,7 @@
       "top": []
     },
     "prism.incremental.lock.UpdateLock": {
-      "count": 44,
+      "count": 47,
       "top": [
         "prism/lifecycle.py",
         "tests/integration/test_freshness.py",
@@ -2556,7 +2586,7 @@
       ]
     },
     "prism.integrations.antigravity.AntigravityIntegration": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -2570,7 +2600,7 @@
       "top": []
     },
     "prism.integrations.base.FileChange": {
-      "count": 30,
+      "count": 32,
       "top": [
         "prism/integrations/antigravity.py",
         "prism/integrations/claude_code.py",
@@ -2587,7 +2617,7 @@
       ]
     },
     "prism.integrations.base.FileChange.kind": {
-      "count": 24,
+      "count": 26,
       "top": [
         "prism/lifecycle.py",
         "prism/cli.py",
@@ -2597,7 +2627,7 @@
       ]
     },
     "prism.integrations.base.FileChange.resolve": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/integrations/git_hooks.py",
         "prism/integrations/other_agents.py",
@@ -2607,7 +2637,7 @@
       ]
     },
     "prism.integrations.base.IntegrationOptions": {
-      "count": 24,
+      "count": 26,
       "top": [
         "prism/cli.py",
         "prism/lifecycle.py",
@@ -2617,7 +2647,7 @@
       ]
     },
     "prism.integrations.base.apply_changes": {
-      "count": 24,
+      "count": 26,
       "top": [
         "prism/lifecycle.py",
         "prism/cli.py",
@@ -2627,7 +2657,7 @@
       ]
     },
     "prism.integrations.base.dump_json": {
-      "count": 27,
+      "count": 29,
       "top": [
         "prism/integrations/claude_code.py",
         "prism/integrations/codex.py",
@@ -2637,7 +2667,7 @@
       ]
     },
     "prism.integrations.base.ledger_path": {
-      "count": 23,
+      "count": 25,
       "top": [
         "prism/lifecycle.py",
         "prism/cli.py",
@@ -2712,7 +2742,7 @@
       ]
     },
     "prism.integrations.claude_code.ClaudeCodeIntegration": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -2722,7 +2752,7 @@
       ]
     },
     "prism.integrations.codex.CodexIntegration": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -2761,7 +2791,7 @@
       ]
     },
     "prism.integrations.gemini.GeminiIntegration": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -2771,7 +2801,7 @@
       ]
     },
     "prism.integrations.get_integration": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/cli.py",
         "prism/lifecycle.py",
@@ -2781,7 +2811,7 @@
       ]
     },
     "prism.integrations.git_hooks.GitHooksIntegration": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/integrations/__init__.py",
         "prism/lifecycle.py",
@@ -2797,7 +2827,7 @@
       ]
     },
     "prism.integrations.git_hooks.make_executable": {
-      "count": 24,
+      "count": 26,
       "top": [
         "prism/lifecycle.py",
         "prism/cli.py",
@@ -2855,7 +2885,7 @@
       ]
     },
     "prism.integrations.other_agents.AgentsMdIntegration": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -2865,7 +2895,7 @@
       ]
     },
     "prism.integrations.other_agents.CursorIntegration": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/integrations/__init__.py",
         "prism/cli.py",
@@ -2887,7 +2917,7 @@
       "top": []
     },
     "prism.lifecycle.InitPlan": {
-      "count": 23,
+      "count": 25,
       "top": [
         "prism/cli.py",
         "tests/benchmarks/agent_prepare.py",
@@ -2897,7 +2927,7 @@
       ]
     },
     "prism.lifecycle.PlannedChange": {
-      "count": 23,
+      "count": 25,
       "top": [
         "prism/cli.py",
         "tests/benchmarks/agent_prepare.py",
@@ -2907,7 +2937,7 @@
       ]
     },
     "prism.lifecycle.apply_init": {
-      "count": 24,
+      "count": 26,
       "top": [
         "prism/cli.py",
         "tests/benchmarks/agent_prepare.py",
@@ -2924,7 +2954,7 @@
       ]
     },
     "prism.lifecycle.plan_init": {
-      "count": 24,
+      "count": 26,
       "top": [
         "prism/cli.py",
         "tests/benchmarks/agent_prepare.py",
@@ -2941,7 +2971,7 @@
       ]
     },
     "prism.lifecycle.require_manifest": {
-      "count": 43,
+      "count": 46,
       "top": [
         "prism/cli.py",
         "tests/integration/test_freshness.py",
@@ -2951,7 +2981,7 @@
       ]
     },
     "prism.lifecycle.run_index": {
-      "count": 51,
+      "count": 54,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/record.py",
@@ -2961,7 +2991,7 @@
       ]
     },
     "prism.lifecycle.scan": {
-      "count": 24,
+      "count": 26,
       "top": [
         "prism/cli.py",
         "prism/maintenance.py",
@@ -2987,7 +3017,7 @@
       ]
     },
     "prism.lifecycle.update": {
-      "count": 55,
+      "count": 59,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/record.py",
@@ -3025,19 +3055,21 @@
       ]
     },
     "prism.mcp.server.PrismTools": {
-      "count": 4,
+      "count": 5,
       "top": [
         "tests/integration/test_freshness.py",
         "tests/integration/test_hooks_mcp.py",
+        "tests/unit/test_context_engine.py",
         "tests/unit/test_task_pack.py",
         "prism/cli.py"
       ]
     },
     "prism.mcp.server.PrismTools.call": {
-      "count": 3,
+      "count": 4,
       "top": [
         "tests/integration/test_freshness.py",
         "tests/integration/test_hooks_mcp.py",
+        "tests/unit/test_context_engine.py",
         "tests/unit/test_task_pack.py"
       ]
     },
@@ -3048,40 +3080,47 @@
       ]
     },
     "prism.mcp.server.PrismTools.prism_task": {
-      "count": 2,
+      "count": 5,
       "top": [
         "tests/integration/test_freshness.py",
-        "tests/unit/test_task_pack.py"
+        "tests/unit/test_context_engine.py",
+        "tests/unit/test_task_pack.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/cli.py"
       ]
     },
     "prism.mcp.server.PrismTools.store": {
-      "count": 3,
+      "count": 4,
       "top": [
         "tests/unit/test_task_pack.py",
         "tests/integration/test_freshness.py",
-        "tests/integration/test_hooks_mcp.py"
+        "tests/integration/test_hooks_mcp.py",
+        "tests/unit/test_context_engine.py"
       ]
     },
     "prism.mcp.server.build_server": {
-      "count": 2,
+      "count": 3,
       "top": [
         "tests/integration/test_hooks_mcp.py",
+        "tests/unit/test_context_engine.py",
         "prism/cli.py"
       ]
     },
     "prism.mcp.server.enabled_tools": {
-      "count": 3,
+      "count": 4,
       "top": [
         "tests/integration/test_hooks_mcp.py",
         "tests/unit/test_task_pack.py",
+        "tests/unit/test_context_engine.py",
         "prism/cli.py"
       ]
     },
     "prism.mcp.server.resolve_profile": {
-      "count": 2,
+      "count": 3,
       "top": [
         "tests/integration/test_hooks_mcp.py",
-        "tests/unit/test_task_pack.py"
+        "tests/unit/test_task_pack.py",
+        "tests/unit/test_context_engine.py"
       ]
     },
     "prism.mcp.server.run": {
@@ -3127,7 +3166,7 @@
       ]
     },
     "prism.navigator.api.op_context": {
-      "count": 8,
+      "count": 9,
       "top": [
         "prism/cli.py",
         "prism/mcp/server.py",
@@ -3144,6 +3183,14 @@
         "prism/viewer/api.py",
         "tests/benchmarks/agent_prepare.py",
         "tests/benchmarks/tokens.py"
+      ]
+    },
+    "prism.navigator.api.op_knowledge": {
+      "count": 3,
+      "top": [
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/unit/test_context_engine.py"
       ]
     },
     "prism.navigator.api.op_locate": {
@@ -3176,7 +3223,7 @@
       ]
     },
     "prism.navigator.api.op_task": {
-      "count": 14,
+      "count": 17,
       "top": [
         "prism/cli.py",
         "prism/hooks/prompt.py",
@@ -3186,7 +3233,7 @@
       ]
     },
     "prism.navigator.cache_db.cache_dir": {
-      "count": 35,
+      "count": 37,
       "top": [
         "prism/navigator/freshness.py",
         "prism/navigator/semantic.py",
@@ -3196,7 +3243,7 @@
       ]
     },
     "prism.navigator.cache_db.fingerprint": {
-      "count": 34,
+      "count": 36,
       "top": [
         "prism/navigator/freshness.py",
         "prism/navigator/semantic.py",
@@ -3206,7 +3253,7 @@
       ]
     },
     "prism.navigator.cache_db.open_cache": {
-      "count": 41,
+      "count": 43,
       "top": [
         "prism/navigator/store.py",
         "prism/cli.py",
@@ -3216,7 +3263,7 @@
       ]
     },
     "prism.navigator.context_pack.build_context": {
-      "count": 9,
+      "count": 10,
       "top": [
         "prism/navigator/api.py",
         "prism/cli.py",
@@ -3235,17 +3282,17 @@
       ]
     },
     "prism.navigator.freshness.refresh_if_stale": {
-      "count": 9,
+      "count": 10,
       "top": [
         "prism/cli.py",
         "prism/hooks/prompt.py",
         "prism/mcp/server.py",
         "tests/integration/test_freshness.py",
-        "tests/unit/test_task_pack.py"
+        "tests/integration/test_prompt_hook.py"
       ]
     },
     "prism.navigator.freshness.warm_caches": {
-      "count": 25,
+      "count": 27,
       "top": [
         "prism/cli.py",
         "prism/hooks/update_job.py",
@@ -3319,6 +3366,24 @@
         "tests/benchmarks/agent_prepare.py"
       ]
     },
+    "prism.navigator.knowledge.knowledge": {
+      "count": 4,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/unit/test_context_engine.py"
+      ]
+    },
+    "prism.navigator.knowledge.render_knowledge": {
+      "count": 4,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/unit/test_context_engine.py"
+      ]
+    },
     "prism.navigator.literals.Evidence": {
       "count": 2,
       "top": [
@@ -3375,17 +3440,17 @@
       ]
     },
     "prism.navigator.overview.render_overview": {
-      "count": 5,
+      "count": 9,
       "top": [
         "prism/navigator/task_pack.py",
         "prism/hooks/prompt.py",
-        "tests/unit/test_task_disclosure.py",
-        "tests/unit/test_task_pack.py",
-        "tests/unit/test_task_retrieval.py"
+        "prism/mcp/server.py",
+        "tests/unit/test_context_engine.py",
+        "tests/unit/test_task_disclosure.py"
       ]
     },
     "prism.navigator.overview.wants_overview": {
-      "count": 11,
+      "count": 13,
       "top": [
         "prism/navigator/task_pack.py",
         "prism/navigator/api.py",
@@ -3423,15 +3488,19 @@
       ]
     },
     "prism.navigator.request.request_focus": {
-      "count": 1,
+      "count": 4,
       "top": [
-        "prism/navigator/task_pack.py"
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_context_engine.py",
+        "tests/unit/test_request_ranking.py",
+        "prism/navigator/api.py"
       ]
     },
     "prism.navigator.request.request_operations": {
-      "count": 2,
+      "count": 3,
       "top": [
         "prism/navigator/task_pack.py",
+        "tests/unit/test_request_ranking.py",
         "prism/navigator/api.py"
       ]
     },
@@ -3465,7 +3534,7 @@
       ]
     },
     "prism.navigator.resolve.resolve_target": {
-      "count": 10,
+      "count": 11,
       "top": [
         "prism/navigator/api.py",
         "prism/cli.py",
@@ -3535,33 +3604,37 @@
       ]
     },
     "prism.navigator.session.load_seen": {
-      "count": 5,
+      "count": 10,
       "top": [
         "prism/cli.py",
         "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
         "tests/integration/test_prompt_hook.py",
-        "prism/hooks/entry.py",
-        "tests/benchmarks/edit_bench.py"
+        "tests/integration/test_freshness.py"
       ]
     },
     "prism.navigator.session.save_seen": {
-      "count": 5,
+      "count": 10,
       "top": [
         "prism/cli.py",
         "prism/hooks/prompt.py",
-        "prism/hooks/entry.py",
-        "tests/benchmarks/edit_bench.py",
-        "tests/integration/test_prompt_hook.py"
+        "prism/mcp/server.py",
+        "tests/unit/test_context_engine.py",
+        "tests/integration/test_freshness.py"
       ]
     },
     "prism.navigator.session.session_id": {
-      "count": 1,
+      "count": 6,
       "top": [
-        "prism/cli.py"
+        "prism/cli.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_freshness.py",
+        "tests/unit/test_context_engine.py",
+        "tests/unit/test_task_pack.py"
       ]
     },
     "prism.navigator.source_index.SourceIndex": {
-      "count": 31,
+      "count": 33,
       "top": [
         "prism/navigator/freshness.py",
         "prism/navigator/literals.py",
@@ -4070,6 +4143,13 @@
         "prism/navigator/task_pack.py"
       ]
     },
+    "prism.navigator.support.produces_shape": {
+      "count": 2,
+      "top": [
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_context_engine.py"
+      ]
+    },
     "prism.navigator.synonyms.related_terms": {
       "count": 1,
       "top": [
@@ -4077,7 +4157,7 @@
       ]
     },
     "prism.navigator.task_pack.build_task": {
-      "count": 12,
+      "count": 15,
       "top": [
         "prism/navigator/api.py",
         "prism/cli.py",
@@ -4087,13 +4167,13 @@
       ]
     },
     "prism.navigator.task_pack.render_task": {
-      "count": 8,
+      "count": 12,
       "top": [
         "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
+        "tests/unit/test_context_engine.py",
         "tests/unit/test_task_disclosure.py",
-        "tests/unit/test_task_pack.py",
-        "tests/unit/test_task_retrieval.py",
-        "prism/hooks/entry.py"
+        "tests/unit/test_task_pack.py"
       ]
     },
     "prism.navigator.text.bm25": {
@@ -4107,7 +4187,7 @@
       ]
     },
     "prism.navigator.text.stem": {
-      "count": 13,
+      "count": 14,
       "top": [
         "prism/navigator/literals.py",
         "tests/unit/test_navigator.py",
@@ -4124,7 +4204,7 @@
       ]
     },
     "prism.navigator.text.tokenize": {
-      "count": 18,
+      "count": 19,
       "top": [
         "prism/navigator/graphify.py",
         "prism/navigator/literals.py",
@@ -4407,7 +4487,7 @@
       ]
     },
     "prism.status.working_tree_changes": {
-      "count": 15,
+      "count": 16,
       "top": [
         "prism/navigator/freshness.py",
         "prism/cli.py",
@@ -4657,7 +4737,7 @@
       ]
     },
     "prism.writers.activity.activity_path": {
-      "count": 18,
+      "count": 20,
       "top": [
         "prism/viewer/server.py",
         "prism/navigator/api.py",
@@ -4673,7 +4753,7 @@
       ]
     },
     "prism.writers.activity.record_activity": {
-      "count": 21,
+      "count": 24,
       "top": [
         "prism/navigator/api.py",
         "prism/cli.py",
@@ -4805,7 +4885,7 @@
       ]
     },
     "prism.writers.json_writer.dumps": {
-      "count": 17,
+      "count": 19,
       "top": [
         "prism/writers/index_writer.py",
         "tests/unit/test_writers.py",
@@ -4815,7 +4895,7 @@
       ]
     },
     "prism.writers.json_writer.read_json": {
-      "count": 47,
+      "count": 49,
       "top": [
         "prism/viewer/api.py",
         "prism/writers/manifest.py",
@@ -4825,7 +4905,7 @@
       ]
     },
     "prism.writers.json_writer.write_json": {
-      "count": 36,
+      "count": 42,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/report.py",
@@ -4835,7 +4915,7 @@
       ]
     },
     "prism.writers.json_writer.write_text": {
-      "count": 53,
+      "count": 56,
       "top": [
         "prism/audit/report.py",
         "prism/consent/registry.py",
@@ -4852,7 +4932,7 @@
       ]
     },
     "prism.writers.manifest.load_manifest": {
-      "count": 48,
+      "count": 50,
       "top": [
         "prism/hooks/runner.py",
         "prism/lifecycle.py",
@@ -4862,7 +4942,7 @@
       ]
     },
     "prism.writers.manifest.new_manifest": {
-      "count": 24,
+      "count": 26,
       "top": [
         "prism/lifecycle.py",
         "prism/cli.py",
@@ -4872,7 +4952,7 @@
       ]
     },
     "prism.writers.manifest.now_iso": {
-      "count": 29,
+      "count": 31,
       "top": [
         "prism/audit/plan.py",
         "prism/audit/record.py",
@@ -4892,7 +4972,7 @@
       ]
     },
     "prism.writers.manifest.write_manifest": {
-      "count": 29,
+      "count": 31,
       "top": [
         "prism/lifecycle.py",
         "prism/maintenance.py",
@@ -4973,6 +5053,56 @@
       "top": [
         "prism/cli.py",
         "tests/integration/test_viewer.py"
+      ]
+    },
+    "prism.writers.task_cache.load_packet": {
+      "count": 15,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/retrieval_economics.py"
+      ]
+    },
+    "prism.writers.task_cache.packet_current": {
+      "count": 15,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/retrieval_economics.py"
+      ]
+    },
+    "prism.writers.task_cache.packet_path": {
+      "count": 15,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/retrieval_economics.py"
+      ]
+    },
+    "prism.writers.task_cache.save_packet": {
+      "count": 15,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/retrieval_economics.py"
+      ]
+    },
+    "prism.writers.task_cache.source_stamp": {
+      "count": 15,
+      "top": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/retrieval_economics.py"
       ]
     },
     "tests.benchmarks.agent_collect.mcp_metrics": {
@@ -5272,6 +5402,10 @@
       "count": 0,
       "top": []
     },
+    "tests.unit.test_context_engine.index": {
+      "count": 0,
+      "top": []
+    },
     "tests.unit.test_edit_bench.apply_reference_solutions": {
       "count": 0,
       "top": []
@@ -5289,7 +5423,7 @@
       "top": []
     },
     "tests.unit.test_phase3_extractors.write": {
-      "count": 53,
+      "count": 52,
       "top": [
         "prism/hooks/runner.py",
         "prism/incremental/lock.py",
@@ -5315,7 +5449,7 @@
       "top": []
     },
     "viewer.src.app.App": {
-      "count": 67,
+      "count": 70,
       "top": [
         "prism/audit/record.py",
         "prism/integrations/base.py",
@@ -5373,7 +5507,7 @@
       ]
     },
     "viewer.src.app.App.emit": {
-      "count": 49,
+      "count": 52,
       "top": [
         "viewer/src/chrome.ts",
         "viewer/src/controls.ts",
@@ -5383,7 +5517,7 @@
       ]
     },
     "viewer.src.app.App.encode": {
-      "count": 62,
+      "count": 64,
       "top": [
         "prism/audit/record.py",
         "prism/integrations/base.py",
@@ -5725,7 +5859,7 @@
       "top": []
     },
     "viewer.src.encode.buildContext": {
-      "count": 47,
+      "count": 50,
       "top": [
         "viewer/src/app.ts",
         "prism/audit/record.py",
@@ -5735,7 +5869,7 @@
       ]
     },
     "viewer.src.encode.categorical": {
-      "count": 13,
+      "count": 14,
       "top": [
         "viewer/src/app.ts",
         "prism/audit/record.py",
@@ -5745,7 +5879,7 @@
       ]
     },
     "viewer.src.encode.categoricalScale": {
-      "count": 12,
+      "count": 13,
       "top": [
         "viewer/src/app.ts",
         "prism/audit/record.py",
@@ -5755,7 +5889,7 @@
       ]
     },
     "viewer.src.encode.communityOf": {
-      "count": 13,
+      "count": 14,
       "top": [
         "viewer/src/app.ts",
         "viewer/src/chrome.ts",
@@ -5771,7 +5905,7 @@
       ]
     },
     "viewer.src.encode.heat": {
-      "count": 13,
+      "count": 14,
       "top": [
         "viewer/src/app.ts",
         "viewer/src/chrome.ts",
@@ -5781,7 +5915,7 @@
       ]
     },
     "viewer.src.encode.kindColor": {
-      "count": 14,
+      "count": 15,
       "top": [
         "viewer/src/search.ts",
         "viewer/src/app.ts",
@@ -5805,7 +5939,7 @@
       ]
     },
     "viewer.src.encode.max": {
-      "count": 20,
+      "count": 21,
       "top": [
         "viewer/src/controls.ts",
         "viewer/src/data.ts",
@@ -5815,7 +5949,7 @@
       ]
     },
     "viewer.src.encode.nodeColor": {
-      "count": 48,
+      "count": 51,
       "top": [
         "viewer/src/app.ts",
         "prism/audit/record.py",
@@ -5825,7 +5959,7 @@
       ]
     },
     "viewer.src.encode.nodeSize": {
-      "count": 47,
+      "count": 50,
       "top": [
         "viewer/src/app.ts",
         "prism/audit/record.py",
@@ -5835,7 +5969,7 @@
       ]
     },
     "viewer.src.encode.nodeType": {
-      "count": 47,
+      "count": 50,
       "top": [
         "viewer/src/app.ts",
         "prism/audit/record.py",
@@ -5845,7 +5979,7 @@
       ]
     },
     "viewer.src.encode.paletteColor": {
-      "count": 14,
+      "count": 15,
       "top": [
         "viewer/src/app.ts",
         "viewer/src/search.ts",
@@ -5855,7 +5989,7 @@
       ]
     },
     "viewer.src.encode.ramp": {
-      "count": 13,
+      "count": 14,
       "top": [
         "viewer/src/app.ts",
         "viewer/src/chrome.ts",
@@ -5873,7 +6007,7 @@
       ]
     },
     "viewer.src.encode.sizeValue": {
-      "count": 12,
+      "count": 13,
       "top": [
         "viewer/src/app.ts",
         "prism/audit/record.py",
@@ -5976,7 +6110,7 @@
       ]
     },
     "viewer.src.inspector.stat": {
-      "count": 46,
+      "count": 49,
       "top": [
         "prism/discovery/scanner.py",
         "prism/hooks/prompt.py",
@@ -6141,7 +6275,7 @@
       ]
     },
     "viewer.src.ui.el": {
-      "count": 27,
+      "count": 30,
       "top": [
         "viewer/src/chrome.ts",
         "viewer/src/controls.ts",

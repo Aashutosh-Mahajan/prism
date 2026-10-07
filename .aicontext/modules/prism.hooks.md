@@ -4,9 +4,9 @@
 - Files: prism/hooks/__init__.py, prism/hooks/entry.py, prism/hooks/formats.py, prism/hooks/prompt.py, prism/hooks/runner.py, prism/hooks/update_job.py
 - Docstring: Command-line plumbing for host-agent hooks, kept free of typer and rich.
 - Public API (by importance):
-  - `user_prompt(raw_stdin: str) -> str` — Context to add for the submitted prompt (empty when there is nothing worth adding). (prism/hooks/prompt.py:122)
+  - `user_prompt(raw_stdin: str) -> str` — Context to add for the submitted prompt (empty when there is nothing worth adding). (prism/hooks/prompt.py:138)
   - `run_hook(name: str, args: list[str] | None = None) -> None` — Run one hook: read the hook JSON from stdin, act, print what belongs in the agent's (prism/hooks/entry.py:73)
-  - `should_retrieve(prompt: str) -> bool` — Is this prompt a request about the code, rather than chat, a command or a confirmation? (prism/hooks/prompt.py:38)
+  - `should_retrieve(prompt: str) -> bool` — Is this prompt a request about the code, rather than chat, a command or a confirmation? (prism/hooks/prompt.py:39)
   - `post_edit(raw_stdin: str, background: bool = False) -> None` — Update the index for the edited files. With `background`, hand the update to a detached (prism/hooks/runner.py:206)
   - `session_start(raw_stdin: str) -> str` — Returns the text to inject into the agent's context (may be empty). (prism/hooks/runner.py:87)
   - `render_context(text: str, fmt: str, event: str) -> str` — `text` as the hook should print it for the agent that asked for `fmt`. (prism/hooks/formats.py:15)
@@ -25,5 +25,5 @@
 
 ## Summary
 <!-- prism:narrative:summary -->
-_Not written yet. Run the prism-refresh skill to fill this section._
+Host hook plumbing. session_start emits a compact brief, user_prompt retrieves bounded request evidence and post_edit schedules incremental updates. prompt skips weak matches and remembers only delivered ranges. entry handles host formats and process lifetime without typer or rich.
 <!-- /prism:narrative:summary -->

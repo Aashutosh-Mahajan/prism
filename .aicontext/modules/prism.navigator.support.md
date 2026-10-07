@@ -4,13 +4,15 @@
 - Files: prism/navigator/support.py
 - Docstring: Source-verified local definitions needed to interpret a retrieved Python body.
 - Public API (by importance):
-  - `class SupportRange` (prism/navigator/support.py:14)
-  - `local_support(reader: SourceReader, file: str, ranges: list[tuple[int, int]]) -> list[SupportRange]` — Resolve loaded names to top-level constants/imports/helpers, not whole headers. (prism/navigator/support.py:22)
+  - `produces_shape(source: str, fields: set[str]) -> bool` — Verify a Python dictionary is returned, directly or through its container. (prism/navigator/support.py:15)
+  - `class SupportRange` (prism/navigator/support.py:76)
+  - `local_support(reader: SourceReader, file: str, ranges: list[tuple[int, int]]) -> list[SupportRange]` — Resolve loaded names to top-level constants/imports/helpers, not whole headers. (prism/navigator/support.py:84)
 - Depends on: `prism.navigator.source_index`
 - Used by: `prism.navigator.task_pack`
+- Tests: tests/unit/test_context_engine.py
 <!-- /prism:generated:facts -->
 
 ## Summary
 <!-- prism:narrative:summary -->
-_Not written yet. Run the prism-refresh skill to fill this section._
+Resolves local Python constants, imports and helpers needed by retrieved code. produces_shape checks AST return evidence for requested dictionary fields, excluding unrelated nested bodies and logging-only dictionaries.
 <!-- /prism:narrative:summary -->
