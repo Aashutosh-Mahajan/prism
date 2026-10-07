@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,11 @@ import pytest
 from prism.integrations import IntegrationOptions, detect_agents
 from prism.integrations.global_note import install_global, uninstall_global
 from prism.lifecycle import apply_init, apply_uninstall, plan_init, plan_uninstall
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:  # pragma: no cover
+    import tomli as tomllib
 
 
 def snapshot(root: Path) -> dict[str, bytes]:
@@ -40,6 +46,9 @@ def test_claude_code_install_contents(tiny_repo: Path) -> None:
     settings = json.loads((tiny_repo / ".claude" / "settings.json").read_text())
     session = settings["hooks"]["SessionStart"][0]
     assert session["hooks"][0]["command"] == "prism hook session-start"
+    prompt = settings["hooks"]["UserPromptSubmit"][0]
+    assert prompt["hooks"][0]["command"] == "prism hook user-prompt"
+    assert "matcher" not in prompt  # UserPromptSubmit has no matcher
     post = settings["hooks"]["PostToolUse"][0]
     assert post["matcher"] == "Edit|Write|MultiEdit"
     assert post["hooks"][0]["command"] == "prism hook post-edit"
@@ -114,19 +123,179 @@ def test_opt_outs(tiny_repo: Path) -> None:
     assert (tiny_repo / ".claude" / "skills" / "prism-audit" / "SKILL.md").is_file()
 
 
-def test_cursor_and_codex(tiny_repo: Path) -> None:
+def test_cursor_rules_are_small_and_procedures_are_on_request(tiny_repo: Path) -> None:
     install(tiny_repo, "cursor")
-    rule = (tiny_repo / ".cursor" / "rules" / "prism.mdc").read_text(encoding="utf-8")
-    assert rule.startswith("---\ndescription:") and "alwaysApply: true" in rule
-    assert "PRISM Codebase Audit" in rule and "PRISM Narrative Refresh" in rule
+    rules = tiny_repo / ".cursor" / "rules"
+    always = (rules / "prism.mdc").read_text(encoding="utf-8")
+    assert always.startswith("---\ndescription:") and "alwaysApply: true" in always
+    assert "prism task" in always
+    # Sent on every turn, so it carries only how to start; procedures are asked for by description.
+    assert "Codebase Audit" not in always and len(always) < 1500
+    for name in ("prism-audit", "prism-refresh", "prism-decisions"):
+        text = (rules / f"{name}.mdc").read_text(encoding="utf-8")
+        assert "alwaysApply: false" in text and "description:" in text
     assert json.loads((tiny_repo / ".cursor" / "mcp.json").read_text())["mcpServers"]["prism"][
         "args"
     ] == ["mcp"]
+    hooks = json.loads((tiny_repo / ".cursor" / "hooks.json").read_text())
+    assert hooks["version"] == 1
+    assert hooks["hooks"]["sessionStart"] == [
+        {"command": "prism hook session-start --format cursor"}
+    ]
+    assert hooks["hooks"]["afterFileEdit"] == [{"command": "prism hook post-edit"}]
+
+
+def test_cursor_hooks_keep_the_users_own(tiny_repo: Path) -> None:
+    (tiny_repo / ".cursor").mkdir()
+    mine = {"version": 1, "hooks": {"afterFileEdit": [{"command": "./format.sh"}]}}
+    (tiny_repo / ".cursor" / "hooks.json").write_text(json.dumps(mine))
+    install(tiny_repo, "cursor")
+    merged = json.loads((tiny_repo / ".cursor" / "hooks.json").read_text())
+    assert [h["command"] for h in merged["hooks"]["afterFileEdit"]] == [
+        "./format.sh",
+        "prism hook post-edit",
+    ]
+    apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
+    assert json.loads((tiny_repo / ".cursor" / "hooks.json").read_text()) == mine
+
+
+def test_codex_install_contents(tiny_repo: Path) -> None:
     install(tiny_repo, "codex")
     assert "PRISM code index" in (tiny_repo / "AGENTS.md").read_text()
+    config = (tiny_repo / ".codex" / "config.toml").read_text()
+    assert "[mcp_servers.prism]" in config and 'args = ["mcp"]' in config
+    parsed = tomllib.loads(config)
+    assert parsed["mcp_servers"]["prism"]["command"] == "prism"
+    hooks = json.loads((tiny_repo / ".codex" / "hooks.json").read_text())["hooks"]
+    assert hooks["UserPromptSubmit"][0]["hooks"][0]["command"] == "prism hook user-prompt"
+    assert hooks["PostToolUse"][0]["matcher"] == "apply_patch|Edit|Write"
+    assert hooks["SessionStart"][0]["hooks"][0]["command"] == "prism hook session-start"
+    plan = plan_init(tiny_repo, ["codex"], IntegrationOptions())
+    assert plan.file_changes == ()  # idempotent
+
+
+def test_codex_never_declares_the_users_prism_server_twice(tiny_repo: Path) -> None:
+    (tiny_repo / ".codex").mkdir()
+    mine = '[mcp_servers.prism]\ncommand = "my-prism"\nargs = ["serve"]\n\n[model]\nname = "x"\n'
+    (tiny_repo / ".codex" / "config.toml").write_text(mine)
+    install(tiny_repo, "codex")
+    after = (tiny_repo / ".codex" / "config.toml").read_text()
+    assert after == mine
+    assert tomllib.loads(after)["mcp_servers"]["prism"]["command"] == "my-prism"
+
+
+def test_codex_toml_merge_and_exact_restore(tiny_repo: Path) -> None:
+    (tiny_repo / ".codex").mkdir()
+    mine = 'model = "o3"\n\n[mcp_servers.other]\ncommand = "x"\n'
+    (tiny_repo / ".codex" / "config.toml").write_text(mine)
+    install(tiny_repo, "codex")
+    merged = tomllib.loads((tiny_repo / ".codex" / "config.toml").read_text())
+    assert set(merged["mcp_servers"]) == {"other", "prism"} and merged["model"] == "o3"
     apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
-    assert not (tiny_repo / ".cursor" / "rules" / "prism.mdc").exists()
+    assert (tiny_repo / ".codex" / "config.toml").read_text() == mine
+    assert not (tiny_repo / ".codex" / "hooks.json").exists()
     assert not (tiny_repo / "AGENTS.md").exists()
+
+
+def test_codex_tells_the_user_about_project_trust(tiny_repo: Path) -> None:
+    from prism.integrations import get_integration
+
+    notes = get_integration("codex").notes(tiny_repo, IntegrationOptions())
+    assert any("trust" in n.lower() for n in notes)
+    assert (
+        get_integration("codex").notes(tiny_repo, IntegrationOptions(hooks=False, mcp=False)) == []
+    )
+
+
+def test_gemini_install_contents_and_merge(tiny_repo: Path) -> None:
+    (tiny_repo / ".gemini").mkdir()
+    mine = {"theme": "dark", "mcpServers": {"other": {"command": "x"}}}
+    (tiny_repo / ".gemini" / "settings.json").write_text(json.dumps(mine))
+    install(tiny_repo, "gemini")
+    settings = json.loads((tiny_repo / ".gemini" / "settings.json").read_text())
+    assert settings["theme"] == "dark" and set(settings["mcpServers"]) == {"other", "prism"}
+    hooks = settings["hooks"]
+    assert hooks["BeforeAgent"][0]["hooks"][0]["command"] == (
+        "prism hook user-prompt --format json --event BeforeAgent"
+    )
+    assert hooks["SessionStart"][0]["hooks"][0]["timeout"] == 10000  # milliseconds
+    assert hooks["AfterTool"][0]["matcher"] == "write_file|replace"
+    assert "PRISM code index" in (tiny_repo / "GEMINI.md").read_text()
+    apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
+    assert json.loads((tiny_repo / ".gemini" / "settings.json").read_text()) == mine
+    assert not (tiny_repo / "GEMINI.md").exists()
+
+
+def test_antigravity_installs_a_rule_and_prints_the_user_level_mcp_entry(tiny_repo: Path) -> None:
+    from prism.integrations import get_integration
+
+    options = IntegrationOptions()
+    install(tiny_repo, "antigravity")
+    rule = (tiny_repo / ".agent" / "rules" / "prism.md").read_text(encoding="utf-8")
+    assert "prism task" in rule and "prism-managed" in rule
+    assert (tiny_repo / ".agents" / "skills" / "prism-context" / "SKILL.md").is_file()
+    (note,) = get_integration("antigravity").notes(tiny_repo, options)
+    assert ".gemini/antigravity/mcp_config.json" in note and '"prism"' in note
+    # PRISM never edits user-level config on its own.
+    assert not any(
+        c.path.startswith(("~", "/")) for c in plan_init(tiny_repo, ["antigravity"]).file_changes
+    )
+    apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
+    assert not (tiny_repo / ".agent" / "rules" / "prism.md").exists()
+
+
+@pytest.mark.parametrize(
+    "agent", ["claude-code", "cursor", "codex", "gemini", "antigravity", "generic"]
+)
+def test_every_agent_is_idempotent_reversible_and_leaves_user_files_alone(
+    tiny_repo: Path, agent: str
+) -> None:
+    mine = {
+        "AGENTS.md": "# Team rules\n\nBe kind.\n",
+        "CLAUDE.md": "# Mine\n",
+        "GEMINI.md": "# Gemini mine\n",
+    }
+    for name, text in mine.items():
+        (tiny_repo / name).write_text(text)
+    before = snapshot(tiny_repo)
+    install(tiny_repo, agent)
+    once = snapshot(tiny_repo)
+    install(tiny_repo, agent)
+    assert snapshot(tiny_repo) == once  # a second init changes nothing
+    apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
+    after = snapshot(tiny_repo)
+    after.pop(".gitignore", None)  # belongs to the index itself, not the integration
+    assert after == before
+
+
+def test_detect_finds_every_agent_that_is_present(tmp_path: Path) -> None:
+    for marker in (".claude", ".cursor", ".codex", ".gemini", ".agent"):
+        (tmp_path / marker).mkdir()
+    assert detect_agents(tmp_path) == ["claude-code", "cursor", "codex", "gemini", "antigravity"]
+
+
+def test_hook_commands_in_every_config_are_ones_the_cli_accepts(tiny_repo: Path) -> None:
+    """A hook entry that names a flag `prism hook` does not know would silently never work."""
+    import re
+    import shlex
+
+    from prism.hooks.entry import HOOKS, parse_flags
+
+    for agent in ("claude-code", "cursor", "codex", "gemini"):
+        install(tiny_repo, agent)
+    text = "\n".join(
+        p.read_text(encoding="utf-8")
+        for p in tiny_repo.rglob("*")
+        if p.is_file() and p.suffix in {".json"} and ".aicontext" not in p.parts
+    )
+    commands = set(re.findall(r'"command": "(prism hook [^"]+)"', text))
+    assert len(commands) >= 5
+    for command in commands:
+        words = shlex.split(command)
+        assert words[2] in HOOKS, command
+        flags = parse_flags(words[3:])
+        assert set(flags) <= {"format", "event"}, command
+        assert flags.get("format", "text") in ("text", "json", "cursor"), command
 
 
 def _git(root: Path, *args: str) -> None:
