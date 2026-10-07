@@ -115,6 +115,13 @@ Upgrade `.aicontext/` to the installed PRISM version's schema and rebuild the in
 
 ## Navigation
 
+### `prism knowledge [--budget N] [--json]`
+
+Inspect the persistent local project inventory: file/symbol counts, call/import relationships,
+languages and top modules. Default budget 600 estimated tokens. This is an on-demand inspection,
+not an extra orientation step before editing. Use `prism task` for the requested change.
+`prism_knowledge` is available in the full MCP profile.
+
 ### `prism task "<request>" [--mode auto|overview|code] [--budget N] [--session ID] [--json]`
 
 Start a coding task with one local call. Pass the request in the user's own words, a symbol
@@ -158,10 +165,18 @@ Source is returned only if it matches the indexed hash.
 
 `--session ID` (or `PRISM_SESSION`) remembers which code ranges this session already received;
 repeats come back as one-line references instead of the code again. The MCP server does this
-for its own lifetime (`repeat=true` forces the full answer).
+for its own lifetime (`repeat=true` forces the full answer). MCP also accepts `session="ID"`
+or `PRISM_SESSION`, sharing the hash-invalidated range memory with CLI and prompt hooks. Use
+the same host-session ID across those surfaces; a new conversation must use a new ID.
+
+MCP `prism_task` now defaults to `format="compact"`: the same bounded text that CLI renders.
+Consumers expecting the structured packet must request `format="json"`. Errors remain
+structured and set the MCP error flag. Other MCP operations retain their existing format.
 
 The query caches (`.aicontext/cache/index-*.sqlite`, `source-v2.sqlite`) are built by `prism scan`
-and kept current by updates; they are local and disposable. No model API, embeddings download or
+and bounded task packets in `cache/tasks/` are local and disposable. Task packets are keyed by
+query, mode, budget, source hashes/stat revisions and artifact versions. Requests with session
+memory are assembled against that session rather than returning a cached full packet. No model API, embeddings download or
 API key is involved.
 
 Targets for the follow-up commands can be a symbol id (`shop.pricing.discounts.apply_discount`),

@@ -1,0 +1,310 @@
+{
+  "design": "two tasks, three arms, one repetition, fresh single-phase agents; descriptive only",
+  "tool_files_sha256": {
+    "prism/navigator/task_pack.py": "51d0d4d2ab5a4c8bcf90a567744442b408f75f6d5de4bd7e6097dff5e6da4a76",
+    "prism/navigator/request.py": "1dcf72da173a0ca323b9bfe02cd96f12c5105e655130b48ad7c9315d66ebe126",
+    "prism/navigator/api.py": "5a48d27a3d1f9ab309760b0714a706f885aba8fe77fb756b7be428e36d242f6a",
+    "prism/mcp/server.py": "f9ce905c046e060d17810e9f1a8dcb4423ed823b6d94d64cd18035c6a2ac8ce8",
+    "prism/writers/task_cache.py": "afd601bebd9421223122fd1d6444026035043717295bca002587d8a7daaee463"
+  },
+  "runs": {
+    "t1-lifetime/without": {
+      "usage": {
+        "agent": "/root/engine_expiry_without",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 7,
+        "total_input_processed": 278483,
+        "cached_input_tokens": 253312,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 50502,
+        "first_turn_context": 29158,
+        "last_turn_context": 46142,
+        "work_context": 16984,
+        "output_tokens": 1985,
+        "tool_calls": 6,
+        "tools": {
+          "exec": 6
+        },
+        "nested_shell_call_sites": 6,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 54869,
+        "tool_output_tokens_est": 13717,
+        "started": "2026-10-07T18:28:55.062Z",
+        "finished": "2026-10-07T18:31:12.802Z",
+        "duration_seconds": 137.74,
+        "final_answer": "Changed three files:\n\n- `backend/core/models.py`: code lifetime is 15 minutes.\n- `VerifyEmailPage.tsx` and `ForgotPasswordPage.tsx`: expiry copy says 15 minutes.\n\nIsolated checks passed: Python syntax, validity at 14:59, expiry at 15:00, API expiry of 900 seconds, and plain-text/HTML email copy. Password reset uses the same code lifetime and stays consistent."
+      },
+      "checks": {
+        "backend/core/models.py: contains 'LIFETIME_MINUTES = 15'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: not_contains 'expires in 10 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: not_contains 'expires in 10 minutes'": true
+      },
+      "passed": 5,
+      "total": 5
+    },
+    "t1-lifetime/cli": {
+      "usage": {
+        "agent": "/root/engine_expiry_cli",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 8,
+        "total_input_processed": 264952,
+        "cached_input_tokens": 254720,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 35704,
+        "first_turn_context": 29201,
+        "last_turn_context": 36572,
+        "work_context": 7371,
+        "output_tokens": 3065,
+        "tool_calls": 7,
+        "tools": {
+          "exec": 7
+        },
+        "nested_shell_call_sites": 7,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 14337,
+        "tool_output_tokens_est": 3584,
+        "started": "2026-10-07T18:29:01.379Z",
+        "finished": "2026-10-07T18:30:47.567Z",
+        "duration_seconds": 106.188,
+        "final_answer": "Changed three files:\n- `backend/core/models.py`: code lifetime is 15 minutes.\n- `VerifyEmailPage.tsx` and `ForgotPasswordPage.tsx`: expiry wording says 15 minutes.\n\nFocused checks passed for issuance, validity before 15 minutes, expiry at 15 minutes, API `expires_in: 900`, email wording, and page copy. No full suites run."
+      },
+      "checks": {
+        "backend/core/models.py: contains 'LIFETIME_MINUTES = 15'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: not_contains 'expires in 10 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: not_contains 'expires in 10 minutes'": true
+      },
+      "passed": 5,
+      "total": 5
+    },
+    "t1-lifetime/mcp": {
+      "usage": {
+        "agent": "/root/engine_expiry_mcp",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 5,
+        "total_input_processed": 161272,
+        "cached_input_tokens": 153728,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 22917,
+        "first_turn_context": 29376,
+        "last_turn_context": 34432,
+        "work_context": 5056,
+        "output_tokens": 1577,
+        "tool_calls": 4,
+        "tools": {
+          "exec": 4
+        },
+        "nested_shell_call_sites": 2,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 10802,
+        "tool_output_tokens_est": 2700,
+        "started": "2026-10-07T18:29:11.833Z",
+        "finished": "2026-10-07T18:31:03.246Z",
+        "duration_seconds": 111.413,
+        "final_answer": "Updated three files: `backend/core/models.py`, `VerifyEmailPage.tsx`, and `ForgotPasswordPage.tsx`.\n\nCodes now expire after 15 minutes; API expiry, email text/HTML, and both page messages agree. Focused checks passed for issuance, 900-second API expiry, email copy, and frontend text."
+      },
+      "checks": {
+        "backend/core/models.py: contains 'LIFETIME_MINUTES = 15'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: not_contains 'expires in 10 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: not_contains 'expires in 10 minutes'": true
+      },
+      "passed": 5,
+      "total": 5,
+      "mcp_calls": 1
+    },
+    "t2-change-pct/without": {
+      "usage": {
+        "agent": "/root/engine_kpi_without",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 5,
+        "total_input_processed": 156858,
+        "cached_input_tokens": 145024,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 26336,
+        "first_turn_context": 29178,
+        "last_turn_context": 33196,
+        "work_context": 4018,
+        "output_tokens": 1221,
+        "tool_calls": 4,
+        "tools": {
+          "exec": 4
+        },
+        "nested_shell_call_sites": 4,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 10830,
+        "tool_output_tokens_est": 2707,
+        "started": "2026-10-07T18:31:35.285Z",
+        "finished": "2026-10-07T18:33:04.398Z",
+        "duration_seconds": 89.113,
+        "final_answer": "Implemented in the assigned trial only.\n\nChanged:\n- `backend/core/analytics.py`: adds rounded `change_pct`, with required null cases.\n- `frontend/zesty-app/src/api/reports.ts`: extends KPI type.\n- `EventraReportsView.tsx`: adds null for its snapshot KPI.\n\nPython syntax and isolated behavior checks passed for increases, decreases, zero values, missing comparisons, and snapshots. No app or full suites run."
+      },
+      "checks": {
+        "build_kpis: a.change_pct == 20.0": true,
+        "build_kpis: b.change_pct == None": true,
+        "build_kpis: c.change_pct == None": true,
+        "build_kpis: d.change_pct == -37.5": true,
+        "build_kpis: e.change_pct == None": true,
+        "build_kpis: a.value == 120": true,
+        "build_kpis: a.kind == 'count'": true,
+        "build_kpis: a.change_pct == None": true,
+        "build_kpis: a.previous == None": true,
+        "zero current": true,
+        "rounding": true,
+        "unchanged": true,
+        "frontend type": true
+      },
+      "passed": 13,
+      "total": 13
+    },
+    "t2-change-pct/cli": {
+      "usage": {
+        "agent": "/root/engine_kpi_cli",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 7,
+        "total_input_processed": 230590,
+        "cached_input_tokens": 215808,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 36363,
+        "first_turn_context": 29223,
+        "last_turn_context": 36198,
+        "work_context": 6975,
+        "output_tokens": 1775,
+        "tool_calls": 6,
+        "tools": {
+          "exec": 6
+        },
+        "nested_shell_call_sites": 6,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 19192,
+        "tool_output_tokens_est": 4798,
+        "started": "2026-10-07T18:31:42.637Z",
+        "finished": "2026-10-07T18:32:59.726Z",
+        "duration_seconds": 77.089,
+        "final_answer": "Changed three files:\n\n- `backend/core/analytics.py`: all five analytics endpoints now include rounded `change_pct`, with null for missing values, zero previous values, and snapshots.\n- `frontend/zesty-app/src/api/reports.ts`: added nullable field to `Kpi`.\n- `frontend/zesty-app/src/pages/dashboard/reports/EventraReportsView.tsx`: updated synthetic snapshot KPI.\n\nChecks: Python syntax and 12 isolated behavior cases passed. TypeScript transpilation unavailable because trial dependencies are absent. Actual Prism CLI called once."
+      },
+      "checks": {
+        "build_kpis: a.change_pct == 20.0": true,
+        "build_kpis: b.change_pct == None": true,
+        "build_kpis: c.change_pct == None": true,
+        "build_kpis: d.change_pct == -37.5": true,
+        "build_kpis: e.change_pct == None": true,
+        "build_kpis: a.value == 120": true,
+        "build_kpis: a.kind == 'count'": true,
+        "build_kpis: a.change_pct == None": true,
+        "build_kpis: a.previous == None": true,
+        "zero current": true,
+        "rounding": true,
+        "unchanged": true,
+        "frontend type": true
+      },
+      "passed": 13,
+      "total": 13
+    },
+    "t2-change-pct/mcp": {
+      "usage": {
+        "agent": "/root/engine_kpi_mcp",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 7,
+        "total_input_processed": 224669,
+        "cached_input_tokens": 213376,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 32631,
+        "first_turn_context": 29393,
+        "last_turn_context": 34449,
+        "work_context": 5056,
+        "output_tokens": 1611,
+        "tool_calls": 6,
+        "tools": {
+          "exec": 6
+        },
+        "nested_shell_call_sites": 5,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 12318,
+        "tool_output_tokens_est": 3079,
+        "started": "2026-10-07T18:31:52.437Z",
+        "finished": "2026-10-07T18:33:03.149Z",
+        "duration_seconds": 70.712,
+        "final_answer": "Changed three files: backend KPI builder, frontend `Kpi` type, and Eventra\u2019s synthetic snapshot KPI.\n\n`change_pct` rounds to one decimal and returns null for missing values, zero previous values, and snapshots.\n\nPython syntax and 12 isolated behavior checks passed. Frontend type checking unavailable: local TypeScript dependency is absent."
+      },
+      "checks": {
+        "build_kpis: a.change_pct == 20.0": true,
+        "build_kpis: b.change_pct == None": true,
+        "build_kpis: c.change_pct == None": true,
+        "build_kpis: d.change_pct == -37.5": true,
+        "build_kpis: e.change_pct == None": true,
+        "build_kpis: a.value == 120": true,
+        "build_kpis: a.kind == 'count'": true,
+        "build_kpis: a.change_pct == None": true,
+        "build_kpis: a.previous == None": true,
+        "zero current": true,
+        "rounding": true,
+        "unchanged": true,
+        "frontend type": true
+      },
+      "passed": 13,
+      "total": 13,
+      "mcp_calls": 1
+    }
+  },
+  "aggregate": {
+    "without": {
+      "total_input_processed": 435341,
+      "cached_input_tokens": 398336,
+      "output_tokens": 3206,
+      "billable_input_equiv_proxy": 76838,
+      "model_turns": 12,
+      "tool_output_tokens_est": 16424
+    },
+    "cli": {
+      "total_input_processed": 495542,
+      "cached_input_tokens": 470528,
+      "output_tokens": 4840,
+      "billable_input_equiv_proxy": 72067,
+      "model_turns": 15,
+      "tool_output_tokens_est": 8382
+    },
+    "mcp": {
+      "total_input_processed": 385941,
+      "cached_input_tokens": 367104,
+      "output_tokens": 3188,
+      "billable_input_equiv_proxy": 55548,
+      "model_turns": 12,
+      "tool_output_tokens_est": 5779
+    }
+  }
+}

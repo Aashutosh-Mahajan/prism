@@ -208,7 +208,8 @@ to `.aicontext/cache/hook.log`), and do nothing if PRISM is missing, not enabled
 - **user-prompt**: looks up the user's own words and adds the answer to the prompt. It says
   nothing for greetings, confirmations, slash commands and shell escapes, nor when the match is
   weak (so an unrelated request costs zero tokens), adds at most `prompt_budget` tokens (default
-  1,200), and sends code only once per session: repeats are one-line references. If the query
+  2,000). It starts at 1,200 and expands only if that supplies complete edit evidence.
+  It sends code only once per session: repeats are one-line references. If the query
   caches are cold (a fresh clone) it starts building them in the background and stays silent
   once. Switch it off with `prompt_context = false` in the config or `PRISM_PROMPT_CONTEXT=0`.
 - **post-edit**: if the edited file is a source file in an enabled repository, starts

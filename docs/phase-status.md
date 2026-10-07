@@ -1,5 +1,29 @@
 # Implementation status against CLAUDE.md
 
+## Context engine upgrade — 2026-10-08
+
+Latest follow-up: the actual checkout is enabled and indexed, with 21 narratives refreshed
+and project-local MCP/hooks installed. Adaptive prompt packets and output-shape literal
+handling were added. Full offline suite: **361 passed** before the final caller-quota change;
+its **64-test** focused regression suite passed. Actual preflight edit-agent processed input:
+**CLI -18.4%, MCP -20.5%**, all **18/18** matched checks per arm. This uses host-supplied
+preflight evidence, not a native-host hook activation test. See the
+[delivery report](token-saving-delivery-2026-10-08.md) for counters and limitations.
+
+Shared task compilation now identifies scalar edit units, AST-verified output builders, small
+declared contracts and bounded literal frontend constructions. CLI and native MCP share the
+compact presentation; JSON remains available explicitly. Session IDs share delivered evidence
+between CLI/hooks/MCP, and full packets have bounded local caches with revision and source-hash
+checks. `prism knowledge` inspects the existing persistent repository inventory on demand.
+
+Validation: full offline suite **357 passed**, Ruff and strict mypy passed; final cache-hardening
+checks are recorded in [context engine validation](context-engine-validation-2026-10-08.md).
+Fresh six-agent pilot: all frozen checks passed; processed input **CLI +13.8%, MCP -11.3%** against
+the matched baseline. Cache-weighted input proxy: **CLI -6.2%, MCP -27.7%**. No large universal
+token saving or completion of every roadmap acceptance target is claimed.
+
+See [context engine guide](context-engine.md) for usage and the MCP format upgrade note.
+
 Reviewed 2026-09-27. “Implemented” means code and relevant tests exist; it does not mean every acceptance target has been certified. CLAUDE.md remains the target specification.
 
 | Phase | Status | Evidence and remaining work |

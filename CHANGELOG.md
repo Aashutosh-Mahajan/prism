@@ -7,6 +7,22 @@ All notable changes to PRISM are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Adaptive prompt delivery starts small and expands within the configured cap only when it
+  completes edit evidence; undelivered attempts cannot consume session ranges. Default cap:
+  2,000 estimated tokens. Explicit lower caps remain supported.
+- Output-shape extensions avoid generic backtick-field literal searches; contracts without
+  callers no longer reduce the primary builder's caller quota.
+- `prism knowledge` and full-profile `prism_knowledge`: a bounded inspection of local project
+  inventory, without loading the repository into the model.
+- Versioned, bounded task-packet caches guarded by source and artifact revisions; unchanged
+  requests reuse local work, and stale source never becomes a cached fresh answer.
+- MCP task responses default to compact CLI-equivalent text. Structured consumers can request
+  `format="json"`. Explicit MCP session IDs share delivered-range memory with CLI and hooks,
+  including across server reconnects. No index-artifact schema change is required.
+- Task compilation distinguishes object producers from UI consumers for explicitly described
+  output shapes, includes matching small contracts, and ranks scalar settings as exact edits.
+- Recovery ranges reserve output space; discarded blocks cannot enter delivered-session memory.
+  Source is deduplicated across primary and supporting-definition assembly passes.
 - Task ranking gives the leading edit operation and symbol names priority over repeated
   caller-body words, without dropping later acceptance criteria. Confidence uses returned
   source and cannot certify an absent leading topic from generic error matches alone.

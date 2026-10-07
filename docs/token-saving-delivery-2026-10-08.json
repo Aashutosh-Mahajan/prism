@@ -1,0 +1,354 @@
+{
+  "design": "two tasks, three arms, one repetition, fresh preflight agents; descriptive only",
+  "tool_files_sha256": {
+    "prism/navigator/task_pack.py": "bd1cdbc34f7086692152857a3b65e65295e37fd66807a616a656760559d76b1c",
+    "prism/navigator/request.py": "1dcf72da173a0ca323b9bfe02cd96f12c5105e655130b48ad7c9315d66ebe126",
+    "prism/navigator/api.py": "87fa2874c6e33f778ea3c254577e3496e5284129e62312321d26bf48a1072dff",
+    "prism/mcp/server.py": "f9ce905c046e060d17810e9f1a8dcb4423ed823b6d94d64cd18035c6a2ac8ce8",
+    "prism/writers/task_cache.py": "d7aad799c82936d662386d14be5e6ee1d0bac1b8ee6a0faaa2d0dcf38e0dc71c"
+  },
+  "runs": {
+    "t1-lifetime/without": {
+      "usage": {
+        "agent": "/root/preflight_expiry_without",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 6,
+        "total_input_processed": 229880,
+        "cached_input_tokens": 212480,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 38648,
+        "first_turn_context": 29156,
+        "last_turn_context": 44051,
+        "work_context": 14895,
+        "output_tokens": 2117,
+        "tool_calls": 5,
+        "tools": {
+          "exec": 5
+        },
+        "nested_shell_call_sites": 5,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 50148,
+        "tool_output_tokens_est": 12537,
+        "started": "2026-10-07T18:57:48.963Z",
+        "finished": "2026-10-07T18:59:11.817Z",
+        "duration_seconds": 82.854,
+        "final_answer": "Changed three files in the assigned copy:\n\n- `backend/core/models.py`: shared code lifetime is now 15 minutes.\n- `VerifyEmailPage.tsx` and `ForgotPasswordPage.tsx`: expiry wording now says 15 minutes.\n\nIsolated checks passed: issuance expires after 15 minutes, verification succeeds at 14:59 and expires at 15:00, API reports 900 seconds, and plain-text/HTML emails match both screens.\n\nFull Django/frontend checks were unavailable because dependencies are absent. No dependencies installed, commits, or outside edits."
+      },
+      "checks": {
+        "backend/core/models.py: contains 'LIFETIME_MINUTES = 15'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: not_contains 'expires in 10 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: not_contains 'expires in 10 minutes'": true
+      },
+      "passed": 5,
+      "total": 5
+    },
+    "t1-lifetime/cli": {
+      "usage": {
+        "agent": "/root/preflight_expiry_cli",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 6,
+        "total_input_processed": 207286,
+        "cached_input_tokens": 196864,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 30108,
+        "first_turn_context": 30302,
+        "last_turn_context": 37220,
+        "work_context": 6918,
+        "output_tokens": 2770,
+        "tool_calls": 5,
+        "tools": {
+          "exec": 5
+        },
+        "nested_shell_call_sites": 4,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 16710,
+        "tool_output_tokens_est": 4177,
+        "started": "2026-10-07T18:58:12.732Z",
+        "finished": "2026-10-07T18:59:33.506Z",
+        "duration_seconds": 80.774,
+        "final_answer": "Changed three files in the isolated copy:\n\n- `backend/core/models.py`: lifetime now 15 minutes.\n- `VerifyEmailPage.tsx` and `ForgotPasswordPage.tsx`: expiry copy now 15 minutes.\n\nIsolated checks passed: validity after 10 minutes, expiration at 15 minutes, API `expires_in = 900`, and matching plain-text/HTML email and screen copy for both code purposes.\n\nFull tests/build unavailable: Django and frontend dependencies are absent. No dependencies installed."
+      },
+      "checks": {
+        "backend/core/models.py: contains 'LIFETIME_MINUTES = 15'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: not_contains 'expires in 10 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: not_contains 'expires in 10 minutes'": true
+      },
+      "passed": 5,
+      "total": 5
+    },
+    "t1-lifetime/mcp": {
+      "usage": {
+        "agent": "/root/preflight_expiry_mcp",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 5,
+        "total_input_processed": 169738,
+        "cached_input_tokens": 160256,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 25508,
+        "first_turn_context": 30307,
+        "last_turn_context": 36373,
+        "work_context": 6066,
+        "output_tokens": 2021,
+        "tool_calls": 4,
+        "tools": {
+          "exec": 4
+        },
+        "nested_shell_call_sites": 4,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 16722,
+        "tool_output_tokens_est": 4180,
+        "started": "2026-10-07T19:00:39.319Z",
+        "finished": "2026-10-07T19:01:44.414Z",
+        "duration_seconds": 65.095,
+        "final_answer": "Changed three files in the isolated copy:\n\n- `backend/core/models.py`: lifetime set to 15 minutes.\n- `VerifyEmailPage.tsx` and `ForgotPasswordPage.tsx`: expiry text set to 15 minutes.\n\nValidation passed for issuance, validity after 10 minutes, expiry at exactly 15 minutes, API `expires_in=900`, and plain-text/HTML email copy. Django tests and frontend build were unavailable because dependencies are absent; nothing was installed."
+      },
+      "checks": {
+        "backend/core/models.py: contains 'LIFETIME_MINUTES = 15'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/VerifyEmailPage.tsx: not_contains 'expires in 10 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: contains 'expires in 15 minutes'": true,
+        "frontend/zesty-app/src/pages/auth/ForgotPasswordPage.tsx: not_contains 'expires in 10 minutes'": true
+      },
+      "passed": 5,
+      "total": 5,
+      "mcp_calls": 1
+    },
+    "t2-change-pct/without": {
+      "usage": {
+        "agent": "/root/preflight_kpi_without",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 7,
+        "total_input_processed": 280410,
+        "cached_input_tokens": 258944,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 47360,
+        "first_turn_context": 29203,
+        "last_turn_context": 46491,
+        "work_context": 17288,
+        "output_tokens": 2260,
+        "tool_calls": 6,
+        "tools": {
+          "exec": 6
+        },
+        "nested_shell_call_sites": 5,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 57545,
+        "tool_output_tokens_est": 14386,
+        "started": "2026-10-07T18:56:16.051Z",
+        "finished": "2026-10-07T18:57:34.110Z",
+        "duration_seconds": 78.059,
+        "final_answer": "Implemented `change_pct` in the shared KPI builder: `(value - previous) / previous * 100`, rounded to one decimal; null for missing values, missing/zero previous values, and snapshots.\n\nChanged four files within the isolated copy:\n\n- `backend/core/analytics.py`\n- `backend/core/test_analytics.py`\n- `frontend/zesty-app/src/api/reports.ts`\n- `frontend/zesty-app/src/pages/dashboard/reports/EventraReportsView.tsx`\n\nValidation passed: three isolated helper tests covering all KPI kinds and null/snapshot cases, Python syntax checks, and frontend contract/construction checks. Full Django tests and frontend compilation were unavailable because dependencies are absent; none were installed."
+      },
+      "checks": {
+        "build_kpis: a.change_pct == 20.0": true,
+        "build_kpis: b.change_pct == None": true,
+        "build_kpis: c.change_pct == None": true,
+        "build_kpis: d.change_pct == -37.5": true,
+        "build_kpis: e.change_pct == None": true,
+        "build_kpis: a.value == 120": true,
+        "build_kpis: a.kind == 'count'": true,
+        "build_kpis: a.change_pct == None": true,
+        "build_kpis: a.previous == None": true,
+        "zero current": true,
+        "rounding": true,
+        "unchanged": true,
+        "frontend type": true
+      },
+      "passed": 13,
+      "total": 13
+    },
+    "t2-change-pct/cli": {
+      "usage": {
+        "agent": "/root/preflight_kpi_cli",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 6,
+        "total_input_processed": 209129,
+        "cached_input_tokens": 188288,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 39670,
+        "first_turn_context": 29661,
+        "last_turn_context": 37979,
+        "work_context": 8318,
+        "output_tokens": 1943,
+        "tool_calls": 5,
+        "tools": {
+          "exec": 5
+        },
+        "nested_shell_call_sites": 5,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 24313,
+        "tool_output_tokens_est": 6078,
+        "started": "2026-10-07T18:56:29.967Z",
+        "finished": "2026-10-07T18:57:35.915Z",
+        "duration_seconds": 65.948,
+        "final_answer": "Implemented in the isolated CLI copy.\n\nChanged:\n- `backend/core/analytics.py`: adds rounded `change_pct` to every KPI, with required null cases.\n- `backend/core/test_analytics.py`: adds calculation, missing-value, zero-baseline, and snapshot tests.\n- `frontend/zesty-app/src/api/reports.ts`: updates `Kpi`.\n- `frontend/zesty-app/src/pages/dashboard/reports/EventraReportsView.tsx`: adds null to constructed snapshot KPI.\n\nValidation: three isolated tests passed; `git diff --check` passed. Full analytics tests could not run because Django is unavailable. Frontend checks unavailable because dependencies are absent. No dependencies installed."
+      },
+      "checks": {
+        "build_kpis: a.change_pct == 20.0": true,
+        "build_kpis: b.change_pct == None": true,
+        "build_kpis: c.change_pct == None": true,
+        "build_kpis: d.change_pct == -37.5": true,
+        "build_kpis: e.change_pct == None": true,
+        "build_kpis: a.value == 120": true,
+        "build_kpis: a.kind == 'count'": true,
+        "build_kpis: a.change_pct == None": true,
+        "build_kpis: a.previous == None": true,
+        "zero current": true,
+        "rounding": true,
+        "unchanged": true,
+        "frontend type": true
+      },
+      "passed": 13,
+      "total": 13
+    },
+    "t2-change-pct/mcp": {
+      "usage": {
+        "agent": "/root/preflight_kpi_mcp",
+        "models": [
+          "gpt-6.1-sol"
+        ],
+        "effort": [
+          "medium"
+        ],
+        "model_turns": 6,
+        "total_input_processed": 236062,
+        "cached_input_tokens": 216832,
+        "cache_write_input_tokens": 0,
+        "billable_input_equiv_proxy": 40913,
+        "first_turn_context": 29666,
+        "last_turn_context": 44034,
+        "work_context": 14368,
+        "output_tokens": 2314,
+        "tool_calls": 5,
+        "tools": {
+          "exec": 5
+        },
+        "nested_shell_call_sites": 4,
+        "prism_cli_command_sites": 0,
+        "tool_output_chars": 45757,
+        "tool_output_tokens_est": 11439,
+        "started": "2026-10-07T18:56:43.580Z",
+        "finished": "2026-10-07T18:59:15.867Z",
+        "duration_seconds": 152.287,
+        "final_answer": "Implemented in the isolated copy.\n\nChanged:\n- `backend/core/analytics.py`: adds rounded `change_pct`, with required null behavior.\n- `backend/core/test_analytics.py`: covers 11 calculation/null cases.\n- `frontend/zesty-app/src/api/reports.ts`: adds the required field.\n- `frontend/zesty-app/src/pages/dashboard/reports/EventraReportsView.tsx`: adds null to the snapshot construction.\n\nValidation: extracted production helpers passed both tests (11 cases); verified all five endpoint callers and frontend contract/construction. Full Django tests and TypeScript build unavailable because this copy lacks dependencies. Nothing installed; no commits or outside edits."
+      },
+      "checks": {
+        "build_kpis: a.change_pct == 20.0": true,
+        "build_kpis: b.change_pct == None": true,
+        "build_kpis: c.change_pct == None": true,
+        "build_kpis: d.change_pct == -37.5": true,
+        "build_kpis: e.change_pct == None": true,
+        "build_kpis: a.value == 120": true,
+        "build_kpis: a.kind == 'count'": true,
+        "build_kpis: a.change_pct == None": true,
+        "build_kpis: a.previous == None": true,
+        "zero current": true,
+        "rounding": true,
+        "unchanged": true,
+        "frontend type": true
+      },
+      "passed": 13,
+      "total": 13,
+      "mcp_calls": 1
+    }
+  },
+  "aggregate": {
+    "without": {
+      "total_input_processed": 510290,
+      "cached_input_tokens": 471424,
+      "output_tokens": 4377,
+      "billable_input_equiv_proxy": 86008,
+      "model_turns": 13,
+      "tool_output_tokens_est": 26923,
+      "input_plus_output": 514667,
+      "uncached_input": 38866,
+      "input_reduction_pct": 0.0
+    },
+    "cli": {
+      "total_input_processed": 416415,
+      "cached_input_tokens": 385152,
+      "output_tokens": 4713,
+      "billable_input_equiv_proxy": 69778,
+      "model_turns": 12,
+      "tool_output_tokens_est": 10255,
+      "input_plus_output": 421128,
+      "uncached_input": 31263,
+      "input_reduction_pct": 18.4
+    },
+    "mcp": {
+      "total_input_processed": 405800,
+      "cached_input_tokens": 377088,
+      "output_tokens": 4335,
+      "billable_input_equiv_proxy": 66421,
+      "model_turns": 11,
+      "tool_output_tokens_est": 15619,
+      "input_plus_output": 410135,
+      "uncached_input": 28712,
+      "input_reduction_pct": 20.48
+    }
+  },
+  "delivery": "Packets retrieved via actual CLI and native MCP stdio, injected before first turn; presentation-only Markdown fences/blank lines omitted equally in both treatments.",
+  "limits": [
+    "Two tasks, one repetition; descriptive only.",
+    "Native host hook activation and schema-injection overhead were not measured.",
+    "Full Django and TypeScript checks unavailable in dependency-free trial copies.",
+    "Parent implementation, narrative writing, harness and orchestration tokens excluded."
+  ],
+  "local_index_build": {
+    "elapsed_seconds": 51.206855900003575,
+    "llm_tokens": 0
+  },
+  "validation": {
+    "full_suite_passed": 361,
+    "final_focused_passed": 64,
+    "ruff": "passed",
+    "mypy": "passed"
+  },
+  "root_mcp_smoke": {
+    "state": "enabled",
+    "fresh": true,
+    "first_chars": 6233,
+    "repeat_chars": 5629,
+    "repeat_reference": true,
+    "registry": "isolated due to native runtime denying default user registry reads"
+  },
+  "project_context": {
+    "enabled": true,
+    "files": 188,
+    "symbols": 1531,
+    "calls": 2944,
+    "imports": 638,
+    "refreshed_narrative_sections": 21,
+    "codex_mcp_and_hooks_installed": true,
+    "host_activation_verified": false
+  }
+}
