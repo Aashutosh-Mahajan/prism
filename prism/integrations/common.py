@@ -13,23 +13,19 @@ MCP_ENTRY = {"command": "prism", "args": ["mcp"]}
 INSTRUCTION_BLOCK = """\
 ## PRISM code index
 
-This repo is indexed by PRISM (`.aicontext/`). If `prism status` shows it is enabled for you:
+This repo has a local code index. Start each task with `prism task "<request>"` (MCP: `prism_task`):
+one call returns the matching code, every exact string match (exhaustive, so do not grep for those),
+call sites and tests. Use `prism context <symbol>` or `prism impact <symbol>` only for follow-ups.
+The index refreshes itself before each answer.
 
-- Start from `.aicontext/AGENTS.md` (the session-start hook usually injects it; otherwise run `prism brief`).
-- Before exploring files, use `prism search "<words>"` / `prism locate <name>`, then `prism context <target>`
-  (or the `prism_*` MCP tools) and read only the line ranges in its `read_list`.
-- Run `prism impact <target>` before changing a public symbol, then run the tests it lists.
-- Without hooks, run `prism update --files <changed files>` after editing.
-- Skills: `prism-context` (navigation), `prism-refresh` (brief upkeep), `prism-audit` (codebase audit).
-
-If PRISM is not initialized, not enabled, or paused, work normally. Never run `prism init`, `prism scan`,
-`prism enable`, or `prism install --global` unless the user explicitly asks.
+If it reports PRISM is not enabled or not installed, work normally. Never run `prism init`,
+`prism scan`, `prism enable`, or `prism install --global` unless the user explicitly asks.
 """
 
 GLOBAL_NOTE = """\
 ## PRISM
 If a repo has `.aicontext/` and `prism status` shows PRISM enabled, use PRISM for navigation
-(`prism brief`, `prism search`, `prism context`) instead of scanning files.
+(`prism task "<user request>"`, then targeted follow-ups) instead of scanning files.
 Never run `prism init` or `prism scan` unless the user asks.
 """
 
