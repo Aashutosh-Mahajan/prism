@@ -7,7 +7,9 @@ user and not paused. Errors go to `.aicontext/cache/hook.log`.
 
 from __future__ import annotations
 
+import contextlib
 import json
+import re
 import threading
 import time
 import traceback
@@ -17,7 +19,6 @@ from typing import Any
 
 from prism.consent import RepoState, repo_state
 from prism.core.paths import AICONTEXT, find_repo_root
-from prism.discovery import detect_language
 from prism.writers.manifest import load_manifest
 
 SESSION_START_BUDGET = 1.8  # seconds
@@ -58,6 +59,15 @@ def _state(root: Path) -> RepoState:
     return repo_state(root, manifest.get("repo_id") if manifest else None)
 
 
+def _update_quietly(root: Path, files: list[str] | None) -> None:
+    """Update the index; another updater already running is not an error, it is doing the job."""
+    from prism.incremental.lock import LockBusy
+    from prism.lifecycle import update
+
+    with contextlib.suppress(LockBusy):
+        update(root, files=files, lock_wait=0.3)
+
+
 def _run_bounded(root: Path, fn: Callable[[], object], budget: float) -> bool:
     """Run `fn` in a daemon thread for at most `budget` seconds. True if it finished."""
     done = threading.Event()
@@ -84,17 +94,24 @@ def session_start(raw_stdin: str) -> str:
             return ""
         if state is RepoState.NOT_ENABLED:
             return NOT_ENABLED_LINE
-        from prism.lifecycle import update
         from prism.navigator.api import freshness_line
         from prism.status import compute_status
 
         report = compute_status(root)
         note = ""
         catching_up = report.indexed and 0 < report.changed <= MAX_CATCHUP_FILES
-        if catching_up and not _run_bounded(root, lambda: update(root), SESSION_START_BUDGET):
+        if catching_up and not _run_bounded(
+            root, lambda: _update_quietly(root, None), SESSION_START_BUDGET
+        ):
             note = " (catch-up still running; results may lag briefly)"
+        from prism.writers.agents_md import compact_brief
+
         brief_path = root / AICONTEXT / "AGENTS.md"
-        brief = brief_path.read_text(encoding="utf-8").rstrip() if brief_path.is_file() else ""
+        brief = (
+            compact_brief(brief_path.read_text(encoding="utf-8")).rstrip()
+            if brief_path.is_file()
+            else ""
+        )
         if not report.indexed:
             return "PRISM is enabled here but the index has not been built. Ask the user before running `prism scan`."
         return f"{brief}\n\n{freshness_line(root)}{note}\n"
@@ -103,48 +120,105 @@ def session_start(raw_stdin: str) -> str:
         return ""
 
 
-def _edited_path(payload: dict[str, Any]) -> str | None:
-    tool_input = payload.get("tool_input") or {}
-    if not isinstance(tool_input, dict):
-        return None
-    for key in ("file_path", "notebook_path", "path"):
-        value = tool_input.get(key)
-        if isinstance(value, str) and value:
-            return value
-    return None
+_PATCH_FILE = re.compile(
+    r"^\*\*\* (?:Add|Update|Delete) File: (.+?)\s*$|^\*\*\* Move to: (.+?)\s*$", re.M
+)
 
 
-def post_edit(raw_stdin: str) -> None:
+def edited_paths(payload: dict[str, Any]) -> list[str]:
+    """Files an edit touched, whichever agent reported it.
+
+    Claude Code and Gemini CLI send `tool_input.file_path`; Cursor's `afterFileEdit` sends
+    `file_path` at the top level; Codex's `apply_patch` carries the patch text itself.
+    """
+    found: list[str] = []
+    top = payload.get("file_path")
+    if isinstance(top, str) and top:
+        found.append(top)
+    tool_input = payload.get("tool_input")
+    if isinstance(tool_input, dict):
+        for key in ("file_path", "notebook_path", "path"):
+            value = tool_input.get(key)
+            if isinstance(value, str) and value:
+                found.append(value)
+        command = tool_input.get("command")
+        patch = "\n".join(command) if isinstance(command, list) else command
+        if isinstance(patch, str) and "*** " in patch:
+            for match in _PATCH_FILE.finditer(patch):
+                found.append(match.group(1) or match.group(2))
+    return list(dict.fromkeys(found))
+
+
+def _spawn_update(root: Path, files: list[str] | None, warm_only: bool = False) -> bool:
+    """Start an index job in a detached process and return at once. False if it could not start.
+    `warm_only` builds the query caches without updating anything."""
+    import subprocess
+    import sys
+
+    flag = ["--warm"] if warm_only else []
+    command = [sys.executable, "-m", "prism.hooks.update_job", *flag, str(root), *(files or [])]
+    options: dict[str, Any] = {
+        "stdin": subprocess.DEVNULL,
+        "stdout": subprocess.DEVNULL,
+        "stderr": subprocess.DEVNULL,
+        "close_fds": True,
+    }
+    if sys.platform == "win32":
+        detached, no_window = 0x00000008, 0x08000000  # DETACHED_PROCESS | CREATE_NO_WINDOW
+        options["creationflags"] = detached | no_window | subprocess.CREATE_NEW_PROCESS_GROUP
+    else:
+        options["start_new_session"] = True
+    try:
+        subprocess.Popen(command, **options)
+    except OSError:
+        return False
+    return True
+
+
+def _relative_source_paths(root: Path, edited: list[str]) -> list[str] | None:
+    """Repo-relative paths among `edited` that can change the index. None = nothing to do."""
+    from prism.discovery import detect_language
+
+    files: list[str] = []
+    for name in edited:
+        path = Path(name)
+        path = path if path.is_absolute() else root / path
+        try:
+            rel = path.resolve().relative_to(root.resolve()).as_posix()
+        except ValueError:
+            continue  # outside this repo
+        if rel.startswith(AICONTEXT + "/"):
+            continue
+        if detect_language(rel) is None:
+            try:
+                with path.open("r", encoding="utf-8", errors="replace") as fh:
+                    first = fh.readline()
+            except OSError:
+                first = ""
+            if detect_language(rel, first) is None and not rel.endswith(
+                (".gitignore", ".prismignore", "pyproject.toml", "prism.toml")
+            ):
+                continue  # docs, data, etc. don't change the index
+        files.append(rel)
+    return files or None
+
+
+def post_edit(raw_stdin: str, background: bool = False) -> None:
+    """Update the index for the edited files. With `background`, hand the update to a detached
+    process so the agent never waits; a query that arrives first waits on the update lock."""
     payload = parse_payload(raw_stdin)
     root = _root_from(payload)
     try:
         if _state(root) is not RepoState.ENABLED:
             return
-        edited = _edited_path(payload)
+        edited = edited_paths(payload)
         files: list[str] | None = None
         if edited:
-            path = Path(edited)
-            path = path if path.is_absolute() else root / path
-            try:
-                rel = path.resolve().relative_to(root.resolve()).as_posix()
-            except ValueError:
-                return  # outside this repo
-            if rel.startswith(AICONTEXT + "/"):
+            files = _relative_source_paths(root, edited)
+            if files is None:
                 return
-            first = ""
-            if detect_language(rel) is None:
-                try:
-                    with path.open("r", encoding="utf-8", errors="replace") as fh:
-                        first = fh.readline()
-                except OSError:
-                    first = ""
-                if detect_language(rel, first) is None and not rel.endswith(
-                    (".gitignore", ".prismignore", "pyproject.toml", "prism.toml")
-                ):
-                    return  # docs, data, etc. don't change the index
-            files = [rel]
-        from prism.lifecycle import update
-
-        _run_bounded(root, lambda: update(root, files=files), POST_EDIT_BUDGET)
+        if background and _spawn_update(root, files):
+            return
+        _run_bounded(root, lambda: _update_quietly(root, files), POST_EDIT_BUDGET)
     except BaseException:
         _log(root, "post-edit failed:\n" + traceback.format_exc())
