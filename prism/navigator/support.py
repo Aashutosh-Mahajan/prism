@@ -3,12 +3,74 @@
 from __future__ import annotations
 
 import ast
+import textwrap
 from dataclasses import dataclass
 
 from prism.navigator.source_index import SourceReader
 
 MAX_SUPPORT = 4
 MAX_FILE_CHARS = 200_000
+
+
+def produces_shape(source: str, fields: set[str]) -> bool:
+    """Verify a Python dictionary is returned, directly or through its container.
+
+    Logging/input validation dictionaries with the same fields are not output
+    definitions. Unsupported/partial source stays an ordinary retrieval candidate.
+    """
+    try:
+        tree = ast.parse(textwrap.dedent(source))
+    except (SyntaxError, ValueError, RecursionError):
+        return False
+    functions = [
+        node for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    ]
+    if len(functions) != 1:
+        return False
+    nodes: list[ast.AST] = []
+
+    def visit(node: ast.AST) -> None:
+        if node is not functions[0] and isinstance(
+            node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)
+        ):
+            return
+        nodes.append(node)
+        for child in ast.iter_child_nodes(node):
+            visit(child)
+
+    visit(functions[0])
+    returned = {
+        node.value.id
+        for node in nodes
+        if isinstance(node, ast.Return) and isinstance(node.value, ast.Name)
+    }
+
+    def matches(node: ast.AST | None) -> bool:
+        return (
+            isinstance(node, ast.Dict)
+            and len(
+                {
+                    key.value
+                    for key in node.keys
+                    if isinstance(key, ast.Constant) and isinstance(key.value, str)
+                }
+                & fields
+            )
+            >= 2
+        )
+
+    for node in nodes:
+        if isinstance(node, ast.Return) and matches(node.value):
+            return True
+        if isinstance(node, (ast.Assign, ast.AnnAssign)) and matches(node.value):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            for target in targets:
+                base = target
+                while isinstance(base, (ast.Subscript, ast.Attribute)):
+                    base = base.value
+                if isinstance(base, ast.Name) and base.id in returned:
+                    return True
+    return False
 
 
 @dataclass(frozen=True)

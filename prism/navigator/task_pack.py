@@ -28,7 +28,7 @@ from prism.navigator.request import request_focus, request_operations
 from prism.navigator.resolve import Target
 from prism.navigator.source_index import SourceIndex, SourceReader
 from prism.navigator.store import IndexStore, SymbolRow
-from prism.navigator.support import local_support
+from prism.navigator.support import local_support, produces_shape
 from prism.navigator.synonyms import EXPANSION_WEIGHT, related_terms
 from prism.navigator.text import FILLER_WORDS, tokenize
 
@@ -348,8 +348,12 @@ def build_task(
         return pack
     with SourceIndex(store) as index:
         _fill(store, index, query, budget, staged_seen, pack)
-    if seen is not None and staged_seen is not None:
-        seen.update(staged_seen)
+    if seen is not None:
+        # Only the final delivered source counts. Recovery metadata may displace
+        # a peripheral block that was staged while fitting the answer.
+        seen.update(
+            (b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"] if b.get("source")
+        )
     return pack
 
 
@@ -442,7 +446,7 @@ def _fill(
     reader = SourceReader(store)
     terms = _query_terms(query, index)
     operations = request_operations(query)
-    evidence = find_literals(index, reader, query)
+    evidence = find_literals(index, reader, query, context_fields=_output_fields(query))
     if evidence.limited:
         pack["search_limited"] = True
     exact_symbol = store.symbol(query)
@@ -570,7 +574,13 @@ def _fill(
             )
         )
     pack["stale_sources"] = len(reader.stale)
-    wants_tests = any(t.startswith("test") or t == "spec" for t in terms)
+    wants_tests = bool(
+        re.search(
+            r"\b(?:fix|change|update|add|write|repair)\b.{0,20}\btests?\b",
+            request_focus(query),
+            re.I,
+        )
+    )
     wants_migrations = any(t.startswith("migrat") for t in terms)
     wants_docs = any(t in ("doc", "docs", "document", "documentation", "readme") for t in terms)
     for block in blocks:
@@ -582,9 +592,22 @@ def _fill(
             block.score *= MIGRATION_DEMOTION
         elif not wants_docs and block.file.split("/", 1)[0] in DOC_DIRS:
             block.score *= DOC_DEMOTION
+    _edit_evidence(blocks, reader, query, terms)
+    producers = [b for b in blocks if b.role == "output definition"]
+    if producers and not wants_tests:
+        # A verified builder and its small declared contract replace broad UI
+        # consumers. Call sites are still returned through the graph below.
+        contracts = [b for b in blocks if b.role == "contract"]
+        blocks = producers + contracts + [b for b in definitions if b not in producers + contracts]
+        blocks.extend(_constructions(store, index, reader, query, blocks))
     _reinforce(store, blocks)
     tight = any(lit.complete for lit in evidence.literals)
     blocks = _select(blocks, tight=tight)
+    if not wants_tests and blocks and not store._is_test(blocks[0].file):
+        # Tests belong to the primary target's verified links, not broad lexical
+        # candidates matching generic words such as value/previous/null.
+        related = set(_related_tests(store, index, blocks[0].symbol)) if blocks[0].symbol else set()
+        blocks = [b for b in blocks if not store._is_test(b.file) or b.file in related]
     if not tight and not exact and pack["intent"] == "edit":
         blocks = _coherent_classes(store, blocks, budget)
     # A literal list or exact lookup already answers where. Expansion is for
@@ -592,7 +615,7 @@ def _fill(
     if not tight:
         if _FLOW_REQUEST.search(query):
             blocks.extend(_flow_blocks(store, reader, blocks, terms))
-        if not exact:
+        if not exact and not producers:
             blocks.extend(_graphify_blocks(store, reader, query, blocks))
         blocks = _select(blocks)
     structural = pack["intent"] == "structural"
@@ -630,19 +653,151 @@ def _fill(
             literals.pop()
     if not literals:
         del pack["literals"]
-    source_budget = int(budget * 0.85) if budget >= 512 else budget
+    source_budget = max(MIN_BUDGET, int(budget * 0.80)) if budget >= 256 else budget
     _fit_blocks(pack, blocks, reader, source_budget, seen, structural)
     support: list[_Block] = []
     if pack["intent"] == "edit":
-        support = _support_blocks(store, reader, pack, budget, seen)
+        support = _support_blocks(store, reader, pack, source_budget, seen)
 
     primaries = _primaries(pack, blocks)
     if primaries:
         _links(store, index, reader, pack, primaries, budget, structural)
     pack["stale_sources"] = len(reader.stale)
     _confidence(pack, evidence, blocks, terms, exact, query)
-    _read_next(pack, blocks[:1] + support, budget, seen)
+    _read_next(
+        pack,
+        blocks[:1] + support,
+        budget,
+        None
+        if seen is None
+        else set(seen)
+        - {(b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"] if b.get("source")},
+    )
     pack["budget"]["used_est"] = _size(pack)
+
+
+def _output_fields(query: str) -> set[str]:
+    """Existing fields in an explicitly described output being extended."""
+    if not re.search(r"\b(?:include|add|return)\b", request_focus(query), re.I):
+        return set()
+    shapes = [part for part in re.findall(r"\(([^()]+)\)", request_focus(query)) if "/" in part]
+    fields = {
+        field.strip()
+        for part in shapes
+        for field in part.split("/")
+        if re.fullmatch(r"\s*[A-Za-z_]\w*\s*", field)
+    }
+    return fields if len(fields) >= 2 else set()
+
+
+def _edit_evidence(
+    blocks: list[_Block], reader: SourceReader, query: str, terms: dict[str, float]
+) -> None:
+    """Prefer producers of a requested object shape and exact configuration edits.
+
+    A consumer reading fields is not their definition. This local pass verifies
+    source instead of asking the model to discover the distinction in another turn.
+    """
+    fields = _output_fields(query)
+    producer = bool(fields)
+    new_blocks: list[_Block] = []
+    for block in blocks:
+        lines = reader.lines(block.file)
+        if not lines:
+            continue
+        text = "\n".join(lines[block.start - 1 : block.end])
+        if producer and block.symbol and block.symbol.kind in {"function", "method"}:
+            defined = sum(
+                bool(re.search(r"['\"]" + re.escape(name) + r"['\"]\s*:", text)) for name in fields
+            )
+            if (
+                defined >= 2
+                and block.file.endswith((".py", ".pyi"))
+                and produces_shape(text, fields)
+            ):
+                block.score *= 3.0
+                block.role = "output definition"
+        if (
+            producer
+            and block.symbol
+            and block.symbol.kind == "class"
+            and re.search(r"\b(?:type|interface)\s+" + re.escape(block.symbol.name) + r"\b", text)
+        ):
+            defined = sum(
+                bool(re.search(r"\b" + re.escape(name) + r"\??\s*:", text)) for name in fields
+            )
+            if defined >= 2 and block.end - block.start <= 60:
+                block.role = "contract"
+        # A class-level scalar is an exact edit unit, not a reason to return the
+        # entire enclosing class. Keep its source location without claiming the
+        # rest of the class was delivered.
+        if block.symbol and block.symbol.kind == "class":
+            for number in block.hits:
+                match = re.match(r"\s*([A-Z][A-Z_0-9]+)\s*=\s*(\d+)\s*(?:#.*)?$", lines[number - 1])
+                if match and len(set(tokenize(match[1])) & terms.keys()) >= 2:
+                    new_blocks.append(
+                        _Block(
+                            block.file,
+                            number,
+                            number,
+                            None,
+                            block.score * 2,
+                            [number],
+                            role="definition",
+                            whole=True,
+                        )
+                    )
+    blocks.extend(new_blocks)
+    producers = [b for b in blocks if b.role == "output definition"]
+    if producers:
+        for block in blocks:
+            if block.role == "contract":
+                block.score = max(b.score for b in producers) * 0.75
+
+
+def _constructions(
+    store: IndexStore, index: SourceIndex, reader: SourceReader, query: str, selected: list[_Block]
+) -> list[_Block]:
+    """Small literal object constructors affected by an explicitly described shape.
+
+    These are candidates, not an exhaustive typechecker. Follow the project's
+    normal type checks for indirect/spread constructions static matching misses.
+    """
+    fields = sorted(_output_fields(query))
+    if len(fields) < 2:
+        return []
+    terms = [term for field in fields for term in tokenize(field)]
+    paths = sorted(index.files_with_all(terms))
+    result: list[_Block] = []
+    score = selected[0].score * 0.65
+    for file in paths[:25]:
+        if not file.endswith((".ts", ".tsx", ".js", ".jsx")) or store._is_test(file):
+            continue
+        lines = reader.lines(file)
+        if not lines:
+            continue
+        for number, line in enumerate(lines, 1):
+            if "{" not in line or not all(
+                re.search(r"\b" + re.escape(field) + r"\s*:", line) for field in fields
+            ):
+                continue
+            if any(b.file == file and b.start <= number <= b.end for b in selected):
+                continue
+            result.append(
+                _Block(
+                    file,
+                    number,
+                    number,
+                    None,
+                    score,
+                    [number],
+                    role="construction candidate",
+                    whole=True,
+                )
+            )
+            if len(result) == 4:
+                return result
+    return result
 
 
 def _support_blocks(
@@ -653,7 +808,14 @@ def _support_blocks(
     seen: set[tuple[str, int, int]] | None,
 ) -> list[_Block]:
     ranges: dict[str, list[tuple[int, int]]] = {}
-    for block in pack["blocks"][:2]:
+    selected_blocks = pack["blocks"][:2]
+    if (
+        selected_blocks
+        and selected_blocks[0]["role"] == "definition"
+        and selected_blocks[0]["symbol"] is None
+    ):
+        selected_blocks = selected_blocks[:1]  # a scalar edit needs no helper-body expansion
+    for block in selected_blocks:
         if block.get("source"):
             ranges.setdefault(block["file"], []).append(tuple(block["lines"]))
     support: list[_Block] = []
@@ -745,6 +907,20 @@ def _read_next(
     pack["read_next"] = []
     for item in missing[:6]:
         pack["read_next"].append(item)
+        # An actionable first gap takes precedence over optional impact/caller
+        # context. Never silently delete every recovery range on a full packet.
+        if len(pack["read_next"]) == 1:
+            while _size(pack) > budget:
+                if pack.get("impact"):
+                    del pack["impact"]
+                elif pack.get("links"):
+                    pack["links"].pop()
+                    if not pack["links"]:
+                        del pack["links"]
+                elif len(pack["blocks"]) > 1:
+                    pack["blocks"].pop()
+                else:
+                    break
         if _size(pack) > budget:
             pack["read_next"].pop()
     if not pack["read_next"]:
@@ -987,7 +1163,9 @@ def _fit_blocks(
     # in this same packet are tracked separately, so they never become a false
     # "shown earlier" reference while the response is still being assembled.
     previous = set(seen or ())
-    included: set[tuple[str, int, int]] = set()
+    included: set[tuple[str, int, int]] = {
+        (b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"] if b.get("source")
+    }
     for rank, block in enumerate(blocks):
         if placed >= MAX_BLOCKS:
             break
@@ -1163,11 +1341,13 @@ def _links(
         return True
 
     omitted = 0
+    caller_sets = {primary.id: store.callers(primary.id) for primary in primaries}
+    active_primaries = sum(bool(callers) for callers in caller_sets.values())
     for number, primary in enumerate(primaries):
         limit = MAX_STRUCTURAL_CALLERS if structural else MAX_CALLERS
-        if len(primaries) > 1:
+        if active_primaries > 1:
             limit = max(3, limit // 2)
-        callers = store.callers(primary.id)
+        callers = caller_sets[primary.id]
         shown = 0
         for link in callers[:limit]:
             src = reader.lines(link.symbol.file)
@@ -1247,7 +1427,13 @@ def _confidence(
     )
     margin = _margin(blocks)
     named = _named_by_request(blocks, terms)
-    if exact or exhaustive or coverage >= 0.55 or named:
+    if (
+        exact
+        or exhaustive
+        or coverage >= 0.55
+        or named
+        or (shown and shown[0]["role"] == "output definition")
+    ):
         level = "high"
     elif coverage >= 0.3 or literals or margin >= MEDIUM_MARGIN:
         level = "medium"

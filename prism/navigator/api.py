@@ -52,10 +52,36 @@ def op_task(
     """One-call retrieval for a request. `seen` (a session's already-returned code ranges)
     makes repeats cost a reference line instead of the source again."""
     from prism.navigator.task_pack import build_task
+    from prism.writers.task_cache import (
+        load_packet,
+        packet_current,
+        packet_path,
+        save_packet,
+        source_stamp,
+    )
 
-    pack = build_task(store, query, budget, seen, mode)
+    stamp = source_stamp(store.root, store.manifest) if seen is None else None
+    path = packet_path(store.root, stamp, query.strip(), budget, mode) if stamp else None
+    pack = load_packet(path) if path else None
+    if pack is not None and not packet_current(store.root, store.manifest, pack):
+        pack = None
+    if pack is None:
+        pack = build_task(store, query, budget, seen, mode)
+        if (
+            path
+            and not pack.get("stale_sources")
+            and source_stamp(store.root, store.manifest) == stamp
+        ):
+            save_packet(path, pack)
     record_activity(store.root, "task", [b["symbol"] for b in pack["blocks"] if b["symbol"]])
     return pack
+
+
+def op_knowledge(store: IndexStore, budget: int = 600) -> dict[str, Any]:
+    """Inspect what is indexed locally without injecting the entire project."""
+    from prism.navigator.knowledge import knowledge
+
+    return knowledge(store, budget)
 
 
 def op_impact(store: IndexStore, target: str, depth: int = DEFAULT_DEPTH) -> dict[str, Any]:

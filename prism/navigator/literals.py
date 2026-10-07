@@ -135,10 +135,12 @@ def _identifier_candidates(query: str) -> list[str]:
     return _dedupe(found)
 
 
-def _quoted_spans(query: str) -> list[str]:
+def _quoted_spans(query: str, context_fields: set[str] | None = None) -> list[str]:
     spans = []
     for match in _QUOTED.finditer(query):
         text = next(g for g in match.groups() if g is not None).strip()
+        if match.group(3) is not None and context_fields and text in context_fields:
+            continue  # existing fields in an explicit output shape, not literal edit targets
         if len(text) >= 3 and any(c.isalnum() for c in text):
             spans.append(text)
     return _dedupe(spans)
@@ -268,7 +270,11 @@ def _literal(
 
 
 def find_literals(
-    index: SourceIndex, reader: SourceReader, query: str, per_literal: int = 8
+    index: SourceIndex,
+    reader: SourceReader,
+    query: str,
+    per_literal: int = 8,
+    context_fields: set[str] | None = None,
 ) -> EvidenceResult:
     """Everything in the request that can be matched exactly, and where it occurs."""
     result = EvidenceResult()
@@ -281,7 +287,7 @@ def find_literals(
         result.limited |= not matches.complete
         return matches
 
-    for text in _quoted_spans(query):
+    for text in _quoted_spans(query, context_fields):
         words = _QUERY_WORD.findall(text)
         if not words:
             continue
