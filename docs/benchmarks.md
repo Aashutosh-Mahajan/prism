@@ -12,6 +12,16 @@ scanned or modified.
 
 ## Token savings
 
+The most recent and most direct evidence is the
+[edit benchmark of 2026-10-07](agent-benchmark-results-2026-10-07.md): fifteen fresh agents made
+five real changes with and without PRISM, every edit checked by executable tests. With the prompt
+hook PRISM used 34% less total input, 15% less billable-equivalent input, 30% fewer turns, 89%
+less tool output and 26% less time, with identical correctness; on a one-method change that is
+easy to grep it saved nothing. Retrieval alone is scored by
+`python -m tests.benchmarks.retrieval_eval`.
+
+The older results below measure orientation only.
+
 The [real Codex agent benchmark](agent-benchmark-results-2026-10-03.md) compares six fresh
 agents across 12 reports. PRISM reduced average tool output by 34.8% and total input processed
 by 1.5%, while taking 42.3% longer. Primary-function scores averaged 9.67/12 with PRISM and
