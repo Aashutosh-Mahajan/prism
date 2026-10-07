@@ -113,10 +113,13 @@ See [Getting started](docs/getting-started.md) for a guided walkthrough.
 ## What you get
 
 **For the agent**
-- A ≤ 600-token project brief injected at session start (stack, entry points, commands, key modules).
-- `search` / `locate` / `context` / `impact` via CLI or native MCP tools, each within a token budget.
+- A compact session brief (languages, how to run tests and lint, how to use PRISM; about 100-150 tokens).
+- The code a request needs, added to the prompt before the model's first turn (Claude Code, Codex,
+  Gemini CLI), or one `prism task` call away: the matching code, every exact string match, call
+  sites, tests and impact, within a token budget. Follow-ups via `context` / `impact`.
 - Skills that teach the agent the workflow: `prism-context`, `prism-refresh`, `prism-audit`, `prism-decisions`.
-- An index that updates itself after every edit through hooks.
+- An index that is current whether or not your agent has hooks: every answer first checks the
+  working tree, and hooks update it in the background after edits.
 
 **For you**
 - `prism view`: a zoomable graph from packages down to functions. Click any node for its
@@ -148,11 +151,11 @@ larger than simply reading everything. Queries answer in 1–3 ms; a one-file up
 |---|---|
 | Setup and consent | `init` · `enable` / `disable` · `pause` / `resume` · `uninstall-integration` · `install --global` · `doctor` |
 | Index | `scan` · `update` · `status` · `watch` · `migrate` |
-| Navigation | `brief` · `search` · `locate` · `context` · `impact` · `module` |
+| Navigation | `task` · `brief` · `search` · `locate` · `context` · `impact` · `module` |
 | Narrative | `refresh prepare` · `refresh commit` · `decision add/list/show` |
 | Audit | `audit plan` · `audit record` · `audit update` · `audit report` |
 | Graph | `view` · `graph export` |
-| Agent plumbing | `mcp` · `hook session-start` · `hook post-edit` |
+| Agent plumbing | `mcp` · `hook session-start` · `hook user-prompt` · `hook post-edit` |
 
 Full reference: [CLI](docs/cli.md).
 
@@ -164,7 +167,7 @@ Full reference: [CLI](docs/cli.md).
 | [Architecture](docs/architecture.md) | Pipeline, incremental updates, package layout, design principles |
 | [CLI reference](docs/cli.md) | Every command and option, exit codes |
 | [The `.aicontext/` directory](docs/aicontext.md) | Artifacts, schemas, the `AGENTS.md` format |
-| [Agent integrations](docs/agents.md) | Claude Code, Cursor, Codex, MCP tools, hooks, the consent model |
+| [Agent integrations](docs/agents.md) | Claude Code, Cursor, Codex, Gemini CLI, Antigravity, MCP tools, hooks, the consent model |
 | [Graph viewer](docs/viewer.md) | Using `prism view`, shortcuts, exports, API and security |
 | [Auditing](docs/audit.md) | The agent-driven audit workflow and finding schema |
 | [Configuration](docs/configuration.md) | `[tool.prism]` settings and environment variables |
