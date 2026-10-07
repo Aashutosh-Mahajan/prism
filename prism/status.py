@@ -11,7 +11,7 @@ from prism.config import load_config
 from prism.consent import RepoState, repo_state
 from prism.core.paths import AICONTEXT
 from prism.discovery import discover
-from prism.writers import load_manifest
+from prism.writers.manifest import load_manifest
 
 
 def audit_summary(root: Path) -> dict[str, Any] | None:
@@ -80,6 +80,19 @@ class StatusReport:
         }
 
 
+def working_tree_changes(
+    root: Path, manifest: dict[str, Any]
+) -> tuple[list[str], list[str], list[str]]:
+    """(added, deleted, modified) source files since the manifest. Files whose size and mtime
+    match the manifest are not re-hashed, so this is a stat walk, not a read of the repo."""
+    known: dict[str, Any] = manifest.get("files", {})
+    current = {f.path: f.sha256 for f in discover(root, load_config(root), known, resniff=False)}
+    added = sorted(set(current) - set(known))
+    deleted = sorted(set(known) - set(current))
+    modified = sorted(p for p in set(current) & set(known) if current[p] != known[p].get("sha256"))
+    return added, deleted, modified
+
+
 def compute_status(root: Path, check_files: bool = True) -> StatusReport:
     manifest = load_manifest(root)
     repo_id = manifest.get("repo_id") if manifest else None
@@ -98,11 +111,5 @@ def compute_status(root: Path, check_files: bool = True) -> StatusReport:
     report.audit = audit_summary(root)
     if not (check_files and report.indexed):
         return report
-    known: dict[str, Any] = manifest.get("files", {})
-    current = {f.path: f.sha256 for f in discover(root, load_config(root), known)}
-    report.added = sorted(set(current) - set(known))
-    report.deleted = sorted(set(known) - set(current))
-    report.modified = sorted(
-        p for p in set(current) & set(known) if current[p] != known[p].get("sha256")
-    )
+    report.added, report.deleted, report.modified = working_tree_changes(root, manifest)
     return report
