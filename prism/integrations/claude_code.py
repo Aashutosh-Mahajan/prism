@@ -21,7 +21,13 @@ from prism.integrations.base import (
     with_block,
     without_block,
 )
-from prism.integrations.common import INSTRUCTION_BLOCK, MCP_ENTRY, SKILL_NAMES, skill_text
+from prism.integrations.common import (
+    INSTRUCTION_BLOCK,
+    MCP_ENTRY,
+    SKILL_NAMES,
+    skill_text,
+)
+from prism.integrations.hooks_json import add_hooks, strip_hooks
 
 SETTINGS = ".claude/settings.json"
 MCP_JSON = ".mcp.json"
@@ -32,48 +38,14 @@ HOOKS: dict[str, dict[str, Any]] = {
         "matcher": "startup|resume|clear|compact",
         "hooks": [{"type": "command", "command": "prism hook session-start", "timeout": 10}],
     },
+    "UserPromptSubmit": {
+        "hooks": [{"type": "command", "command": "prism hook user-prompt", "timeout": 10}],
+    },
     "PostToolUse": {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [{"type": "command", "command": "prism hook post-edit", "timeout": 5}],
     },
 }
-
-
-def _is_prism_entry(entry: Any) -> bool:
-    if not isinstance(entry, dict):
-        return False
-    return any(
-        isinstance(h, dict) and str(h.get("command", "")).startswith("prism hook")
-        for h in entry.get("hooks", [])
-    )
-
-
-def strip_hooks(settings: dict[str, Any]) -> dict[str, Any]:
-    data = copy.deepcopy(settings)
-    hooks = data.get("hooks")
-    if not isinstance(hooks, dict):
-        return data
-    for event in list(hooks):
-        entries = (
-            [e for e in hooks[event] if not _is_prism_entry(e)]
-            if isinstance(hooks[event], list)
-            else hooks[event]
-        )
-        if entries:
-            hooks[event] = entries
-        else:
-            del hooks[event]
-    if not hooks:
-        del data["hooks"]
-    return data
-
-
-def add_hooks(settings: dict[str, Any]) -> dict[str, Any]:
-    data = strip_hooks(settings)
-    hooks = data.setdefault("hooks", {})
-    for event, entry in HOOKS.items():
-        hooks.setdefault(event, []).append(copy.deepcopy(entry))
-    return data
 
 
 def _json_change(root: Path, rel: str, data: dict[str, Any], detail: str) -> FileChange:
@@ -92,14 +64,14 @@ class ClaudeCodeIntegration(Integration):
             for name in SKILL_NAMES
         ]
         settings = load_json(root / SETTINGS)
-        new_settings = add_hooks(settings) if options.hooks else strip_hooks(settings)
+        new_settings = add_hooks(settings, HOOKS) if options.hooks else strip_hooks(settings)
         if new_settings != settings or options.hooks:
             changes.append(
                 _json_change(
                     root,
                     SETTINGS,
                     new_settings,
-                    "SessionStart + PostToolUse(Edit|Write|MultiEdit) hooks",
+                    "hooks: SessionStart, UserPromptSubmit, PostToolUse(Edit|Write|MultiEdit)",
                 )
             )
         mcp = load_json(root / MCP_JSON)
@@ -139,3 +111,26 @@ class ClaudeCodeIntegration(Integration):
                 FileChange(CLAUDE_MD, without_block(read_text(root / CLAUDE_MD)), "PRISM block")
             )
         return [c for c in changes if not c.is_noop(root)]
+
+    def status(self, root: Path) -> list[tuple[str, bool | None, str]]:
+        out: list[tuple[str, bool | None, str]] = []
+        settings = read_text(root / SETTINGS)
+        if settings is not None:
+            installed = [
+                h
+                for h in ("session-start", "user-prompt", "post-edit")
+                if f"prism hook {h}" in settings
+            ]
+            out.append(
+                (
+                    "claude hooks",
+                    True if len(installed) == 3 else None,
+                    ", ".join(installed) + " installed"
+                    if installed
+                    else "not installed (optional)",
+                )
+            )
+        mcp = read_text(root / MCP_JSON)
+        if mcp is not None:
+            out.append(("claude mcp", '"prism"' in mcp, ".mcp.json registers `prism mcp`"))
+        return out
