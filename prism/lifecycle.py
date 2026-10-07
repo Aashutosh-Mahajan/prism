@@ -21,6 +21,7 @@ from prism.drift import diff, snapshot
 from prism.graph.ranking import LazyRanker, Ranker, pagerank
 from prism.health import git_head
 from prism.incremental.hash_cache import StateCache
+from prism.incremental.lock import UpdateLock
 from prism.integrations import (
     FileChange,
     GitHooksIntegration,
@@ -32,9 +33,10 @@ from prism.integrations.base import apply_changes, remove_changes
 from prism.integrations.git_hooks import make_executable
 from prism.parsing import get_parser
 from prism.pipeline import build_index
-from prism.writers import load_manifest, new_manifest, write_index, write_manifest
 from prism.writers.artifacts import ARTIFACTS, build_docs
+from prism.writers.index_writer import write_index
 from prism.writers.json_writer import write_text
+from prism.writers.manifest import load_manifest, new_manifest, write_manifest
 
 
 @dataclass(frozen=True)
@@ -218,6 +220,7 @@ def run_index(
     files: list[str] | None = None,
     full: bool = False,
     lazy_rank: bool = True,
+    lock_wait: float = 10.0,
 ) -> IndexRun:
     """Build (or incrementally update) the index and write `.aicontext/`.
 
@@ -226,12 +229,25 @@ def run_index(
     early without writing anything if no file and no git history changed.
     """
     root = root.resolve()
+    require_manifest(root)
+    with UpdateLock(root, wait=lock_wait):
+        return _run_index_locked(root, incremental, files, full, lazy_rank)
+
+
+def _run_index_locked(
+    root: Path,
+    incremental: bool,
+    files: list[str] | None,
+    full: bool,
+    lazy_rank: bool,
+) -> IndexRun:
+    # Read the manifest only once the lock is held: a writer we waited for has just changed it.
     manifest = require_manifest(root)
     config = load_config(root)
     known: dict[str, Any] = {} if full else dict(manifest.get("files", {}))
     for f in files or []:
         known.pop(f.replace("\\", "/"), None)  # force a re-hash of files named explicitly
-    discovered = discover(root, config, known)
+    discovered = discover(root, config, known, resniff=not incremental)
     shas = {f.path: f.sha256 for f in discovered}
     previous = {p: e.get("sha256") for p, e in manifest.get("files", {}).items()}
     added = tuple(sorted(set(shas) - set(previous)))
@@ -308,12 +324,24 @@ def run_index(
     return IndexRun(manifest, changed, added, deleted, reparsed, skipped=False)
 
 
-def scan(root: Path, full: bool = False) -> dict[str, Any]:
-    return run_index(root, incremental=False, full=full).manifest
+def scan(root: Path, full: bool = False, warm: bool = True) -> dict[str, Any]:
+    """Build the whole index. By default the query caches are built too, so the first question
+    after a scan (or the first prompt a hook sees) is as fast as every later one."""
+    manifest = run_index(root, incremental=False, full=full).manifest
+    if warm:
+        from prism.navigator.freshness import warm_caches
+
+        warm_caches(root.resolve())
+    return manifest
 
 
-def update(root: Path, files: list[str] | None = None, lazy_rank: bool = True) -> IndexRun:
-    return run_index(root, incremental=True, files=files, lazy_rank=lazy_rank)
+def update(
+    root: Path,
+    files: list[str] | None = None,
+    lazy_rank: bool = True,
+    lock_wait: float = 10.0,
+) -> IndexRun:
+    return run_index(root, incremental=True, files=files, lazy_rank=lazy_rank, lock_wait=lock_wait)
 
 
 def set_enabled(root: Path, enabled: bool) -> None:
