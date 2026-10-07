@@ -21,7 +21,7 @@ from typing import Any
 from prism.core.paths import AICONTEXT
 from prism.navigator.text import term_counts
 
-CACHE_FORMAT = "5"  # 5: stemmed search terms
+CACHE_FORMAT = "6"  # 6: short plurals stem ("kpis" -> "kpi")
 
 SCHEMA = """
 CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -80,7 +80,10 @@ def _read(path: Path) -> Any:
 
 def fingerprint(manifest: dict[str, Any]) -> str:
     artifacts = manifest.get("artifacts", {})
-    blob = json.dumps({"format": CACHE_FORMAT, "artifacts": artifacts}, sort_keys=True)
+    sources = {p: f.get("sha256") for p, f in manifest.get("files", {}).items()}
+    blob = json.dumps(
+        {"format": CACHE_FORMAT, "artifacts": artifacts, "sources": sources}, sort_keys=True
+    )
     return hashlib.sha256(blob.encode()).hexdigest()[:16]
 
 
