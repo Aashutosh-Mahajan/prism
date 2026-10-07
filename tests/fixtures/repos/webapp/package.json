@@ -1,0 +1,6 @@
+{
+  "name": "webapp-fixture",
+  "private": true,
+  "scripts": { "test": "vitest run", "lint": "eslint src" },
+  "dependencies": { "react": "^18.2.0", "axios": "^1.6.0" }
+}
