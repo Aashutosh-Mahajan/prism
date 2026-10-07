@@ -12,6 +12,33 @@ Reviewed 2026-09-27. “Implemented” means code and relevant tests exist; it d
 | 4.5 — Visualizer | Implemented broadly; acceptance gaps remain | Live viewer, layers, drill-down, local focus, search, overlays, persistence, SSE and exporters exist. Fixed responsive collapse, path edges, search races, static filtering, legend and input validation issues. Browser CI, full keyboard graph navigation, exact low-confidence dashed edges, richer diff semantics and large-graph frame-rate/paint/SSE measurements remain. |
 | 5 — Breadth | Partial | JS/TS/Go/Java tree-sitter support, Cursor/Codex adapters, local semantic search, communities, decisions, watch and doctor exist. Optional 3D graph and VS Code webview are absent. A real local embedding-model smoke test and broader parser accuracy validation remain. |
 
+## Retrieval, freshness and multi-agent work (2026-10-07)
+
+Driven by the agent benchmarks, which showed PRISM saving little because it added turns on top
+of normal exploration. Delivered, with tests:
+
+- **One-call answers** (`prism task`): exhaustive literal evidence, symbol-aware blocks, call
+  sites, mention-based tests, impact, confidence. Retrieval benchmark: 13 of 14 labeled queries
+  located (the 12 core ones all), mean answer about 850 tokens.
+- **Footprint:** compact brief, short instruction block and skill, lean MCP profile, on-request
+  Cursor rules. Context added at session start: about 460 tokens with the tool setup.
+- **Freshness without hooks:** working-tree check on every query; update lock; detached
+  post-edit update; cold caches warmed by `scan` and in the background by the prompt hook.
+- **Agents:** Claude Code, Codex, Gemini CLI, Cursor (hooks), Antigravity (experimental), generic;
+  idempotent and reversible for each; `doctor` checks them.
+- **Measured** ([results](agent-benchmark-results-2026-10-07.md)): 15 live agents, 5 edit tasks,
+  all 45 edits correct. Against agents with their normal tools: hook setup -34% total input,
+  -15% billable-equivalent, -30% turns, -89% tool output, -26% time; tool setup -22% / -11% /
+  -17% / -67% / -2%. One task (a single greppable method) saw no benefit.
+
+Open: the 70% target is **not** demonstrated. On these tasks the fixed per-turn overhead of the
+agent environment (about 77k tokens) bounds the savings in billable tokens; larger repositories,
+vaguer requests and multi-session days are not yet measured. Semantic (embedding) retrieval
+stays optional and unevaluated against the new lexical path. Antigravity's formats come from
+third-party documentation; hooks for it are not documented. Windows-specific behaviors (file
+sharing, code pages, first-open latency after files are written) were fixed as found; Linux and
+macOS CI results are outstanding.
+
 ## Verified in this work
 
 - Python: **192 tests passed** after fixing the stale golden and adding five boundary cases. Ruff and strict mypy passed.
