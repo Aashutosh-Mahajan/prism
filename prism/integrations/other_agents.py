@@ -1,9 +1,10 @@
-"""Cursor, Codex (and other AGENTS.md readers), and a generic fallback."""
+"""Cursor, and the generic fallback for any agent that reads a root AGENTS.md."""
 
 from __future__ import annotations
 
 import copy
 from pathlib import Path
+from typing import Any
 
 from prism.integrations.base import (
     FileChange,
@@ -15,27 +16,54 @@ from prism.integrations.base import (
     with_block,
     without_block,
 )
-from prism.integrations.common import INSTRUCTION_BLOCK, MCP_ENTRY, skill_body
+from prism.integrations.common import (
+    INSTRUCTION_BLOCK,
+    MCP_ENTRY,
+    skill_body,
+    skill_description,
+)
+from prism.integrations.hooks_json import add_hooks, strip_hooks
 
 CURSOR_RULE = ".cursor/rules/prism.mdc"
 CURSOR_MCP = ".cursor/mcp.json"
+CURSOR_HOOKS = ".cursor/hooks.json"
 AGENTS_MD = "AGENTS.md"
+MANAGED = "<!-- prism-managed: installed and updated by `prism init`. Local edits are overwritten on upgrade. -->"
+# Procedures an agent needs only now and then are rules it asks for by description, so they cost
+# nothing in a session that never audits, refreshes or records a decision.
+CURSOR_PROCEDURES = ("prism-audit", "prism-refresh", "prism-decisions")
+
+CURSOR_HOOKS_ENTRIES: dict[str, dict[str, Any]] = {
+    "sessionStart": {"command": "prism hook session-start --format cursor"},
+    "afterFileEdit": {"command": "prism hook post-edit"},
+}
 
 
 def cursor_rule() -> str:
-    """Navigation rules plus the refresh and audit procedures, as one always-on rule."""
+    """The always-on rule: only how to start a task. Short, because it is sent on every turn."""
     return (
         "---\n"
-        "description: PRISM code index - navigation, brief refresh, and audit procedures\n"
+        "description: PRISM code index - start each task with `prism task`\n"
         "alwaysApply: true\n"
         "---\n"
-        "<!-- prism-managed: installed and updated by `prism init`. Local edits are overwritten on upgrade. -->\n\n"
-        f"{INSTRUCTION_BLOCK}\n"
-        "---\n\n"
-        f"{skill_body('prism-context')}\n---\n\n"
-        f"{skill_body('prism-refresh')}\n---\n\n"
-        f"{skill_body('prism-audit')}"
+        f"{MANAGED}\n\n"
+        f"{INSTRUCTION_BLOCK}"
     )
+
+
+def cursor_procedure(name: str) -> str:
+    return (
+        "---\n"
+        f"description: {skill_description(name)}\n"
+        "alwaysApply: false\n"
+        "---\n"
+        f"{MANAGED}\n\n"
+        f"{skill_body(name)}"
+    )
+
+
+def _procedure_path(name: str) -> str:
+    return f".cursor/rules/{name}.mdc"
 
 
 class CursorIntegration(Integration):
@@ -46,16 +74,33 @@ class CursorIntegration(Integration):
 
     def plan(self, root: Path, options: IntegrationOptions) -> list[FileChange]:
         changes = [FileChange(CURSOR_RULE, cursor_rule(), "always-on PRISM rule")]
+        changes += [
+            FileChange(_procedure_path(n), cursor_procedure(n), f"{n} rule (on request)")
+            for n in CURSOR_PROCEDURES
+        ]
         if options.mcp:
             mcp = copy.deepcopy(load_json(root / CURSOR_MCP))
             mcp.setdefault("mcpServers", {})["prism"] = MCP_ENTRY
             changes.append(FileChange(CURSOR_MCP, dump_json(mcp), "MCP server `prism mcp` (stdio)"))
+        hooks = load_json(root / CURSOR_HOOKS)
+        if options.hooks:
+            merged = add_hooks(hooks, CURSOR_HOOKS_ENTRIES)
+            # A fixed key order, so installing twice writes the same bytes.
+            new = {"version": merged.get("version", 1)}
+            new.update({k: v for k, v in merged.items() if k != "version"})
+            changes.append(
+                FileChange(CURSOR_HOOKS, dump_json(new), "hooks: sessionStart, afterFileEdit")
+            )
+        elif hooks:
+            changes.append(FileChange(CURSOR_HOOKS, dump_json(strip_hooks(hooks)), "PRISM hooks"))
         return [c for c in changes if not c.is_noop(root)]
 
     def plan_removal(self, root: Path) -> list[FileChange]:
-        changes = []
-        if (root / CURSOR_RULE).is_file():
-            changes.append(FileChange(CURSOR_RULE, None, "PRISM rule"))
+        changes = [
+            FileChange(path, None, "PRISM rule")
+            for path in (CURSOR_RULE, *(_procedure_path(n) for n in CURSOR_PROCEDURES))
+            if (root / path).is_file()
+        ]
         if (root / CURSOR_MCP).is_file():
             mcp = copy.deepcopy(load_json(root / CURSOR_MCP))
             servers = mcp.get("mcpServers", {})
@@ -66,17 +111,42 @@ class CursorIntegration(Integration):
             changes.append(
                 FileChange(CURSOR_MCP, dump_json(mcp) if mcp else None, "PRISM MCP server")
             )
+        if (root / CURSOR_HOOKS).is_file():
+            remaining = strip_hooks(load_json(root / CURSOR_HOOKS))
+            empty = not (set(remaining) - {"version"})
+            changes.append(
+                FileChange(CURSOR_HOOKS, None if empty else dump_json(remaining), "PRISM hooks")
+            )
         return [c for c in changes if not c.is_noop(root)]
+
+    def status(self, root: Path) -> list[tuple[str, bool | None, str]]:
+        out: list[tuple[str, bool | None, str]] = []
+        rule = read_text(root / CURSOR_RULE)
+        if rule is not None:
+            out.append(("cursor rule", rule == cursor_rule(), ".cursor/rules/prism.mdc installed"))
+        hooks = read_text(root / CURSOR_HOOKS)
+        if hooks is not None:
+            both = "prism hook session-start" in hooks and "prism hook post-edit" in hooks
+            out.append(
+                (
+                    "cursor hooks",
+                    True if both else None,
+                    "sessionStart and afterFileEdit installed"
+                    if both
+                    else "not installed (optional)",
+                )
+            )
+        return out
 
 
 class AgentsMdIntegration(Integration):
-    """Codex and other agents that read a root AGENTS.md. Also the generic fallback."""
+    """Any agent that reads a root AGENTS.md: the generic fallback."""
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str = "generic") -> None:
         self.name = name
 
     def detect(self, root: Path) -> bool:
-        return self.name == "codex" and ((root / AGENTS_MD).is_file() or (root / ".codex").is_dir())
+        return False
 
     def plan(self, root: Path, options: IntegrationOptions) -> list[FileChange]:
         change = FileChange(
