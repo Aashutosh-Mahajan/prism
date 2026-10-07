@@ -8,11 +8,11 @@ description: Use at the start of any coding task in this repo, and for "where is
 
 ## Purpose
 
-This repo has a local code index. One call returns the code a task needs, so you do not list directories, grep, or read whole files to get oriented.
+This repo has a local code index. Retrieve evidence for the actual request; avoid a separate broad orientation phase for an already-located edit.
 
 ## When to use
 
-- At the start of any coding task: fix, feature, refactor, or a question about the code.
+- To locate unknown code for a fix, feature, refactor, or question.
 - Before you grep or open files just to find where something lives.
 
 ## Preconditions
@@ -21,10 +21,10 @@ None to check first. Call `prism task`; if it reports that PRISM is not enabled,
 
 ## Procedure
 
-1. `prism task "<the request>"` (MCP: `prism_task`). Pass the user's wording, a symbol name, or a file path. It returns the matching code with line numbers, every exact occurrence of the strings, names and quantities in the request, call sites with their calling line, tests to run, and impact.
-2. Edit from what it returned. A literal list marked exhaustive covers the whole indexed source: do not grep for those strings. Read more only where the answer says it is an excerpt or its confidence is low.
+1. If PRISM already supplied context with the prompt, use that packet without another retrieval. Otherwise call `prism task "<the request>"` (MCP: `prism_task`). Pass the user's actual wording once, rather than a sequence of guessed searches. Architecture requests return a selective map of signatures and relationships; edit requests return source, used local definitions, call sites and test candidates. Explicit modes: `--mode overview` or `--mode code` (MCP: `mode`). A file path in overview mode returns its symbol outline.
+2. Use the evidence directly. Lists marked exhaustive cover the indexed matching lines; lists marked limited do not. For partial source, read only the `read_next` ranges or request that exact symbol with a larger budget. Do not repeat retrieval with synonyms and then read whole files when the packet already answers the request. Weak matches still need a targeted ordinary search; never suppress missing evidence just to save tokens.
 3. For a follow-up on one symbol: `prism context <symbol>` or `prism impact <symbol>` (MCP: `prism_context`, `prism_impact`). Run `prism impact` before changing a public signature, and update every caller it lists.
-4. Run the tests the answer names. Hooks update the index after edits; without hooks, `prism update <files>` forces it.
+4. Run relevant tests. Hooks update the index after edits; queries also catch working-tree changes. Use `--session <id>` for repeated CLI retrieval so unchanged code becomes references. MCP maintains session memory automatically.
 
 ## Outputs
 

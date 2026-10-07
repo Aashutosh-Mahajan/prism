@@ -6,6 +6,8 @@ import contextlib
 import json
 import sys
 from collections.abc import Callable
+from contextvars import ContextVar
+from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
 from typing import Annotated, Any, TypeVar
@@ -47,6 +49,19 @@ QuietOption = Annotated[
 ]
 
 
+@dataclass(frozen=True)
+class _CliDefaults:
+    root: Path | None = None
+    session: str | None = None
+
+
+_CLI_DEFAULTS: ContextVar[_CliDefaults | None] = ContextVar("prism_cli_defaults", default=None)
+
+
+def _defaults() -> _CliDefaults:
+    return _CLI_DEFAULTS.get() or _CliDefaults()
+
+
 def emit(text: str) -> None:
     """Plain output: never interpreted as Rich markup."""
     typer.echo(text)
@@ -64,7 +79,7 @@ def _output(data: dict[str, Any], as_json: bool, renderer: Callable[[dict[str, A
 
 
 def _root(root: Path | None) -> Path:
-    return (root or find_repo_root(Path.cwd())).resolve()
+    return (root or _defaults().root or find_repo_root(Path.cwd())).resolve()
 
 
 def handle_errors(fn: F) -> F:
@@ -98,12 +113,19 @@ def _version_callback(value: bool) -> None:
 
 @app.callback()
 def _main(
+    ctx: typer.Context,
     version: Annotated[
         bool,
         typer.Option("--version", callback=_version_callback, is_eager=True, help="Show version."),
     ] = False,
+    root: RootOption = None,
+    session: Annotated[
+        str | None, typer.Option("--session", help="Default task retrieval session.")
+    ] = None,
 ) -> None:
     """PRISM maps a codebase once and keeps the map fresh for coding agents."""
+    token = _CLI_DEFAULTS.set(_CliDefaults(root, session))
+    ctx.call_on_close(lambda: _CLI_DEFAULTS.reset(token))
 
 
 # --- setup and consent ---------------------------------------------------------
@@ -531,6 +553,9 @@ def task(
     query: Annotated[str, typer.Argument(help="The request, a symbol name, or a file path.")],
     root: RootOption = None,
     budget: Annotated[int, typer.Option("--budget", min=128, max=32000)] = 2000,
+    mode: Annotated[
+        str, typer.Option("--mode", help="auto | overview (signatures/map) | code (edit context)")
+    ] = "auto",
     session: Annotated[
         str | None,
         typer.Option(
@@ -546,12 +571,15 @@ def task(
     from prism.navigator.task_pack import render_task
 
     store = _store(root)
-    sid = session_id(session)
-    seen = load_seen(store.root, sid) if sid else None
-    pack = nav.op_task(store, query, budget, seen)
-    if sid and seen is not None:
-        save_seen(store.root, sid, seen)
-    _output(pack, as_json, render_task)
+    sid = session_id(session if session is not None else _defaults().session)
+    seen = load_seen(store.root, sid, store.manifest) if sid else None
+    try:
+        pack = nav.op_task(store, query, budget, seen, mode)
+        _output(pack, as_json, render_task)
+        if sid and seen is not None:
+            save_seen(store.root, sid, seen, store.manifest)
+    finally:
+        store.close()
 
 
 @app.command()

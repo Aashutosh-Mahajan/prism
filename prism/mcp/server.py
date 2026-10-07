@@ -26,9 +26,10 @@ from prism.status import compute_status
 from prism.writers.manifest import load_manifest
 
 INSTRUCTIONS = (
-    "PRISM indexes this repository. Start every task with prism_task(request): one call returns "
-    "the matching code, every exact string match (exhaustive), call sites and tests. Use "
-    "prism_context or prism_impact only for follow-ups."
+    "For unknown code, call prism_task with the user's request. Architecture requests return a map; "
+    "edits return source and dependencies. Use the packet directly; partial packets list read_next "
+    "ranges. Search narrowly on weak matches. Complete literal lists need no repeated grep. "
+    "Avoid broad orientation for already-located edits."
 )
 
 
@@ -43,9 +44,21 @@ class PrismTools:
     def store(self) -> IndexStore:
         refresh_if_stale(self.root)  # answer from the working tree, whether or not hooks ran
         if self._store is None or not self._store.is_current():
+            current = IndexStore.open(self.root)
             if self._store is not None:
+                previous_files = self._store.manifest.get("files", {})
+                current_files = current.manifest.get("files", {})
+                self._seen.intersection_update(
+                    {
+                        item
+                        for item in self._seen
+                        if item[0] in current_files
+                        and previous_files.get(item[0], {}).get("sha256")
+                        == current_files[item[0]].get("sha256")
+                    }
+                )
                 self._store.close()
-            self._store = IndexStore.open(self.root)
+            self._store = current
         return self._store
 
     def call(self, fn: Callable[[], dict[str, Any]]) -> dict[str, Any]:
@@ -75,13 +88,16 @@ class PrismTools:
         """Resolve a name to candidate symbols/files with exact file:lines."""
         return self.call(lambda: nav.op_locate(self.store(), name))
 
-    def prism_task(self, query: str, budget: int = 2000, repeat: bool = False) -> dict[str, Any]:
+    def prism_task(
+        self, query: str, budget: int = 2000, repeat: bool = False, mode: str = "auto"
+    ) -> dict[str, Any]:
         """Start here. For a request, symbol or file: the matching code with line numbers, every
         exact occurrence of the strings/names/quantities it mentions (exhaustive, so no grep),
         call sites, tests and impact. Code returned earlier in this session is referenced, not
-        repeated, unless repeat=true. budget is chars/4, 128-32000."""
+        repeated, unless repeat=true. mode: auto, overview (map/signatures), code (edit source).
+        budget is chars/4, 128-32000."""
         return self.call(
-            lambda: nav.op_task(self.store(), query, budget, None if repeat else self._seen)
+            lambda: nav.op_task(self.store(), query, budget, None if repeat else self._seen, mode)
         )
 
     def prism_context(

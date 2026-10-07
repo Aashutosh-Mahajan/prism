@@ -37,8 +37,8 @@ NAVIGATION = (
 # itself is injected: how to run things, anything a human wrote down, and how to use PRISM.
 COMPACT_FACTS = ("Languages", "Commands")
 COMPACT_NAVIGATION = (
-    'Start with `prism task "<request>"`: one call returns the code, every exact string match '
-    "(exhaustive), call sites and tests."
+    'For unknown code use `prism task "<request>"`: architecture maps or edit source. '
+    "Use complete evidence directly; partial packets list missing ranges."
 )
 
 

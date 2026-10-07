@@ -82,11 +82,16 @@ def _retrieve(
 ) -> str:
     from pathlib import Path
 
+    from prism.core.tokens import estimate_tokens
     from prism.navigator.api import op_task
     from prism.navigator.freshness import caches_ready, refresh_if_stale
     from prism.navigator.session import load_seen, save_seen
     from prism.navigator.store import IndexStore
-    from prism.navigator.task_pack import render_task
+    from prism.navigator.task_pack import MIN_BUDGET, render_task
+
+    packet_budget = budget - estimate_tokens(HEADER + "\n")
+    if packet_budget < MIN_BUDGET:
+        return ""  # a silent hook costs less than an over-budget packet
 
     root = Path(root_text)
     refresh_if_stale(root, wait=1.5)
@@ -98,17 +103,20 @@ def _retrieve(
         return ""
     store = IndexStore.open(root)
     try:
-        seen = load_seen(root, session) if session else None
-        pack = op_task(store, prompt, budget, seen)
+        seen = load_seen(root, session, store.manifest) if session else None
+        pack = op_task(store, prompt, packet_budget, seen)
+        if pack["confidence"] == "low" or not (pack["blocks"] or pack.get("literals")):
+            return ""
+        result = f"{HEADER}\n{render_task(pack)}"
+        if estimate_tokens(result) > budget or (abandoned and abandoned.is_set()):
+            return ""
         # Remember what was returned only if the hook is still waiting for it: a result nobody
         # received must not make a later answer skip code the agent has never seen.
         if seen is not None and session and not (abandoned and abandoned.is_set()):
-            save_seen(root, session, seen)
+            save_seen(root, session, seen, store.manifest)
+        return result
     finally:
         store.close()
-    if pack["confidence"] == "low" or not (pack["blocks"] or pack.get("literals")):
-        return ""
-    return f"{HEADER}\n{render_task(pack)}"
 
 
 def user_prompt(raw_stdin: str) -> str:
