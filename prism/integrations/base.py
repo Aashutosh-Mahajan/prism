@@ -74,6 +74,14 @@ class Integration(ABC):
     def plan_removal(self, root: Path) -> list[FileChange]:
         """Changes that remove every PRISM-managed piece of this integration."""
 
+    def notes(self, root: Path, options: IntegrationOptions) -> list[str]:
+        """Things the user must do or know that PRISM will not do for them (printed after init)."""
+        return []
+
+    def status(self, root: Path) -> list[tuple[str, bool | None, str]]:
+        """Health of what is installed, as (name, ok, detail) for `prism doctor`. `ok` None warns."""
+        return []
+
 
 # --- text helpers ----------------------------------------------------------------
 
@@ -102,6 +110,36 @@ def without_block(existing: str | None) -> str | None:
         return existing
     remaining = _BLOCK_RE.sub("\n", existing).strip("\n")
     return (remaining + "\n") if remaining.strip() else None
+
+
+TOML_START = "# prism-managed:start"
+TOML_END = "# prism-managed:end"
+_TOML_RE = re.compile(
+    r"\n?" + re.escape(TOML_START) + r".*?" + re.escape(TOML_END) + r"\n?", re.DOTALL
+)
+
+
+def with_toml_block(existing: str | None, body: str) -> str:
+    """The TOML-comment twin of `with_block`: insert or replace PRISM's block, keep the rest."""
+    block = f"{TOML_START}\n{body.strip()}\n{TOML_END}\n"
+    if existing is None or not existing.strip():
+        return block
+    if TOML_START in existing:
+        return _TOML_RE.sub("\n" + block, existing, count=1).lstrip("\n")
+    sep = "" if existing.endswith("\n\n") else ("\n" if existing.endswith("\n") else "\n\n")
+    return existing + sep + block
+
+
+def without_toml_block(existing: str | None) -> str | None:
+    if existing is None or TOML_START not in existing:
+        return existing
+    remaining = _TOML_RE.sub("\n", existing).strip("\n")
+    return (remaining + "\n") if remaining.strip() else None
+
+
+def outside_toml_block(existing: str | None) -> str:
+    """The user's own TOML, with PRISM's block removed (for checking what they already define)."""
+    return _TOML_RE.sub("\n", existing or "")
 
 
 def load_json(path: Path) -> dict[str, Any]:
