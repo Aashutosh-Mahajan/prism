@@ -11,6 +11,7 @@ from typer.testing import CliRunner
 
 from prism.cli import app
 from prism.consent import registry_path
+from prism.core.tokens import estimate_tokens
 from prism.hooks import post_edit, session_start
 from prism.hooks.runner import NOT_ENABLED_LINE
 from prism.lifecycle import apply_init, plan_init, scan, set_paused
@@ -60,7 +61,10 @@ def test_paused_hooks_are_noops(enabled: Path) -> None:
 def test_session_start_catches_up_and_prints_brief(enabled: Path) -> None:
     (enabled / "src" / "shop" / "pulled.py").write_text("def from_git_pull():\n    pass\n")
     text = session_start(payload(enabled))
-    assert text.startswith("# smallshop — Agent Brief")
+    # The injected brief is compact: commands and how to use PRISM, no placeholders or overview.
+    assert text.startswith("# smallshop\n")
+    assert 'prism task "<request>"' in text and "Not written yet" not in text
+    assert "Top modules" not in text and estimate_tokens(text) < 200
     assert text.rstrip().endswith("PRISM · index fresh")
     store = IndexStore.open(enabled)
     assert store.symbol("shop.pulled.from_git_pull") is not None
@@ -106,9 +110,18 @@ def test_hook_cli_exits_zero(enabled: Path, monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setenv("PRISM_HOOK_NO_EXIT", "1")
     runner = CliRunner()
     result = runner.invoke(app, ["hook", "session-start"], input=payload(enabled))
-    assert result.exit_code == 0 and "Agent Brief" in result.output
+    assert result.exit_code == 0 and "prism task" in result.output
     result = runner.invoke(app, ["hook", "post-edit"], input="not json at all")
     assert result.exit_code == 0 and result.output == ""
+
+
+def test_mcp_default_profile_is_lean(enabled: Path) -> None:
+    """Every tool schema is sent each turn, so the default is the few a coding task needs."""
+    assert enabled_tools(enabled) == ["prism_status", "prism_task", "prism_context", "prism_impact"]
+    assert "prism_audit_plan" in enabled_tools(enabled, "full")
+    server = build_server(enabled)
+    names = {t.name for t in asyncio.run(server.list_tools())}
+    assert names == {"prism_status", "prism_task", "prism_context", "prism_impact"}
 
 
 def test_mcp_exposes_only_status_without_consent(enabled: Path) -> None:
@@ -120,7 +133,7 @@ def test_mcp_exposes_only_status_without_consent(enabled: Path) -> None:
 
 
 def test_mcp_tools_return_structured_results_and_errors(enabled: Path) -> None:
-    server = build_server(enabled)
+    server = build_server(enabled, "full")
 
     async def call(name: str, args: dict[str, object]) -> dict[str, object]:
         result = await server.call_tool(name, args)
@@ -135,6 +148,7 @@ def test_mcp_tools_return_structured_results_and_errors(enabled: Path) -> None:
     async def scenario() -> None:
         names = {t.name for t in await server.list_tools()}
         assert {"prism_status", "prism_context", "prism_search", "prism_impact"} <= names
+        assert {"prism_task", "prism_locate", "prism_audit_plan"} <= names
         pack = await call("prism_context", {"target": "apply_discount"})
         assert pack["target"]["id"] == "shop.pricing.discounts.apply_discount"
         missing = await call("prism_context", {"target": "definitely_not_here_xyz"})
@@ -151,3 +165,46 @@ def test_mcp_store_reloads_after_update(enabled: Path) -> None:
     (enabled / "src" / "shop" / "fresh.py").write_text("def brand_new_fn():\n    pass\n")
     scan(enabled)
     assert tools.prism_locate("brand_new_fn")["candidates"][0]["id"] == "shop.fresh.brand_new_fn"
+
+
+def test_post_edit_in_background_returns_before_the_update_lands(enabled: Path) -> None:
+    import time
+
+    from prism.status import compute_status
+
+    (enabled / "src" / "shop" / "bg.py").write_text("def background_fn():\n    pass\n")
+    post_edit(payload(enabled, tool_input={"file_path": "src/shop/bg.py"}), background=True)
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline and not compute_status(enabled).fresh:
+        time.sleep(0.1)
+    assert compute_status(enabled).fresh
+    store = IndexStore.open(enabled)
+    try:
+        assert store.symbol("shop.bg.background_fn") is not None
+    finally:
+        store.close()
+
+
+def test_hook_entry_never_loads_the_full_cli(enabled: Path) -> None:
+    """A hook runs on every edit: routing it must not import typer, rich or any sub-command."""
+    import os
+    import subprocess
+    import sys
+
+    code = (
+        "import sys; from prism.entry import main; sys.argv = ['prism', 'hook', 'session-start']; "
+        "main(); sys.stderr.write(repr(sorted(m for m in ('typer', 'rich', 'prism.cli') "
+        "if m in sys.modules)))"
+    )
+    env = {**os.environ, "PRISM_HOOK_NO_EXIT": "1"}
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        input=payload(enabled),
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=enabled,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stderr.strip().endswith("[]"), result.stderr
+    assert 'prism task "<request>"' in result.stdout
