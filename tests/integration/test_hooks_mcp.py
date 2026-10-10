@@ -117,15 +117,34 @@ def test_hook_cli_exits_zero(enabled: Path, monkeypatch: pytest.MonkeyPatch) -> 
 
 def test_mcp_default_profile_is_lean(enabled: Path) -> None:
     """Every tool schema is sent each turn, so the default is the few a coding task needs."""
-    assert enabled_tools(enabled) == ["prism_status", "prism_task", "prism_context", "prism_impact"]
+    assert enabled_tools(enabled) == ["prism_task"]
+    assert enabled_tools(enabled, "standard") == [
+        "prism_status",
+        "prism_task",
+        "prism_find",
+        "prism_context",
+        "prism_impact",
+    ]
     assert "prism_audit_plan" in enabled_tools(enabled, "full")
     server = build_server(enabled)
-    names = {t.name for t in asyncio.run(server.list_tools())}
-    assert names == {"prism_status", "prism_task", "prism_context", "prism_impact"}
+    tools = asyncio.run(server.list_tools())
+    assert {t.name for t in tools} == {"prism_task"}
+    # The schema and instructions are re-sent on every model call: keep them small (chars/4).
+    import json
+
+    from prism.mcp.server import INSTRUCTIONS
+
+    schema = json.dumps(
+        [
+            {"name": t.name, "description": t.description, "inputSchema": t.input_schema}
+            for t in tools
+        ]
+    )
+    assert (len(schema) + len(INSTRUCTIONS)) // 4 <= 330
 
 
 def test_mcp_exposes_only_status_without_consent(enabled: Path) -> None:
-    assert "prism_context" in enabled_tools(enabled)
+    assert "prism_context" in enabled_tools(enabled, "standard")
     registry_path().unlink()
     assert enabled_tools(enabled) == ["prism_status"]
     set_state = PrismTools(enabled).prism_status()
@@ -142,6 +161,9 @@ def test_mcp_tools_return_structured_results_and_errors(enabled: Path) -> None:
         )
         if content is None and isinstance(result, tuple):
             content = result[1]
+        if content is None:  # JSON-format tools carry the packet once, as text content
+            blocks = result[0] if isinstance(result, tuple) else result.content
+            content = json.loads("".join(b.text for b in blocks if hasattr(b, "text")))
         assert isinstance(content, dict)
         return content
 

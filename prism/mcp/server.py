@@ -26,10 +26,9 @@ from prism.status import compute_status
 from prism.writers.manifest import load_manifest
 
 INSTRUCTIONS = (
-    "For unknown code, call prism_task with the user's request. Architecture requests return a map; "
-    "edits return source and dependencies. Use the packet directly; partial packets list read_next "
-    "ranges. Search narrowly on weak matches. Complete literal lists need no repeated grep. "
-    "Avoid broad orientation for already-located edits."
+    "Call prism_task with the user's request first. Use the packet directly; a list marked "
+    "exhaustive needs no grep. When it says Edit-ready, edit the listed sites now. "
+    "After editing, mode=verify lists sites that still match the old value."
 )
 
 
@@ -39,9 +38,31 @@ class PrismTools:
     def __init__(self, root: Path) -> None:
         self.root = root.resolve()
         self._store: IndexStore | None = None
-        self._seen: set[tuple[str, int, int]] = set()  # code already returned this session
+        self._seen: set[tuple[str, int, int]] = set()  # code the client is known to have received
+        self._pending: tuple[str, set[tuple[str, int, int]]] | None = (
+            None  # last reply, not yet proven delivered
+        )
+        # Work-log id for this server's lifetime (one agent conversation), unless a caller
+        # shares an explicit session id with the hooks and CLI.
+        self._worklog = f"mcp-{os.getpid()}-{id(self)}"
+
+    def _require_consent(self) -> None:
+        """Re-checked on every call: `prism disable` or `prism pause` takes effect at once, even
+        in a server that was started while PRISM was still enabled."""
+        from prism.consent import RepoState, repo_state
+        from prism.core.errors import NotEnabledError
+        from prism.writers.manifest import load_manifest
+
+        manifest = load_manifest(self.root) or {}
+        state = repo_state(self.root, manifest.get("repo_id"))
+        if state is not RepoState.ENABLED:
+            raise NotEnabledError(
+                f"PRISM is {state.value} for you in this repo, so only prism_status answers. "
+                "The user can run `prism enable` / `prism resume`; agents must not."
+            )
 
     def store(self) -> IndexStore:
+        self._require_consent()
         refresh_if_stale(self.root)  # answer from the working tree, whether or not hooks ran
         if self._store is None or not self._store.is_current():
             current = IndexStore.open(self.root)
@@ -62,8 +83,20 @@ class PrismTools:
         return self._store
 
     def call(self, fn: Callable[[], dict[str, Any]]) -> dict[str, Any]:
+        import sqlite3
+
         try:
-            return fn()
+            try:
+                return fn()
+            except sqlite3.DatabaseError:
+                # A damaged disposable cache: drop every cache, reopen and answer once more.
+                from prism.navigator.cache_db import purge_disposable_caches
+
+                if self._store is not None:
+                    self._store.close()
+                    self._store = None
+                purge_disposable_caches(self.root)
+                return fn()
         except PrismError as exc:
             return exc.to_dict()
 
@@ -99,6 +132,7 @@ class PrismTools:
         repeat: bool = False,
         mode: str = "auto",
         session: str | None = None,
+        detail: str = "full",
     ) -> dict[str, Any]:
         """Start here. For a request, symbol or file: the matching code with line numbers, every
         exact occurrence of the strings/names/quantities it mentions (exhaustive, so no grep),
@@ -107,17 +141,53 @@ class PrismTools:
         budget is chars/4, 128-32000."""
 
         def retrieve() -> dict[str, Any]:
-            from prism.navigator.session import load_seen, save_seen, session_id
+            from prism.navigator.session import load_seen, query_key, save_seen, session_id
 
             store = self.store()
-            sid = session_id(session)
-            seen = load_seen(self.root, sid, store.manifest) if sid else self._seen
-            pack = nav.op_task(store, query, budget, None if repeat else seen, mode)
-            if sid and not repeat:
-                save_seen(self.root, sid, seen, store.manifest)
+            sid = session_id(session, self.root)
+            if sid:
+                seen = load_seen(self.root, sid, store.manifest, query)
+            else:
+                # In-process memory follows the same rule as the session file: what a reply
+                # returned counts as delivered only once a *different* request arrives.
+                qk = query_key(query)
+                if self._pending is not None:
+                    if self._pending[0] != qk:
+                        self._seen |= self._pending[1]
+                    self._pending = None
+                seen = set(self._seen)
+            committed = set(seen)
+            log_id = sid or self._worklog
+            pack = nav.op_task(
+                store, query, budget, None if repeat else seen, mode, log_id, detail=detail
+            )
+            if not repeat:
+                if sid:
+                    save_seen(self.root, sid, seen, store.manifest, query, committed)
+                else:
+                    self._pending = (qk, seen - committed)
+            from prism.writers.worklog import record_delivery, record_focus
+
+            record_delivery(self.root, log_id, "mcp", True)
+            record_focus(
+                self.root, log_id, [b["symbol"] for b in pack["blocks"][:2] if b["symbol"]]
+            )
             return pack
 
         return self.call(retrieve)
+
+    def prism_find(
+        self,
+        patterns: list[str],
+        regex: bool = False,
+        ignore_case: bool = False,
+        glob: list[str] | None = None,
+        budget: int = 1500,
+    ) -> dict[str, Any]:
+        """Several searches in one call (substring, or regex), grouped by file within a budget."""
+        from prism.navigator.find import run_find
+
+        return self.call(lambda: run_find(self.store(), patterns, regex, ignore_case, glob, budget))
 
     def prism_context(
         self, target: str, budget: int = 2000, depth: int = 1, with_source: bool = False
@@ -136,6 +206,18 @@ class PrismTools:
     def prism_module(self, name: str) -> dict[str, Any]:
         """Module summary from .aicontext/modules/."""
         return self.call(lambda: nav.op_module(self.store(), name))
+
+    def prism_recall(self, query: str | None = None, limit: int = 3) -> dict[str, Any]:
+        """What earlier sessions asked, edited and noted (most recent first, or matching query)."""
+        from prism.navigator.recall import recall
+
+        return self.call(lambda: recall(self.root, query, limit, exclude=self._worklog))
+
+    def prism_note(self, text: str, session: str | None = None) -> dict[str, Any]:
+        """Leave a one-line handoff for the next session: what changed, what is left."""
+        from prism.writers.worklog import record_note
+
+        return self.call(lambda: record_note(self.root, session or self._worklog, text))
 
     # --- narrator and auditor (the only tools that write, and only inside .aicontext/) ---
 
@@ -230,10 +312,12 @@ class PrismTools:
 # is the few tools a coding task needs. `prism_task` also resolves names and free text, which is
 # what `prism_search` and `prism_locate` are for; audit, refresh and decision tools are reached
 # through the CLI and their skills, or by choosing the full profile.
-LEAN_TOOLS = ("prism_task", "prism_context", "prism_impact")
+LEAN_TOOLS = ("prism_task",)
+STANDARD_TOOLS = ("prism_task", "prism_find", "prism_context", "prism_impact")
 NAVIGATION_TOOLS = (
     "prism_brief",
     "prism_task",
+    "prism_find",
     "prism_search",
     "prism_locate",
     "prism_context",
@@ -251,8 +335,10 @@ EXTRA_TOOLS: list[str] = [
     "prism_graph_view_url",
     "prism_decisions",
     "prism_decision_record",
+    "prism_recall",
+    "prism_note",
 ]
-PROFILES = ("lean", "full")
+PROFILES = ("lean", "standard", "full")
 
 
 def resolve_profile(profile: str | None = None) -> str:
@@ -268,7 +354,10 @@ def enabled_tools(root: Path, profile: str | None = None) -> list[str]:
         return ["prism_status"]
     if resolve_profile(profile) == "full":
         return ["prism_status", *NAVIGATION_TOOLS, *EXTRA_TOOLS]
-    return ["prism_status", *LEAN_TOOLS]
+    if resolve_profile(profile) == "standard":
+        return ["prism_status", *STANDARD_TOOLS]
+    # Lean: every tool's schema is re-sent on each model call, so an enabled repo gets one tool.
+    return list(LEAN_TOOLS)
 
 
 def _server_class() -> Any:
@@ -294,6 +383,7 @@ def build_server(root: Path, profile: str | None = None) -> Any:
         mode: str = "auto",
         session: str | None = None,
         format: Literal["compact", "json"] = "compact",
+        detail: Literal["full", "brief"] = "full",
     ) -> Any:
         """Get edit source, contracts, literals, callers and tests in one call.
 
@@ -303,7 +393,7 @@ def build_server(root: Path, profile: str | None = None) -> Any:
         """
         from prism.navigator.task_pack import render_task
 
-        pack = tools.prism_task(query, budget, repeat, mode, session)
+        pack = tools.prism_task(query, budget, repeat, mode, session, detail)
         if format == "json" or pack.get("error"):
             import json
 
@@ -313,10 +403,14 @@ def build_server(root: Path, profile: str | None = None) -> Any:
             # constructor uses snake_case although the protocol uses camelCase.
             return CallToolResult.model_validate(
                 {
+                    # One copy only: the host feeds `content` to the model, and a second copy in
+                    # `structuredContent` would be paid for again whenever a host forwards both.
                     "content": [
-                        TextContent(type="text", text=json.dumps(pack, ensure_ascii=False))
+                        TextContent(
+                            type="text",
+                            text=json.dumps(pack, separators=(",", ":"), ensure_ascii=False),
+                        )
                     ],
-                    "structuredContent": pack,
                     "isError": bool(pack.get("error")),
                 }
             )
