@@ -15,7 +15,7 @@ from prism.integrations.other_agents import AgentsMdIntegration, CursorIntegrati
 
 AGENTS = ("claude-code", "cursor", "codex", "gemini", "antigravity", "generic")
 # What each agent can do, so `init` only asks about what applies.
-HAS_HOOKS = frozenset({"claude-code", "cursor", "codex", "gemini"})
+HAS_HOOKS = frozenset({"claude-code", "cursor", "codex", "gemini", "antigravity"})
 HAS_MCP = frozenset({"claude-code", "cursor", "codex", "gemini", "antigravity"})
 
 

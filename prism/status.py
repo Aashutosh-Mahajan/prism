@@ -86,7 +86,14 @@ def working_tree_changes(
     """(added, deleted, modified) source files since the manifest. Files whose size and mtime
     match the manifest are not re-hashed, so this is a stat walk, not a read of the repo."""
     known: dict[str, Any] = manifest.get("files", {})
-    current = {f.path: f.sha256 for f in discover(root, load_config(root), known, resniff=False)}
+    text_files: list[tuple[str, int, int]] = []
+    current = {
+        f.path: f.sha256
+        for f in discover(root, load_config(root), known, resniff=False, text_files=text_files)
+    }
+    from prism.discovery.scanner import remember_text_listing
+
+    remember_text_listing(root, text_files)
     added = sorted(set(current) - set(known))
     deleted = sorted(set(known) - set(current))
     modified = sorted(p for p in set(current) & set(known) if current[p] != known[p].get("sha256"))

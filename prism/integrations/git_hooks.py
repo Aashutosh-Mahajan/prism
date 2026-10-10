@@ -26,6 +26,10 @@ _BLOCK_RE = re.compile(re.escape(START) + r".*?" + re.escape(END) + r"\n?", re.D
 
 
 def hooks_dir(root: Path) -> Path | None:
+    # An explicitly indexed subfolder is not consent to edit its ancestor's
+    # Git hooks. Worktrees/submodules have a .git file and remain supported.
+    if not (root / ".git").exists():
+        return None
     try:
         out = subprocess.run(
             ["git", "rev-parse", "--git-path", "hooks"],

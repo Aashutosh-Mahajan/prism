@@ -57,6 +57,11 @@ class FileChange:
 class IntegrationOptions:
     hooks: bool = True
     mcp: bool = True
+    # Only `prism-context` is installed by default: every skill's name and description sit in the
+    # agent's context on every call, and the others (audit, refresh, decisions) are for on-request work.
+    all_skills: bool = False
+    # Opt-in: refuse to re-read an unchanged file the agent already has (Claude Code PreToolUse).
+    dedupe_reads: bool = False
 
 
 class Integration(ABC):
@@ -102,6 +107,15 @@ def with_block(existing: str | None, body: str) -> str:
         return _BLOCK_RE.sub("\n" + block, existing, count=1).lstrip("\n")
     sep = "" if existing.endswith("\n\n") else ("\n" if existing.endswith("\n") else "\n\n")
     return existing + sep + block
+
+
+def managed_block(existing: str | None) -> str | None:
+    """The text inside the managed block, or None when the file has none."""
+    if existing is None or BLOCK_START not in existing:
+        return None
+    start = existing.index(BLOCK_START) + len(BLOCK_START)
+    end = existing.find(BLOCK_END, start)
+    return existing[start:end].strip() if end != -1 else None
 
 
 def without_block(existing: str | None) -> str | None:
@@ -238,4 +252,18 @@ def remove_changes(root: Path, removals: list[FileChange]) -> list[FileChange]:
         applied.append(change)
     if ledger_path(root).exists():
         write_text(ledger_path(root), dump_json(dict(sorted(ledger.items()))))
+    for change in applied:
+        _prune_empty_parents(root, change.resolve(root).parent)
     return applied
+
+
+def _prune_empty_parents(root: Path, directory: Path) -> None:
+    """Remove directories an uninstall emptied (`.claude/skills/prism-audit/`), never the repo."""
+    root = root.resolve()
+    current = directory.resolve()
+    while current != root and root in current.parents:
+        try:
+            current.rmdir()  # only succeeds when empty
+        except OSError:
+            return
+        current = current.parent

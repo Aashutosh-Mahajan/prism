@@ -13,17 +13,36 @@ MCP_ENTRY = {"command": "prism", "args": ["mcp"]}
 INSTRUCTION_BLOCK = """\
 ## PRISM code index
 
-Use PRISM context supplied with the prompt directly; do not retrieve it again.
-Otherwise, for unknown code use `prism task "<user request>"` (MCP: `prism_task`) once.
-Architecture requests return a compact map; edits return source, local definitions, callers and tests.
-Use returned evidence directly. If partial, read only `read_next` ranges; if weak, search narrowly.
-Literal lists are exhaustive only when marked complete. Do not follow a good packet with a repo scan.
-For a map explicitly use `--mode overview`; for source use `--mode code` (MCP: `mode`).
-Known one-line edits need no broad orientation. Queries refresh the index.
+PRISM context may already be in the prompt: use it as given, do not fetch it again.
+Otherwise run `prism task "<user request>"` once (MCP: `prism_task`) and read only the ranges it lists.
+A literal list marked "exhaustive" is complete: no grep for it. Follow its `Patch:`, `Twins:` and
+`Next:` lines; for several searches at once use `prism find "a" "b"`.
 
-If it reports PRISM is not enabled or not installed, work normally. Never run `prism init`,
-`prism scan`, `prism enable`, or `prism install --global` unless the user explicitly asks.
+If PRISM is not enabled or not installed, work normally. Never run `prism init`, `prism scan`,
+`prism enable`, or `prism install --global` unless the user explicitly asks.
 """
+
+# For installs that register the MCP server: some agents (Codex) load MCP tools lazily and only
+# reach for a tool the instructions name, so the block must name it and not only the shell command.
+INSTRUCTION_BLOCK_MCP = """\
+## PRISM code index
+
+PRISM context may already be in the prompt: use it as given, do not fetch it again.
+Otherwise call the MCP tool `prism_task` (server `prism`) once with the user's request and read
+only the ranges it lists. If your tools do not list it, search them for "prism"; the shell command
+`prism task "<user request>"` gives the same answer.
+A literal list marked "exhaustive" is complete: no grep for it. Follow its `Patch:`, `Twins:` and
+`Next:` lines; `prism_find` runs several searches at once.
+
+If PRISM is not enabled or not installed, work normally. Never run `prism init`, `prism scan`,
+`prism enable`, or `prism install --global` unless the user explicitly asks.
+"""
+
+
+def instruction_block(mcp: bool) -> str:
+    """The managed block for an install that does (`mcp`) or does not register the MCP server."""
+    return INSTRUCTION_BLOCK_MCP if mcp else INSTRUCTION_BLOCK
+
 
 GLOBAL_NOTE = """\
 ## PRISM

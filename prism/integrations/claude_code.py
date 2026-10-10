@@ -22,9 +22,9 @@ from prism.integrations.base import (
     without_block,
 )
 from prism.integrations.common import (
-    INSTRUCTION_BLOCK,
     MCP_ENTRY,
     SKILL_NAMES,
+    instruction_block,
     skill_text,
 )
 from prism.integrations.hooks_json import add_hooks, strip_hooks
@@ -39,11 +39,20 @@ HOOKS: dict[str, dict[str, Any]] = {
         "hooks": [{"type": "command", "command": "prism hook session-start", "timeout": 10}],
     },
     "UserPromptSubmit": {
-        "hooks": [{"type": "command", "command": "prism hook user-prompt", "timeout": 10}],
+        "hooks": [{"type": "command", "command": "prism hook user-prompt", "timeout": 20}],
     },
     "PostToolUse": {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [{"type": "command", "command": "prism hook post-edit", "timeout": 5}],
+    },
+    "Stop": {
+        "hooks": [{"type": "command", "command": "prism hook stop", "timeout": 20}],
+    },
+}
+DEDUPE_HOOK: dict[str, dict[str, Any]] = {
+    "PreToolUse": {
+        "matcher": "Read",
+        "hooks": [{"type": "command", "command": "prism hook dedupe-read", "timeout": 5}],
     },
 }
 
@@ -59,19 +68,30 @@ class ClaudeCodeIntegration(Integration):
         return (root / ".claude").is_dir() or (root / CLAUDE_MD).is_file()
 
     def plan(self, root: Path, options: IntegrationOptions) -> list[FileChange]:
+        names = SKILL_NAMES if options.all_skills else SKILL_NAMES[:1]
         changes = [
             FileChange(f".claude/skills/{name}/SKILL.md", skill_text(name), f"{name} skill")
-            for name in SKILL_NAMES
+            for name in names
         ]
         settings = load_json(root / SETTINGS)
-        new_settings = add_hooks(settings, HOOKS) if options.hooks else strip_hooks(settings)
+        wanted = {**HOOKS, **(DEDUPE_HOOK if options.dedupe_reads else {})}
+        if options.dedupe_reads:
+            wanted = copy.deepcopy(wanted)
+            wanted["PostToolUse"]["matcher"] = "Edit|Write|MultiEdit|Read"
+            wanted["PostToolUse"]["hooks"].append(
+                {"type": "command", "command": "prism hook dedupe-read", "timeout": 5}
+            )
+            wanted["SessionStart"]["hooks"].append(
+                {"type": "command", "command": "prism hook dedupe-read", "timeout": 5}
+            )
+        new_settings = add_hooks(settings, wanted) if options.hooks else strip_hooks(settings)
         if new_settings != settings or options.hooks:
             changes.append(
                 _json_change(
                     root,
                     SETTINGS,
                     new_settings,
-                    "hooks: SessionStart, UserPromptSubmit, PostToolUse(Edit|Write|MultiEdit)",
+                    "hooks: SessionStart, UserPromptSubmit, PostToolUse(Edit|Write|MultiEdit), Stop",
                 )
             )
         mcp = load_json(root / MCP_JSON)
@@ -82,7 +102,7 @@ class ClaudeCodeIntegration(Integration):
         changes.append(
             FileChange(
                 CLAUDE_MD,
-                with_block(read_text(root / CLAUDE_MD), INSTRUCTION_BLOCK),
+                with_block(read_text(root / CLAUDE_MD), instruction_block(options.mcp)),
                 "short PRISM instruction block",
             )
         )

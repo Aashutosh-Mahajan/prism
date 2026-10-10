@@ -21,7 +21,7 @@ from prism.integrations.base import (
     with_block,
     without_block,
 )
-from prism.integrations.common import INSTRUCTION_BLOCK
+from prism.integrations.common import instruction_block
 from prism.integrations.hooks_json import add_hooks, strip_hooks
 
 SETTINGS = ".gemini/settings.json"
@@ -47,7 +47,7 @@ HOOKS: dict[str, dict[str, Any]] = {
                 "type": "command",
                 "name": "prism-context",
                 "command": "prism hook user-prompt --format json --event BeforeAgent",
-                "timeout": 10000,
+                "timeout": 20000,
             }
         ],
     },
@@ -75,7 +75,7 @@ class GeminiIntegration(Integration):
         changes = [
             FileChange(
                 GEMINI_MD,
-                with_block(read_text(root / GEMINI_MD), INSTRUCTION_BLOCK),
+                with_block(read_text(root / GEMINI_MD), instruction_block(options.mcp)),
                 "PRISM instruction block",
             )
         ]

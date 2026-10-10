@@ -38,6 +38,8 @@ from prism.writers.index_writer import write_index
 from prism.writers.json_writer import write_text
 from prism.writers.manifest import load_manifest, new_manifest, write_manifest
 
+LAZY_RANK_MIN_SYMBOLS = 5000  # below this, every update recomputes PageRank exactly
+
 
 @dataclass(frozen=True)
 class PlannedChange:
@@ -270,7 +272,9 @@ def _run_index_locked(
         lazy: list[LazyRanker] = []
         if incremental and lazy_rank and manifest.get("last_scan"):
             prev = state.get("ranks") or {}
-            if prev:
+            # Exact PageRank costs milliseconds on a small graph, so approximate (kept) scores are
+            # only worth their drift on large ones; below the threshold an update equals a scan.
+            if prev and len(prev.get("call", {})) >= LAZY_RANK_MIN_SYMBOLS:
                 lazy = [
                     LazyRanker(
                         prev.get("call", {}), {(a, b) for a, b in prev.get("call_edges", [])}

@@ -6,6 +6,7 @@ directory with `PRISM_CONFIG_HOME`). Never committed, never shared.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sys
@@ -93,6 +94,22 @@ def set_entry(root: Path, entry: RepoEntry | None) -> None:
     else:
         entries[key] = entry
     save_registry(entries)
+    if entry is None or not entry.enabled or entry.paused:
+        from prism.navigator.daemon import stop_quietly
+
+        stop_quietly(root)  # a warm query process never outlives the user's consent
+
+
+def cache_root(root: Path) -> Path:
+    """Where this user's disposable caches for `root` live.
+
+    Inside the repo (`.aicontext/cache`, gitignored) only for a user who enabled PRISM there.
+    For a repo they never enabled (a teammate's committed index) the caches live in the user's
+    own config directory, so reading such a repo never writes a file into it."""
+    entry = get_entry(root)
+    if entry is not None and entry.enabled:
+        return root / ".aicontext" / "cache"
+    return config_home() / "cache" / hashlib.sha256(repo_key(root).encode()).hexdigest()[:16]
 
 
 def repo_state(root: Path, repo_id: str | None) -> RepoState:

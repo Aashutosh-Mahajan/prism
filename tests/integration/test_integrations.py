@@ -40,9 +40,13 @@ def test_detect_agents(tmp_path: Path) -> None:
 
 def test_claude_code_install_contents(tiny_repo: Path) -> None:
     install(tiny_repo, "claude-code")
-    for name in ("prism-context", "prism-refresh", "prism-audit"):
-        text = (tiny_repo / ".claude" / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
-        assert "prism-managed" in text and f"name: {name}" in text
+    # Only the context skill by default: every skill's description sits in context on every call.
+    skills = tiny_repo / ".claude" / "skills"
+    assert [p.name for p in skills.iterdir()] == ["prism-context"]
+    text = (skills / "prism-context" / "SKILL.md").read_text(encoding="utf-8")
+    assert "prism-managed" in text and "name: prism-context" in text
+    stop = json.loads((tiny_repo / ".claude" / "settings.json").read_text())["hooks"]["Stop"][0]
+    assert stop["hooks"][0]["command"] == "prism hook stop"
     settings = json.loads((tiny_repo / ".claude" / "settings.json").read_text())
     session = settings["hooks"]["SessionStart"][0]
     assert session["hooks"][0]["command"] == "prism hook session-start"
@@ -120,7 +124,26 @@ def test_opt_outs(tiny_repo: Path) -> None:
     install(tiny_repo, "claude-code", hooks=False, mcp=False)
     assert not (tiny_repo / ".mcp.json").exists()
     assert not (tiny_repo / ".claude" / "settings.json").exists()
-    assert (tiny_repo / ".claude" / "skills" / "prism-audit" / "SKILL.md").is_file()
+    assert (tiny_repo / ".claude" / "skills" / "prism-context" / "SKILL.md").is_file()
+    assert not (tiny_repo / ".claude" / "skills" / "prism-audit").exists()
+
+
+def test_all_skills_and_dedupe_reads_are_opt_in(tiny_repo: Path) -> None:
+    install(tiny_repo, "claude-code", all_skills=True, dedupe_reads=True)
+    names = sorted(p.name for p in (tiny_repo / ".claude" / "skills").iterdir())
+    assert names == ["prism-audit", "prism-context", "prism-decisions", "prism-refresh"]
+    pre = json.loads((tiny_repo / ".claude" / "settings.json").read_text())["hooks"]["PreToolUse"]
+    assert pre[0]["matcher"] == "Read"
+    assert pre[0]["hooks"][0]["command"] == "prism hook dedupe-read"
+    installed_hooks = json.loads((tiny_repo / ".claude" / "settings.json").read_text())["hooks"]
+    assert "Read" in installed_hooks["PostToolUse"][0]["matcher"]
+    for event in ("PostToolUse", "SessionStart"):
+        assert any(
+            h["command"] == "prism hook dedupe-read" for h in installed_hooks[event][0]["hooks"]
+        )
+    # taking the integration out removes every one of them again
+    apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
+    assert not (tiny_repo / ".claude" / "settings.json").exists()
 
 
 def test_cursor_rules_are_small_and_procedures_are_on_request(tiny_repo: Path) -> None:
@@ -226,22 +249,51 @@ def test_gemini_install_contents_and_merge(tiny_repo: Path) -> None:
     assert not (tiny_repo / "GEMINI.md").exists()
 
 
-def test_antigravity_installs_a_rule_and_prints_the_user_level_mcp_entry(tiny_repo: Path) -> None:
+def test_antigravity_installs_an_always_active_block_a_hook_and_prints_the_mcp_entry(
+    tiny_repo: Path,
+) -> None:
     from prism.integrations import get_integration
 
     options = IntegrationOptions()
     install(tiny_repo, "antigravity")
-    rule = (tiny_repo / ".agent" / "rules" / "prism.md").read_text(encoding="utf-8")
-    assert "prism task" in rule and "prism-managed" in rule
+    agents = (tiny_repo / "AGENTS.md").read_text(encoding="utf-8")  # always active, no front matter
+    assert "prism task" in agents and "prism-managed" in agents
+    hooks = json.loads((tiny_repo / ".agents" / "hooks.json").read_text(encoding="utf-8"))
+    handler = hooks["prism"]["PreInvocation"][0]
+    assert handler["command"] == "prism hook pre-invocation" and handler["type"] == "command"
     assert (tiny_repo / ".agents" / "skills" / "prism-context" / "SKILL.md").is_file()
+    assert not (
+        tiny_repo / ".agent" / "rules" / "prism.md"
+    ).exists()  # never loaded unconditionally
     (note,) = get_integration("antigravity").notes(tiny_repo, options)
-    assert ".gemini/antigravity/mcp_config.json" in note and '"prism"' in note
+    assert ".gemini/config/mcp_config.json" in note and '"prism"' in note
     # PRISM never edits user-level config on its own.
     assert not any(
         c.path.startswith(("~", "/")) for c in plan_init(tiny_repo, ["antigravity"]).file_changes
     )
     apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
-    assert not (tiny_repo / ".agent" / "rules" / "prism.md").exists()
+    assert not (tiny_repo / ".agents" / "hooks.json").exists()
+    assert (
+        "prism"
+        not in (
+            (tiny_repo / "AGENTS.md").read_text(encoding="utf-8")
+            if (tiny_repo / "AGENTS.md").exists()
+            else ""
+        ).lower()
+    )
+
+
+def test_antigravity_keeps_the_users_own_hooks(tiny_repo: Path) -> None:
+    (tiny_repo / ".agents").mkdir()
+    mine = {
+        "lint": {"PostToolUse": [{"matcher": "run_command", "hooks": [{"command": "./lint.sh"}]}]}
+    }
+    (tiny_repo / ".agents" / "hooks.json").write_text(json.dumps(mine), encoding="utf-8")
+    install(tiny_repo, "antigravity")
+    both = json.loads((tiny_repo / ".agents" / "hooks.json").read_text(encoding="utf-8"))
+    assert both["lint"] == mine["lint"] and "prism" in both
+    apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
+    assert json.loads((tiny_repo / ".agents" / "hooks.json").read_text(encoding="utf-8")) == mine
 
 
 @pytest.mark.parametrize(
@@ -314,6 +366,18 @@ def test_git_hooks_install_and_remove(tiny_repo: Path) -> None:
     apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
     assert (hooks / "post-commit").read_text() == "#!/bin/sh\necho mine\n"
     assert not (hooks / "post-merge").exists()
+
+
+def test_nested_project_does_not_install_hooks_in_ancestor_git(tmp_path: Path) -> None:
+    from prism.integrations.git_hooks import hooks_dir
+
+    _git(tmp_path, "init", "-q")
+    child = tmp_path / "nested"
+    child.mkdir()
+    assert hooks_dir(child) is None
+    before = {p.name: p.read_bytes() for p in (tmp_path / ".git/hooks").iterdir()}
+    apply_init(plan_init(child, [], git_hooks=True))
+    assert {p.name: p.read_bytes() for p in (tmp_path / ".git/hooks").iterdir()} == before
 
 
 def test_purge_removes_index_and_consent(tiny_repo: Path) -> None:

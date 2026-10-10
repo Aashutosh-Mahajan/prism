@@ -18,6 +18,11 @@ def main() -> None:
         if argv[1] in HOOKS:
             run_hook(argv[1], argv[2:])
             return
+    if argv[:1] == ["task"]:
+        from prism.taskfast import try_fast
+
+        if try_fast(argv[1:]):
+            return
     from prism.cli import main as cli_main
 
     cli_main()

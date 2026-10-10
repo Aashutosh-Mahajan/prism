@@ -23,7 +23,7 @@ from prism.integrations.base import (
     without_block,
     without_toml_block,
 )
-from prism.integrations.common import INSTRUCTION_BLOCK
+from prism.integrations.common import instruction_block
 from prism.integrations.hooks_json import add_hooks, strip_hooks
 
 AGENTS_MD = "AGENTS.md"
@@ -44,11 +44,16 @@ HOOKS: dict[str, dict[str, Any]] = {
         "hooks": [{"type": "command", "command": "prism hook session-start", "timeout": 10}],
     },
     "UserPromptSubmit": {
-        "hooks": [{"type": "command", "command": "prism hook user-prompt", "timeout": 10}],
+        "hooks": [{"type": "command", "command": "prism hook user-prompt", "timeout": 20}],
     },
     "PostToolUse": {
         "matcher": "apply_patch|Edit|Write",
         "hooks": [{"type": "command", "command": "prism hook post-edit", "timeout": 5}],
+    },
+    # Verified against Codex 0.162: a {"decision": "block", "reason": ...} answer sends the agent
+    # back to work once (see prism/hooks/gate.py).
+    "Stop": {
+        "hooks": [{"type": "command", "command": "prism hook stop", "timeout": 20}],
     },
 }
 
@@ -66,7 +71,7 @@ class CodexIntegration(Integration):
         changes = [
             FileChange(
                 AGENTS_MD,
-                with_block(read_text(root / AGENTS_MD), INSTRUCTION_BLOCK),
+                with_block(read_text(root / AGENTS_MD), instruction_block(options.mcp)),
                 "PRISM instruction block",
             )
         ]
@@ -85,7 +90,7 @@ class CodexIntegration(Integration):
                 FileChange(
                     HOOKS_JSON,
                     dump_json(add_hooks(hooks, HOOKS)),
-                    "hooks: SessionStart, UserPromptSubmit, PostToolUse(apply_patch)",
+                    "hooks: SessionStart, UserPromptSubmit, PostToolUse(apply_patch), Stop",
                 )
             )
         return [c for c in changes if not c.is_noop(root)]

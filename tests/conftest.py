@@ -30,6 +30,8 @@ def _no_network(monkeypatch: pytest.MonkeyPatch) -> None:
 
     def check(address: Any) -> None:
         # Loopback is local (asyncio's self-pipe on Windows, the viewer's own server).
+        if isinstance(address, (str, bytes)):
+            return  # a Unix socket path is local IPC, not a network address
         if host_of(address) not in loopback:
             raise NetworkBlocked(f"network access attempted: {address!r}")
 
@@ -62,6 +64,7 @@ def _isolated_user_config(
     """Keep the per-user consent registry out of the real home directory."""
     home = tmp_path_factory.mktemp("prism-config")
     monkeypatch.setenv("PRISM_CONFIG_HOME", str(home))
+    monkeypatch.setenv("PRISM_DAEMON", "0")  # tests that exercise the warm process turn it on
     return home
 
 
