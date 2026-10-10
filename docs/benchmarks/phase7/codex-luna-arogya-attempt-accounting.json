@@ -1,0 +1,87 @@
+{
+  "setup": {
+    "started_sessions": 6,
+    "completed_turns": 4,
+    "reported_usage": {
+      "input_tokens": 473901,
+      "cached_input_tokens": 400640,
+      "output_tokens": 2044
+    },
+    "usage_unavailable_sessions": [
+      "phase7-t1_age-hook.jsonl",
+      "phase7-t1_age-mcphook.jsonl"
+    ],
+    "mcp_successful_calls": 0,
+    "mcp_failed_calls": 2
+  },
+  "mcp-policy": {
+    "started_sessions": 27,
+    "completed_turns": 23,
+    "reported_usage": {
+      "input_tokens": 3426492,
+      "cached_input_tokens": 2869504,
+      "output_tokens": 24597
+    },
+    "usage_unavailable_sessions": [
+      "phase7-t0_orient-mcp-r2.jsonl",
+      "phase7-t0_orient-mcphook-r2.jsonl",
+      "phase7-t1_age-baseline-r2.jsonl",
+      "phase7-t1_age-cli-r2.jsonl"
+    ],
+    "mcp_successful_calls": 0,
+    "mcp_failed_calls": 3
+  },
+  "interrupted-restart": {
+    "started_sessions": 6,
+    "completed_turns": 0,
+    "reported_usage": {
+      "input_tokens": 0,
+      "cached_input_tokens": 0,
+      "output_tokens": 0
+    },
+    "usage_unavailable_sessions": [
+      "phase7-t0_orient-baseline.jsonl",
+      "phase7-t0_orient-mcp.jsonl",
+      "phase7-t0_orient-mcphook.jsonl",
+      "phase7-t1_age-baseline.jsonl",
+      "phase7-t1_age-hook.jsonl",
+      "phase7-t1_age-mcp.jsonl"
+    ],
+    "mcp_successful_calls": 0,
+    "mcp_failed_calls": 0
+  },
+  "optional-startup": {
+    "started_sessions": 12,
+    "completed_turns": 8,
+    "reported_usage": {
+      "input_tokens": 1325679,
+      "cached_input_tokens": 1094144,
+      "output_tokens": 12497
+    },
+    "usage_unavailable_sessions": [
+      "phase7-t1_age-hook.jsonl",
+      "phase7-t1_age-mcp.jsonl",
+      "phase7-t1_age-mcphook.jsonl",
+      "phase7-t2_webp-cli.jsonl"
+    ],
+    "mcp_successful_calls": 0,
+    "mcp_failed_calls": 0
+  },
+  "final": {
+    "started_sessions": 64,
+    "completed_turns": 60,
+    "reported_usage": {
+      "input_tokens": 8030919,
+      "cached_input_tokens": 6796032,
+      "output_tokens": 63992
+    },
+    "usage_unavailable_sessions": [
+      "phase7-t1_age-cli-r2.jsonl",
+      "phase7-t1_age-hook-r2.jsonl",
+      "phase7-t1_age-mcphook-r2.jsonl",
+      "phase7-t2_webp-baseline-r2.jsonl"
+    ],
+    "mcp_successful_calls": 19,
+    "mcp_failed_calls": 0
+  }
+}

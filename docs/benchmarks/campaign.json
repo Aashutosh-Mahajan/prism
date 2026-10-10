@@ -1,0 +1,29 @@
+{
+  "template_version": "1.0",
+  "status": "draft",
+  "campaign_id": "REQUIRED",
+  "prism_commit": "REQUIRED",
+  "prism_dirty_diff_sha256": "REQUIRED",
+  "agent": {"model": "REQUIRED", "effort": "REQUIRED", "host_version": "REQUIRED", "harness_sha256": "REQUIRED"},
+  "repositories": [
+    {"id": "repo_a", "commit": "REQUIRED", "source_manifest_sha256": "REQUIRED", "task_count": 32},
+    {"id": "repo_b", "commit": "REQUIRED", "source_manifest_sha256": "REQUIRED", "task_count": 32},
+    {"id": "repo_c", "commit": "REQUIRED", "source_manifest_sha256": "REQUIRED", "task_count": 32}
+  ],
+  "experiment": "native_tool_only",
+  "arms": ["baseline", "cli", "mcp"],
+  "repetitions": 3,
+  "planned_sessions": 864,
+  "seed": 20261009,
+  "schedule_sha256": "REQUIRED",
+  "task_suite_sha256": "REQUIRED",
+  "hidden_key_sha256": "REQUIRED",
+  "prompt_manifest_sha256": "REQUIRED",
+  "analysis_sha256": "REQUIRED",
+  "state": {"prism_index": "warm_fresh", "session": "fresh_per_trial", "hooks": "disabled", "mcp_profile": "lean", "packet_budget_estimate": 2000, "provider_cache_policy": "REQUIRED"},
+  "limits": {"trial_seconds": null, "trial_model_turns": null, "trial_processed_input": null, "campaign_currency_ceiling": null},
+  "recovery": {"max_infrastructure_retries": 1, "retry_wrong_answers": false, "count_all_attempts": true},
+  "analysis": {"primary": "processed_input", "estimand": "equal_repository_weighted_ratio_of_means", "cluster": "task", "bootstrap_draws": 10000, "interval_level": 0.975, "quality_margin": 0.05, "useful_ratio": 0.8, "large_ratio": 0.5, "very_large_ratio": 0.3, "latency_ratio_guardrail": null},
+  "pricing": {"currency": null, "source": null, "effective_date": null, "proxy_cache_weights": [0, 0.1, 0.25, 0.5, 1]},
+  "archive_path": "REQUIRED"
+}

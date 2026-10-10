@@ -1,0 +1,1 @@
+campaign_id,timestamp_utc,stage,change,reason,decided_before_outcomes,affected_trials,original_artifact_hash,replacement_artifact_hash,analysis_consequence,reviewer

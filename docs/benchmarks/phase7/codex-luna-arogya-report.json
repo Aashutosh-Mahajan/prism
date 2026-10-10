@@ -1,0 +1,181 @@
+{
+  "seed": 7,
+  "bootstrap_draws": 4000,
+  "interval_level": 0.95,
+  "estimand": "paired ratio of mean session tokens; equal task weights",
+  "resampling": "tasks, then matched repetition pairs within sampled tasks",
+  "repetitions": 3,
+  "tasks": 4,
+  "arms": {
+    "baseline": {
+      "sessions": 12,
+      "solved": 10,
+      "pass_rate": 0.8333333333333334,
+      "pass_power_k": 0.75,
+      "tokens_per_solved_task": 182458.8,
+      "metrics": {
+        "fresh_input": {
+          "mean": 23245.833333333332,
+          "change_percent": 0.0,
+          "interval_percent": [
+            0.0,
+            0.0
+          ]
+        },
+        "processed_input": {
+          "mean": 150819.16666666666,
+          "change_percent": 0.0,
+          "interval_percent": [
+            0.0,
+            0.0
+          ]
+        },
+        "total_tokens": {
+          "mean": 152049.0,
+          "change_percent": 0.0,
+          "interval_percent": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "hook_delivery_rate": 0.0
+    },
+    "cli": {
+      "sessions": 12,
+      "solved": 10,
+      "pass_rate": 0.8333333333333334,
+      "pass_power_k": 0.5,
+      "tokens_per_solved_task": 233286.8,
+      "metrics": {
+        "fresh_input": {
+          "mean": 24703.083333333332,
+          "change_percent": 6.268865388062372,
+          "interval_percent": [
+            -10.082478527142069,
+            20.22879904788506
+          ]
+        },
+        "processed_input": {
+          "mean": 192745.75,
+          "change_percent": 27.79924081267302,
+          "interval_percent": [
+            10.689658408785885,
+            58.90045034503621
+          ]
+        },
+        "total_tokens": {
+          "mean": 194405.66666666666,
+          "change_percent": 27.857247773195915,
+          "interval_percent": [
+            10.849337863135267,
+            59.22686995797519
+          ]
+        }
+      },
+      "hook_delivery_rate": 0.0
+    },
+    "hook": {
+      "sessions": 12,
+      "solved": 12,
+      "pass_rate": 1.0,
+      "pass_power_k": 1.0,
+      "tokens_per_solved_task": 101376.91666666667,
+      "metrics": {
+        "fresh_input": {
+          "mean": 19640.416666666668,
+          "change_percent": -15.50994801935831,
+          "interval_percent": [
+            -50.138053014692574,
+            32.32764885422217
+          ]
+        },
+        "processed_input": {
+          "mean": 100579.08333333333,
+          "change_percent": -33.31147124315543,
+          "interval_percent": [
+            -63.153297658581195,
+            12.865461521292708
+          ]
+        },
+        "total_tokens": {
+          "mean": 101376.91666666667,
+          "change_percent": -33.326153630299004,
+          "interval_percent": [
+            -63.22670806643485,
+            12.998941650960937
+          ]
+        }
+      },
+      "hook_delivery_rate": 1.0
+    },
+    "mcp": {
+      "sessions": 12,
+      "solved": 12,
+      "pass_rate": 1.0,
+      "pass_power_k": 1.0,
+      "tokens_per_solved_task": 134530.33333333334,
+      "metrics": {
+        "fresh_input": {
+          "mean": 18499.666666666668,
+          "change_percent": -20.41727908227281,
+          "interval_percent": [
+            -44.555566014056225,
+            9.628541311399342
+          ]
+        },
+        "processed_input": {
+          "mean": 133657.0,
+          "change_percent": -11.379300818308902,
+          "interval_percent": [
+            -44.09065794691174,
+            32.943821218043645
+          ]
+        },
+        "total_tokens": {
+          "mean": 134530.33333333334,
+          "change_percent": -11.521724356402652,
+          "interval_percent": [
+            -44.301625755021135,
+            32.90543872512441
+          ]
+        }
+      },
+      "hook_delivery_rate": 0.0
+    },
+    "mcphook": {
+      "sessions": 12,
+      "solved": 11,
+      "pass_rate": 0.9166666666666666,
+      "pass_power_k": 0.75,
+      "tokens_per_solved_task": 100597.09090909091,
+      "metrics": {
+        "fresh_input": {
+          "mean": 16818.25,
+          "change_percent": -27.650474995518913,
+          "interval_percent": [
+            -52.4723464752592,
+            1.1657022459043986
+          ]
+        },
+        "processed_input": {
+          "mean": 91442.25,
+          "change_percent": -39.36960930032103,
+          "interval_percent": [
+            -65.85244376254258,
+            -3.331672750629844
+          ]
+        },
+        "total_tokens": {
+          "mean": 92214.0,
+          "change_percent": -39.352445593196926,
+          "interval_percent": [
+            -65.90209939010239,
+            -3.2616198111778183
+          ]
+        }
+      },
+      "hook_delivery_rate": 1.0
+    }
+  }
+}

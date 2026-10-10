@@ -1,0 +1,1 @@
+campaign_id,trial_id,attempt_id,provider_response_id,event_timestamp_utc,provider,model,usage_semantics,processed_input,cached_input,uncached_input,cache_write_input,output_tokens,reasoning_subset_tokens,provider_cost,currency,raw_event_path,parser_version

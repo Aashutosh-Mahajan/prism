@@ -1,0 +1,30 @@
+[
+  {
+    "task": "t1_age",
+    "arm": "cli",
+    "rep": 1,
+    "audit_exit": 1,
+    "agrees_with_original": true
+  },
+  {
+    "task": "t2_webp",
+    "arm": "baseline",
+    "rep": 2,
+    "audit_exit": 128,
+    "agrees_with_original": true
+  },
+  {
+    "task": "t2_webp",
+    "arm": "cli",
+    "rep": 2,
+    "audit_exit": 1,
+    "agrees_with_original": true
+  },
+  {
+    "task": "t2_webp",
+    "arm": "baseline",
+    "rep": 3,
+    "audit_exit": 1,
+    "agrees_with_original": true
+  }
+]

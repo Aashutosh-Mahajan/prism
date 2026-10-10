@@ -1,0 +1,383 @@
+{
+  "rows": [
+    {
+      "repo": "webapp",
+      "tier": "core",
+      "kind": "quantity",
+      "query": "Email verification codes should stay valid for 15 minutes in",
+      "found": 3,
+      "expected": 3,
+      "located": true,
+      "tokens": 586,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 2,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "core",
+      "kind": "quantity",
+      "query": "email verification code expires in 10 minutes",
+      "found": 3,
+      "expected": 3,
+      "located": true,
+      "tokens": 472,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 2,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "core",
+      "kind": "identifier",
+      "query": "Rename the EmailCode lifetime constant LIFETIME_MINUTES to C",
+      "found": 4,
+      "expected": 4,
+      "located": true,
+      "tokens": 1119,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 3,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "core",
+      "kind": "natural",
+      "query": "Every KPI object the analytics endpoints return (value / pre",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 463,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "core",
+      "kind": "quoted",
+      "query": "On the login page the user sees a generic 'Something went wr",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 759,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "core",
+      "kind": "identifier",
+      "query": "EmailCode.verify",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 870,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "core",
+      "kind": "structural",
+      "query": "who calls build_kpis",
+      "found": 2,
+      "expected": 2,
+      "located": true,
+      "tokens": 630,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "core",
+      "kind": "natural",
+      "query": "simulated payments should be able to fail",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 229,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "core",
+      "kind": "natural",
+      "query": "login returns 403 and sends a code when the user has not ver",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 1292,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 0,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "core",
+      "kind": "natural",
+      "query": "where do we decide which dashboard a user lands on after sig",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 1097,
+      "confidence": "medium",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "stretch",
+      "kind": "natural",
+      "query": "how long is a verification code good for",
+      "found": 0,
+      "expected": 1,
+      "located": false,
+      "tokens": 994,
+      "confidence": "medium",
+      "missing": [
+        [
+          "backend/core/models.py",
+          19
+        ]
+      ],
+      "top3_locations": 0,
+      "semantic": false
+    },
+    {
+      "repo": "webapp",
+      "tier": "stretch",
+      "kind": "natural",
+      "query": "the order status endpoint rejects statuses it does not know",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 258,
+      "confidence": "medium",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "small",
+      "tier": "core",
+      "kind": "identifier",
+      "query": "apply_discount",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 748,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "small",
+      "tier": "core",
+      "kind": "natural",
+      "query": "the discount is applied twice when a coupon and a sale overl",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 864,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "small",
+      "tier": "paraphrase",
+      "kind": "paraphrase",
+      "query": "how is an amount rounded when it is multiplied",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 401,
+      "confidence": "medium",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "small",
+      "tier": "paraphrase",
+      "kind": "paraphrase",
+      "query": "charge the customer at checkout and return the transaction r",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 487,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "small",
+      "tier": "paraphrase",
+      "kind": "paraphrase",
+      "query": "split a list into fixed-size groups",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 210,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "small",
+      "tier": "paraphrase",
+      "kind": "paraphrase",
+      "query": "which promotions qualify given how much the shopper spent",
+      "found": 0,
+      "expected": 1,
+      "located": false,
+      "tokens": 57,
+      "confidence": "low",
+      "missing": [
+        [
+          "src/shop/pricing/rules.py",
+          19
+        ]
+      ],
+      "top3_locations": 0,
+      "semantic": false
+    },
+    {
+      "repo": "seeded",
+      "tier": "paraphrase",
+      "kind": "paraphrase",
+      "query": "pagination of the account statement",
+      "found": 0,
+      "expected": 1,
+      "located": false,
+      "tokens": 618,
+      "confidence": "high",
+      "missing": [
+        [
+          "ledger/report.py",
+          6
+        ]
+      ],
+      "top3_locations": 0,
+      "semantic": false
+    },
+    {
+      "repo": "seeded",
+      "tier": "paraphrase",
+      "kind": "paraphrase",
+      "query": "persist a new transaction row to the database",
+      "found": 0,
+      "expected": 1,
+      "located": false,
+      "tokens": 393,
+      "confidence": "medium",
+      "missing": [
+        [
+          "ledger/storage.py",
+          17
+        ]
+      ],
+      "top3_locations": 0,
+      "semantic": false
+    },
+    {
+      "repo": "seeded",
+      "tier": "paraphrase",
+      "kind": "paraphrase",
+      "query": "convert a dollar amount to whole integer pennies",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 517,
+      "confidence": "high",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    },
+    {
+      "repo": "seeded",
+      "tier": "paraphrase",
+      "kind": "paraphrase",
+      "query": "open the sqlite database file",
+      "found": 1,
+      "expected": 1,
+      "located": true,
+      "tokens": 360,
+      "confidence": "medium",
+      "missing": [],
+      "top3_locations": 1,
+      "semantic": false
+    }
+  ],
+  "summary": {
+    "all": {
+      "cases": 22,
+      "located": 0.8181818181818182,
+      "locations": 0.8666666666666667,
+      "tokens": 610.1818181818181,
+      "top3_recall": 0.7
+    },
+    "identifier": {
+      "cases": 3,
+      "located": 1.0,
+      "locations": 1.0,
+      "tokens": 912.3333333333334,
+      "top3_recall": 0.8333333333333334
+    },
+    "natural": {
+      "cases": 7,
+      "located": 0.8571428571428571,
+      "locations": 0.8571428571428571,
+      "tokens": 742.4285714285714,
+      "top3_recall": 0.7142857142857143
+    },
+    "paraphrase": {
+      "cases": 8,
+      "located": 0.625,
+      "locations": 0.625,
+      "tokens": 380.375,
+      "top3_recall": 0.625
+    },
+    "quantity": {
+      "cases": 2,
+      "located": 1.0,
+      "locations": 1.0,
+      "tokens": 529.0,
+      "top3_recall": 0.6666666666666666
+    },
+    "quoted": {
+      "cases": 1,
+      "located": 1.0,
+      "locations": 1.0,
+      "tokens": 759.0,
+      "top3_recall": 1.0
+    },
+    "structural": {
+      "cases": 1,
+      "located": 1.0,
+      "locations": 1.0,
+      "tokens": 630.0,
+      "top3_recall": 0.5
+    }
+  }
+}

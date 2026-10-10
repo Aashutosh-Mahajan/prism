@@ -1,0 +1,35 @@
+{
+  "template_version": "1.0",
+  "warning": "Authoring template only. Hidden evaluation fields must not be copied into agent-visible prompts or repositories.",
+  "tasks": [
+    {
+      "id": "repo_a_edit_001",
+      "repository_id": "repo_a",
+      "split": "confirmation",
+      "category": "local_behaviour",
+      "difficulty": "medium",
+      "provenance": "REQUIRED: mined issue, seeded bug, or reviewed request",
+      "base_commit": "REQUIRED",
+      "seed_patch_sha256": null,
+      "agent_visible": {
+        "request": "REQUIRED: realistic user request without solution hints",
+        "acceptance_requirements": ["REQUIRED: observable expected behaviour"],
+        "verification_commands": ["REQUIRED: supported public checks"],
+        "constraints": ["Do not weaken or remove tests to make the change pass."]
+      },
+      "evaluator_only": {
+        "expected_behaviour": "REQUIRED",
+        "hidden_tests_path": "REQUIRED: outside agent-visible roots",
+        "hidden_tests_sha256": "REQUIRED",
+        "baseline_failure_verified": false,
+        "valid_solution_pass_verified": false,
+        "mandatory_regression_commands": ["REQUIRED"],
+        "allowed_alternative_solutions": ["REQUIRED"],
+        "prohibited_shortcuts": ["Hardcoding hidden test outputs", "Removing required behaviour"],
+        "abstention_rule": null,
+        "reviewers": ["REQUIRED", "REQUIRED"],
+        "rubric": {"requirements": 40, "hidden_behaviour": 30, "regressions": 20, "patch_review": 10}
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+campaign_id,repository_id,arm,build_id,operation,state_before,source_hash,prism_commit,start_utc,end_utc,elapsed_seconds,cpu_seconds,peak_memory_bytes,disk_bytes,processed_input,cached_input,output_tokens,provider_cost,currency,files_indexed,symbols_indexed,parse_errors,status,raw_usage_path,log_path,notes
