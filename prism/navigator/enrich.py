@@ -365,6 +365,14 @@ def build_patch(
         return "no_replacement"
     if len({item.old for item in replacements}) != len(replacements):
         return "conflicting_destinations"  # conflicting destinations must never be guessed
+    if any(
+        item.kind == "identifier"
+        and (len(item.old) <= 3 or item.old in {"get", "set", "run", "id", "data"})
+        for item in replacements
+    ):
+        return "generic_name"
+    if any(item.old in getattr(evidence, "oversized", []) for item in replacements):
+        return "too_many_sites"
     edits: dict[str, set[int]] = {}
     used: list[Replacement] = []
     for item in replacements:
@@ -382,7 +390,9 @@ def build_patch(
             for occ in lit.occurrences:
                 sites[(occ.file, occ.line)] = occ.text
         if not sites:
-            return "not_exhaustive"  # never offer only part of the explicitly requested substitutions
+            return (
+                "not_exhaustive"  # never offer only part of the explicitly requested substitutions
+            )
         if item.kind == "identifier" and item.new not in set(evidence.absent):
             return "new_name_exists"  # the new name already exists: a blind rename could merge two things
         for (file, line), indexed_text in sorted(sites.items()):

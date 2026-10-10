@@ -155,7 +155,7 @@ def test_no_patch_without_an_explicit_old_and_new_value(tmp_path: Path) -> None:
 
 def test_no_patch_when_the_literal_list_is_not_exhaustive(tmp_path: Path) -> None:
     write(tmp_path, "pyproject.toml", "[project]\nname='x'\n")
-    for i in range(60):
+    for i in range(450):  # beyond the mechanical-specific scan/file limit
         write(tmp_path, f"pkg/m{i}.py", f"LIMIT_{i} = 23  # doctor age limit\n")
     index(tmp_path)
     assert "patch" not in task(tmp_path, REQUEST)

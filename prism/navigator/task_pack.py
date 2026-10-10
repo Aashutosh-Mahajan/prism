@@ -144,6 +144,12 @@ def render_task(pack: dict[str, Any]) -> str:
         )
     elif pack.get("patch_reason"):
         parts.append(f"Patch: none ({pack['patch_reason']})")
+    if pack.get("patch_sites"):
+        parts.append("Sites (exhaustive):")
+        parts.extend(
+            f"  {file}: {','.join(map(str, lines))}"
+            for file, lines in sorted(pack["patch_sites"].items())
+        )
     for twin in pack.get("twins", []):
         where = ", ".join(
             [_loc(twin["primary"]["file"], *twin["primary"]["lines"])]
@@ -779,6 +785,16 @@ def _fill(
             pack["patch_reason"] = "budget_exceeded"
             patch = None
         else:
+            if patch["sites"] > 40:
+                sites: dict[str, list[int]] = {}
+                replacements = enrich.parse_replacements(query)
+                for lit in evidence.literals:
+                    if any(item.old == lit.text for item in replacements) and lit.complete:
+                        for occurrence in lit.occurrences:
+                            sites.setdefault(occurrence.file, []).append(occurrence.line)
+                pack.pop("literals", None)
+                pack["patch_sites"] = {file: sorted(set(lines)) for file, lines in sites.items()}
+                blocks = [replace(b, end=min(b.end, b.start + 2)) for b in blocks[:1]]
             # The patch carries the edit; code beside it is only context, so keep that short.
             source_budget = min(source_budget, _size(pack) + max(120, int(budget * 0.22)))
     # What earlier responses delivered, fixed before this packet adds to `seen`: a block of this
@@ -811,6 +827,15 @@ def _fill(
     )
     if pack["intent"] == "edit":
         _enrich(store, reader, pack, primaries, budget)
+    if pack.get("patch_sites"):
+        pack.pop("read_next", None)
+        pack.pop("read_ranges", None)
+        pack.pop("twins", None)
+        pack.pop("batch", None)
+        pack.pop("done", None)
+        pack["confidence"] = "high"
+        pack["sufficient"] = True
+        pack["next"] = "Apply the checked patch; run the named tests."
     pack["budget"]["used_est"] = _size(pack)
 
 
@@ -827,7 +852,13 @@ def _evidence(store: IndexStore, index: SourceIndex, reader: SourceReader, query
     hit = _EVIDENCE_MEMO.get(key)
     if hit is not None:
         return copy.deepcopy(hit)
-    evidence = find_literals(index, reader, query, context_fields=_output_fields(query))
+    evidence = find_literals(
+        index,
+        reader,
+        query,
+        context_fields=_output_fields(query),
+        mechanical=bool(enrich.parse_replacements(query)),
+    )
     if len(_EVIDENCE_MEMO) >= _EVIDENCE_MEMO_LIMIT:
         _EVIDENCE_MEMO.clear()
     _EVIDENCE_MEMO[key] = copy.deepcopy(evidence)

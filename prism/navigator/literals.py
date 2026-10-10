@@ -21,6 +21,7 @@ MAX_OCCURRENCES_SCANNED = 200  # per literal; beyond this a literal is too commo
 MAX_FILES_PER_LITERAL = 80
 MAX_PHRASE_LINES = 8  # an unquoted phrase found on more lines than this is generic prose
 MAX_NAMED_LINES = 40  # quoted strings and identifiers the user typed are kept longer
+MECHANICAL_NAMED_LINES = 400
 MAX_PHRASE_CANDIDATES = 120
 MAX_LITERALS = 6
 LINE_CHARS = 110
@@ -104,6 +105,7 @@ class EvidenceResult:
     absent: list[str] = field(default_factory=list)  # code-like names the source never uses
     identifiers: list[str] = field(default_factory=list)  # every code-like name in the request
     limited: bool = False
+    oversized: list[str] = field(default_factory=list)
     scope: tuple[int, int] = (0, 0)  # (code files, text/data files) the exact-match search covered
     unindexed: list[str] = field(
         default_factory=list
@@ -250,12 +252,14 @@ def _scan(
     files: set[str],
     pattern: re.Pattern[str],
     is_test: Any,
+    max_occurrences: int = MAX_OCCURRENCES_SCANNED,
+    max_files: int = MAX_FILES_PER_LITERAL,
 ) -> _Matches:
     # Application code first: a fix belongs in the code, tests and docs come after.
     ordered = sorted(files, key=lambda p: (bool(is_test(p)), p.endswith((".md", ".txt")), p))
     found = _Matches()
-    found.complete = len(ordered) <= MAX_FILES_PER_LITERAL
-    for path in ordered[:MAX_FILES_PER_LITERAL]:
+    found.complete = len(ordered) <= max_files
+    for path in ordered[:max_files]:
         lines = reader.lines(path)
         if lines is None:
             found.complete = False
@@ -268,7 +272,7 @@ def _scan(
             if match:
                 col = max(0, match.start() - (len(target) - len(target.lstrip())))
                 found.append(Occurrence(path, number, line.strip(), col))
-                if len(found) >= MAX_OCCURRENCES_SCANNED:
+                if len(found) >= max_occurrences:
                     found.complete = False
                     return found
     return found
@@ -401,7 +405,13 @@ def _changed_numbers(query: str) -> list[str]:
 
 
 def _number_hits(
-    index: SourceIndex, reader: SourceReader, number: str, context: set[str], is_test: Any
+    index: SourceIndex,
+    reader: SourceReader,
+    number: str,
+    context: set[str],
+    is_test: Any,
+    max_occurrences: int = MAX_OCCURRENCES_SCANNED,
+    max_files: int = MAX_FILES_PER_LITERAL * 2,
 ) -> _Matches:
     """Standalone occurrences of `number` in files that also talk about what the request is about.
 
@@ -412,8 +422,8 @@ def _number_hits(
     roots = {tok[:5] for tok in context}  # stems share a prefix with the words that produced them
     found = _Matches()
     paths = sorted(index.files_with_all_text([number]), key=lambda p: (bool(is_test(p)), p))
-    found.complete = len(paths) <= MAX_FILES_PER_LITERAL * 2
-    for path in paths[: MAX_FILES_PER_LITERAL * 2]:
+    found.complete = len(paths) <= max_files
+    for path in paths[:max_files]:
         lines = reader.lines(path)
         if lines is None:
             found.complete = False
@@ -426,7 +436,7 @@ def _number_hits(
             continue
         for (n, line), _ in zip(rows, on_topic, strict=True):
             found.append(Occurrence(path, n, line.strip(), 0))
-            if len(found) >= MAX_OCCURRENCES_SCANNED:
+            if len(found) >= max_occurrences:
                 found.complete = False
                 return found
     return found
@@ -438,6 +448,7 @@ def find_literals(
     query: str,
     per_literal: int = 24,
     context_fields: set[str] | None = None,
+    mechanical: bool = False,
 ) -> EvidenceResult:
     """Everything in the request that can be matched exactly, and where it occurs."""
     original_query = query
@@ -448,10 +459,20 @@ def find_literals(
     result.scope = result_scope
     is_test = index.store._is_test
     found: list[Evidence] = []
+    named_limit = MECHANICAL_NAMED_LINES if mechanical else MAX_NAMED_LINES
+    if mechanical:
+        per_literal = MECHANICAL_NAMED_LINES + 1
     quoted_words: set[str] = set()
 
     def scan_matches(files: set[str], pattern: re.Pattern[str]) -> _Matches:
-        matches = _scan(reader, files, pattern, is_test)
+        matches = _scan(
+            reader,
+            files,
+            pattern,
+            is_test,
+            MECHANICAL_NAMED_LINES + 1 if mechanical else MAX_OCCURRENCES_SCANNED,
+            MECHANICAL_NAMED_LINES if mechanical else MAX_FILES_PER_LITERAL,
+        )
         result.limited |= not matches.complete
         return matches
 
@@ -472,7 +493,7 @@ def find_literals(
             else _phrase_regex(words)
         )
         lit = _literal("quoted", text, scan_matches(files, pattern), 9.0, per_literal)
-        if lit and lit.total <= MAX_NAMED_LINES:
+        if lit and lit.total <= named_limit:
             found.append(lit)
 
     for name in _identifier_candidates(query):
@@ -489,8 +510,10 @@ def find_literals(
         if lit is None:
             if "." not in name and hits.complete:
                 result.absent.append(name)
-        elif lit.total <= MAX_NAMED_LINES:
+        elif lit.total <= named_limit:
             found.append(lit)
+        elif mechanical:
+            result.oversized.append(name)
 
     if result.absent:
         # "Not in the source" is a strong claim that tells the agent to skip searching. The word
@@ -501,7 +524,7 @@ def find_literals(
         for name in result.absent:
             hits, complete = _substring_hits(index, reader, name, is_test, deadline)
             lit = _literal("identifier", name, hits, 4.0, per_literal) if hits else None
-            if lit is not None and lit.total <= MAX_NAMED_LINES:
+            if lit is not None and lit.total <= named_limit:
                 found.append(lit)
             elif complete and not hits:
                 still_absent.append(name)
@@ -518,7 +541,7 @@ def find_literals(
         files = index.files_with_all_text(tokens)
         hits = scan_matches(files, _quantity_regex(number, unit)) if files else _Matches()
         lit = _literal("quantity", f"{number} {unit}", hits, 8.0, per_literal)
-        if lit and lit.total <= MAX_NAMED_LINES:
+        if lit and lit.total <= named_limit:
             found.append(lit)
 
     # A bare changed number ("from 23 to 25"): the old value is the thing to find, wherever the
@@ -528,11 +551,21 @@ def find_literals(
     for number in _changed_numbers(query):
         if number in unit_numbers or index.df_text(number) == 0:
             continue
-        hits = _number_hits(index, reader, number, context, is_test)
+        hits = _number_hits(
+            index,
+            reader,
+            number,
+            context,
+            is_test,
+            MECHANICAL_NAMED_LINES + 1 if mechanical else MAX_OCCURRENCES_SCANNED,
+            MECHANICAL_NAMED_LINES if mechanical else MAX_FILES_PER_LITERAL * 2,
+        )
         result.limited |= not hits.complete
         lit = _literal("number", f"{number} (current value)", hits, 7.5, per_literal)
-        if lit and lit.total <= MAX_NAMED_LINES:
+        if lit and lit.total <= named_limit:
             found.append(lit)
+        elif lit and mechanical:
+            result.oversized.append(number)
 
     phrases: list[Evidence] = []
     skip_numbers = _target_numbers(query)
