@@ -1,0 +1,11 @@
+{
+  "status": "prepared; API measurement pending",
+  "sample_count": 50,
+  "default_scale": 1.0,
+  "groups": {
+    "code": 47,
+    "prose": 3,
+    "digits-json": 0
+  },
+  "models": {}
+}

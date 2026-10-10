@@ -6,6 +6,7 @@ import pytest
 
 from prism.config import PrismConfig, load_config
 from prism.core.errors import UserError
+from prism.core.tokens import estimate_tokens
 
 
 def test_defaults_without_config(tmp_path: Path) -> None:
@@ -34,4 +35,14 @@ def test_prism_toml_wins_over_pyproject(tmp_path: Path) -> None:
 def test_invalid_config_is_a_user_error(tmp_path: Path, body: str) -> None:
     (tmp_path / "prism.toml").write_text(body + "\n")
     with pytest.raises(UserError):
+        load_config(tmp_path)
+
+
+def test_optional_token_scale_is_pure_and_default_is_unchanged(tmp_path: Path) -> None:
+    assert estimate_tokens("abcde") == 2
+    assert estimate_tokens("abcde", 2) == 3
+    (tmp_path / "prism.toml").write_text("token_scale = 1.3\n", encoding="utf-8")
+    assert load_config(tmp_path).token_scale == 1.3
+    (tmp_path / "prism.toml").write_text("token_scale = -1\n", encoding="utf-8")
+    with pytest.raises(UserError, match="token_scale"):
         load_config(tmp_path)

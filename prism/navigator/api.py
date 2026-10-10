@@ -77,6 +77,11 @@ def op_task(
     # Answers with and without the embedding channel differ, so they are cached apart.
     cache_mode = f"{mode}+semantic" if semantic_enabled(store.root) else mode
     cache_mode = f"{cache_mode}+{detail}"
+    from prism.config import load_config
+
+    scale = load_config(store.root).token_scale
+    if scale != 1.0:
+        cache_mode += f"+scale={scale}"
     path = packet_path(store.root, stamp, query.strip(), budget, cache_mode) if stamp else None
     cached = load_packet(path) if path else None
     pack = None

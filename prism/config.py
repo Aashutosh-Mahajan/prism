@@ -5,6 +5,7 @@ Every setting has a default so a first run needs no configuration.
 
 from __future__ import annotations
 
+import math
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -27,6 +28,7 @@ class PrismConfig:
     source_roots: tuple[str, ...] = ("src",)
     test_dirs: tuple[str, ...] = ("tests", "test")
     drift_threshold: int = 8
+    token_scale: float = 1.0
     extra: dict[str, Any] = field(default_factory=dict)
 
 
@@ -57,16 +59,32 @@ def load_config(root: Path) -> PrismConfig:
     defaults = PrismConfig()
     max_size = raw.get("max_file_size", defaults.max_file_size)
     threshold = raw.get("drift_threshold", defaults.drift_threshold)
+    scale = raw.get("token_scale", 1.0)
+    if (
+        isinstance(scale, bool)
+        or not isinstance(scale, (int, float))
+        or not math.isfinite(scale)
+        or scale <= 0
+    ):
+        raise UserError("prism config: 'token_scale' must be positive and finite")
     if not isinstance(max_size, int) or max_size <= 0:
         raise UserError("prism config: 'max_file_size' must be a positive integer")
     if not isinstance(threshold, int) or threshold <= 0:
         raise UserError("prism config: 'drift_threshold' must be a positive integer")
-    known = {"ignore", "max_file_size", "source_roots", "test_dirs", "drift_threshold"}
+    known = {
+        "ignore",
+        "max_file_size",
+        "source_roots",
+        "test_dirs",
+        "drift_threshold",
+        "token_scale",
+    }
     return PrismConfig(
         ignore=_str_tuple(raw, "ignore", defaults.ignore),
         max_file_size=max_size,
         source_roots=_str_tuple(raw, "source_roots", defaults.source_roots),
         test_dirs=_str_tuple(raw, "test_dirs", defaults.test_dirs),
         drift_threshold=threshold,
+        token_scale=float(scale),
         extra={k: v for k, v in raw.items() if k not in known},
     )
