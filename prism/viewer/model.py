@@ -13,16 +13,19 @@ import json
 import math
 import subprocess
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from prism.core.errors import IndexMissingError, NotFoundError, UserError
 from prism.core.paths import AICONTEXT
+from prism.writers.json_writer import read_json
 from prism.writers.manifest import load_manifest
 
 LEVELS = ("package", "file", "symbol")
 LAYERS = ("import", "call", "tests", "cochange", "routes")
+DIRECTED_LAYERS = frozenset({"import", "call", "routes"})  # edges point at what is depended on
 DEFAULT_NODE_CAP = 5000
 
 
@@ -65,9 +68,11 @@ class GraphPayload:
     edges: list[dict[str, Any]] = field(default_factory=list)
     truncated: int = 0
     root: str | None = None
+    tiers: int = 0  # dependency tiers in view (0 when the layer has no direction)
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "tiers": self.tiers,
             "level": self.level,
             "layer": self.layer,
             "root": self.root,
@@ -82,15 +87,56 @@ def _read(out: Path, name: str) -> dict[str, Any]:
     path = out / name
     if not path.is_file():
         return {}
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = read_json(path)
     return data if isinstance(data, dict) else {}
 
 
+ROOT_GROUP = "(root)"
+# Folders that only hold the real top-level areas (`src/shop`, `packages/web`): areas start
+# one level below them.
+CONTAINER_DIRS = frozenset(
+    {"src", "lib", "app", "apps", "packages", "pkg", "source", "internal", "cmd", "services"}
+)
+DOMINANT_SHARE = 0.4  # a top folder holding this share of all files is split into its subfolders
+
+
 def _group_of(module: str, is_package: bool, packages: set[str]) -> str:
+    """The package a module belongs to: itself if it is a package, otherwise its folder.
+
+    Folders are grouped whether or not they are Python packages, so TypeScript, Go or plain
+    script folders form one group per directory instead of one "package" per file."""
     if is_package:
         return module
-    parent = module.rsplit(".", 1)[0] if "." in module else ""
-    return parent if parent in packages else module
+    return module.rsplit(".", 1)[0] if "." in module else ROOT_GROUP
+
+
+def area_resolver(files: list[str]) -> Callable[[str | None], str]:
+    """`path -> area`: the top-level part of the repository a file belongs to (`prism/hooks`,
+    `tests`, `viewer`), so colour can say what a part of the code is for."""
+    children: dict[str, set[str]] = {}
+    counts: dict[str, int] = {}
+    for path in files:
+        parts = path.split("/")
+        if len(parts) > 1:
+            counts[parts[0]] = counts.get(parts[0], 0) + 1
+            if len(parts) > 2:
+                children.setdefault(parts[0], set()).add(parts[1])
+    total = max(1, len(files))
+    split = {
+        top
+        for top, subdirs in children.items()
+        if len(subdirs) >= 2 and (top in CONTAINER_DIRS or counts[top] / total >= DOMINANT_SHARE)
+    }
+
+    def area(path: str | None) -> str:
+        if not path or "/" not in path:
+            return ROOT_GROUP
+        parts = path.split("/")
+        if parts[0] in split and len(parts) > 2:
+            return f"{parts[0]}/{parts[1]}"
+        return parts[0]
+
+    return area
 
 
 def git_changes(root: Path, ref: str) -> dict[str, str]:
@@ -155,6 +201,7 @@ class GraphModel:
         self.group_of_module = {
             mid: _group_of(mid, m["is_package"], packages) for mid, m in self.modules.items()
         }
+        self.area_of = area_resolver(sorted(self.module_by_file))
         self.symbols: dict[str, dict[str, Any]] = {s["id"]: s for s in symbols}
         self.import_edges: list[tuple[str, str]] = [
             (e["from"], e["to"]) for e in dep.get("edges", [])
@@ -197,6 +244,7 @@ class GraphModel:
             "module": m["id"],
             "file": path,
             "group": self.group_of_module.get(m["id"], m["id"]),
+            "area": self.area_of(path),
             "rank": m["rank"],
             "loc": m.get("loc", 0),
             "blast": self.blast_files.get(path, {}).get("count", 0),
@@ -224,6 +272,7 @@ class GraphModel:
             "file": path,
             "lines": s["lines"],
             "group": self.group_of_module.get(m.get("id", s["module"]), s["module"]),
+            "area": self.area_of(path),
             "rank": s["rank"],
             "loc": s["lines"][1] - s["lines"][0] + 1,
             "blast": self.blast_symbols.get(s["id"], {}).get("count", 0),
@@ -251,6 +300,7 @@ class GraphModel:
                     "label": gid,
                     "kind": "cluster",
                     "group": gid,
+                    "area": n["area"],
                     "rank": 0.0,
                     "loc": 0,
                     "blast": 0,
@@ -266,7 +316,7 @@ class GraphModel:
                 },
             )
             if g["files"] == 0 or n["kind"] == "package":
-                g["dir"] = n["file"].rsplit("/", 1)[0] if n["kind"] == "package" else n["file"]
+                g["dir"] = n["file"].rsplit("/", 1)[0] if "/" in n["file"] else ""
             g["rank"] += n["rank"]
             g["loc"] += n["loc"]
             g["blast"] = max(g["blast"], n["blast"])
@@ -412,6 +462,7 @@ class GraphModel:
                 "kind": "route",
                 "file": r["file"],
                 "group": "routes",
+                "area": self.area_of(r["file"]),
                 "rank": 0.0,
                 "loc": 1,
                 "blast": 0,
@@ -563,7 +614,37 @@ class GraphModel:
             for n in ordered
         ]
         ordered.sort(key=lambda n: n["id"])
-        return GraphPayload(level, layer, ordered, edges, truncated, root_id)
+        tiers = 0
+        if layer in DIRECTED_LAYERS and ordered:
+            tier_of = self.tiers(edges)
+            ordered = [{**n, "tier": tier_of.get(n["id"], 0)} for n in ordered]
+            tiers = 1 + max((n["tier"] for n in ordered), default=0)
+        return GraphPayload(level, layer, ordered, edges, truncated, root_id, tiers)
+
+    @classmethod
+    def tiers(cls, edges: list[dict[str, Any]]) -> dict[str, int]:
+        """Dependency tier per node: 0 for code that depends on nothing in view (foundations),
+        otherwise one above the highest tier it depends on. A cycle is one unit sharing a tier,
+        so the architecture reads from foundations (bottom) to entry points (top)."""
+        comp = cls._components(edges)
+        succ: dict[int, set[int]] = {}
+        preds: dict[int, set[int]] = {}
+        for e in edges:
+            a, b = comp[e["source"]], comp[e["target"]]
+            if a != b:
+                succ.setdefault(a, set()).add(b)
+                preds.setdefault(b, set()).add(a)
+        remaining = {c: len(succ.get(c, ())) for c in set(comp.values())}
+        height = dict.fromkeys(remaining, 0)
+        ready = deque(sorted(c for c, n in remaining.items() if n == 0))
+        while ready:
+            c = ready.popleft()
+            for p in sorted(preds.get(c, ())):
+                height[p] = max(height[p], height[c] + 1)
+                remaining[p] -= 1
+                if remaining[p] == 0:
+                    ready.append(p)
+        return {node: height[c] for node, c in comp.items()}
 
     @staticmethod
     def _neighborhood(root: str, edges: list[dict[str, Any]], depth: int) -> dict[str, int]:
@@ -583,9 +664,22 @@ class GraphModel:
                     queue.append(nxt)
         return dist
 
+    @classmethod
+    def cycle_edges(cls, edges: list[dict[str, Any]]) -> set[str]:
+        """Edge ids inside a strongly connected component of size > 1."""
+        comp = cls._components(edges)
+        sizes: dict[int, int] = {}
+        for c in comp.values():
+            sizes[c] = sizes.get(c, 0) + 1
+        return {
+            e["id"]
+            for e in edges
+            if comp[e["source"]] == comp[e["target"]] and sizes[comp[e["source"]]] > 1
+        }
+
     @staticmethod
-    def cycle_edges(edges: list[dict[str, Any]]) -> set[str]:
-        """Edge ids inside a strongly connected component of size > 1 (Tarjan, iterative)."""
+    def _components(edges: list[dict[str, Any]]) -> dict[str, int]:
+        """Strongly connected component id per node (Tarjan, iterative, deterministic)."""
         adj: dict[str, list[str]] = {}
         for e in edges:
             adj.setdefault(e["source"], []).append(e["target"])
@@ -631,16 +725,12 @@ class GraphModel:
                         if w == node:
                             break
                     for w in members:
-                        comp[w] = n_comp if len(members) > 1 else -1
+                        comp[w] = n_comp
                     n_comp += 1
                 if work:
                     parent = work[-1][0]
                     low[parent] = min(low[parent], low[node])
-        return {
-            e["id"]
-            for e in edges
-            if comp.get(e["source"], -1) >= 0 and comp.get(e["source"]) == comp.get(e["target"])
-        }
+        return comp
 
     def path(
         self, source: str, target: str, layer: str = "import", level: str = "file"

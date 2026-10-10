@@ -15,6 +15,7 @@ from prism.core.paths import AICONTEXT
 from prism.navigator import api as nav
 from prism.navigator.store import IndexStore
 from prism.viewer.model import LEVELS, GraphFilters, GraphModel
+from prism.writers.activity import quiet_activity
 from prism.writers.json_writer import read_json, write_json
 from prism.writers.manifest import load_manifest
 
@@ -122,7 +123,8 @@ class ViewerBackend:
             if not files:
                 raise NotFoundError(f"no package '{group}'")
             try:
-                summary = nav.op_module(self.store(), group)["text"]
+                with quiet_activity():
+                    summary = nav.op_module(self.store(), group)["text"]
             except PrismError:
                 summary = ""
             return {
@@ -145,7 +147,8 @@ class ViewerBackend:
                 **route,
                 "editor": self._editor(route["file"], route["line"]),
             }
-        pack = nav.op_context(self.store(), node_id)
+        with quiet_activity():
+            pack = nav.op_context(self.store(), node_id)
         target = pack["target"]
         file = target["file"]
         start = (target.get("lines") or [1, 1])[0]
@@ -177,7 +180,8 @@ class ViewerBackend:
 
     def search(self, q: dict[str, str]) -> dict[str, Any]:
         query = q.get("q", "")
-        data = nav.op_search(self.store(), query, _int(q, "limit", 15, 1, 100))
+        with quiet_activity():
+            data = nav.op_search(self.store(), query, _int(q, "limit", 15, 1, 100))
         level = q.get("level", "file")
         model = self.model()
         for hit in data["hits"]:
@@ -196,7 +200,8 @@ class ViewerBackend:
         )
 
     def impact(self, target: str, q: dict[str, str]) -> dict[str, Any]:
-        data = nav.op_impact(self.store(), target, _int(q, "depth", 3, 1, 6))
+        with quiet_activity():
+            data = nav.op_impact(self.store(), target, _int(q, "depth", 3, 1, 6))
         level = q.get("level", "file")
         model = self.model()
         rings: dict[str, int] = {}
