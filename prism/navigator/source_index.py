@@ -10,16 +10,18 @@ from __future__ import annotations
 
 import hashlib
 import math
+import re
 import sqlite3
 from pathlib import Path
 from types import TracebackType
 from typing import Any
 
+from prism.core.textio import decode_source
 from prism.navigator.cache_db import cache_dir
 from prism.navigator.store import IndexStore
 from prism.navigator.text import bm25, term_counts, tokenize
 
-SOURCE_DB = "source-v2.sqlite"
+SOURCE_DB = "source-v3.sqlite"  # v3: Unicode-aware postings (v2 dropped non-ASCII words)
 MAX_LINE_CHARS = 400
 
 
@@ -35,11 +37,22 @@ def read_indexed_source(store: IndexStore, file: str) -> str | None:
         return None
     if hashlib.sha256(raw).hexdigest() != expected:
         return None
-    return raw.decode("utf-8", errors="replace")
+    return decode_source(raw)
 
 
-def split_lines(text: str) -> list[str]:
-    """Lines numbered the way the parsers number them (`\\n`), without a phantom last line."""
+_PY_NEWLINE = re.compile(r"\r\n|\r|\n")
+
+
+def split_lines(text: str, python: bool = False) -> list[str]:
+    """Lines numbered the way the parsers number them, without a phantom last line.
+
+    Python's tokenizer ends a line at a newline, CRLF or a lone CR; the tree-sitter parsers count
+    only newlines. Using the parser's own rule keeps every reported line number correct."""
+    if python:
+        parts = _PY_NEWLINE.split(text)
+        if parts and parts[-1] == "":
+            parts.pop()
+        return parts
     lines = text.split("\n")
     if lines and lines[-1] == "":
         lines.pop()
@@ -53,11 +66,18 @@ class SourceReader:
         self._store = store
         self._lines: dict[str, list[str] | None] = {}
         self.stale: set[str] = set()
+        self.corpus: Any = None  # text/data files, set by the literal search
 
     def lines(self, path: str) -> list[str] | None:
+        if path not in self._lines and self.corpus is not None and path in self.corpus.paths_set:
+            self._lines[path] = self.corpus.lines(path)
+            if self._lines[path] is None:
+                self.stale.add(path)
         if path not in self._lines:
             text = read_indexed_source(self._store, path)
-            self._lines[path] = split_lines(text) if text is not None else None
+            self._lines[path] = (
+                split_lines(text, path.endswith(".py")) if text is not None else None
+            )
             if text is None:
                 self.stale.add(path)
         return self._lines[path]
@@ -73,6 +93,7 @@ class SourceIndex:
         self._conn = sqlite3.connect(directory / SOURCE_DB, timeout=30)
         self._paths: dict[str, set[str]] = {}
         self._df: dict[str, int] = {}
+        self._text: Any = None
         try:
             self._sync()
         except BaseException:
@@ -97,6 +118,24 @@ class SourceIndex:
 
     def close(self) -> None:
         self._conn.close()
+        if self._text is not None:
+            self._text.close()
+
+    @property
+    def text(self) -> Any:
+        """Text and data files (locales, config, docs, unparsed languages), for literal search."""
+        if self._text is None:
+            from prism.navigator.textcorpus import TextCorpus
+
+            self._text = TextCorpus(self.store.root, self.store.manifest)
+        return self._text
+
+    def files_with_all_text(self, terms: list[str]) -> set[str]:
+        """Code files and text/data files that contain every term."""
+        return set(self.files_with_all(terms) | self.text.files_with_all(terms))
+
+    def df_text(self, term: str) -> int:
+        return int(self.df(term) + self.text.df(term))
 
     def _sync(self) -> None:
         conn = self._conn

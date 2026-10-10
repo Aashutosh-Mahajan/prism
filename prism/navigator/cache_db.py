@@ -88,10 +88,28 @@ def fingerprint(manifest: dict[str, Any]) -> str:
 
 
 def cache_dir(root: Path) -> Path:
-    return root / AICONTEXT / "cache"
+    from prism.consent import cache_root
+
+    return cache_root(root)
 
 
 _BUILD_LOCK = threading.Lock()
+
+
+def purge_disposable_caches(root: Path) -> int:
+    """Delete every SQLite cache of this repo. They are all rebuilt from the JSON artifacts or the
+    source, so a damaged one (killed process, full disk, antivirus) is cheaper to drop than to
+    repair. Sessions, the work log and the activity trail are not databases and are kept."""
+    removed = 0
+    directory = cache_dir(root)
+    for pattern in ("*.sqlite", "*.sqlite-wal", "*.sqlite-shm", "*.sqlite-journal", ".index-*.tmp"):
+        for path in directory.glob(pattern):
+            try:
+                path.unlink()
+                removed += 1
+            except OSError:
+                pass
+    return removed
 
 
 def open_cache(root: Path, manifest: dict[str, Any]) -> sqlite3.Connection:

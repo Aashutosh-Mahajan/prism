@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import math
 import re
+import unicodedata
 from collections import Counter
 from collections.abc import Iterable
+from functools import lru_cache
 
-_WORD = re.compile(r"[A-Za-z0-9]+")
+_WORD = re.compile(r"[^\W_]+")  # Unicode letters and digits (Cyrillic, CJK, accents, ...)
 _CAMEL = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|[0-9]+")
 STOPWORDS = frozenset(
     [
@@ -136,6 +138,7 @@ FILLER_WORDS = STOPWORDS | frozenset(
 )
 
 
+@lru_cache(maxsize=200_000)
 def stem(word: str) -> str:
     """Light, deterministic suffix stripping so "recording" meets `record` and "enabled"
     meets `enable`. Applied identically to indexed text and queries, so it only has to be
@@ -156,21 +159,28 @@ def stem(word: str) -> str:
     return word
 
 
-def tokenize(text: str) -> list[str]:
+@lru_cache(maxsize=150_000)
+def _tokenize(text: str) -> tuple[str, ...]:
     """Stemmed words, lowercased, with snake_case and camelCase split. Whole identifiers are
     kept too (unstemmed) so exact names still rank first."""
+    text = unicodedata.normalize("NFC", text) if not text.isascii() else text
     out: list[str] = []
     for word in _WORD.findall(text.replace("_", " ")):
         low = word.lower()
-        parts = [p.lower() for p in _CAMEL.findall(word)]
+        parts = [p.lower() for p in _CAMEL.findall(word)] if word.isascii() else []
         if low not in STOPWORDS:
             out.append(stem(low))
         if len(parts) > 1:
             out.extend(stem(p) for p in parts if p not in STOPWORDS)
-    for ident in re.findall(r"[A-Za-z_][A-Za-z0-9_]*", text):
+    for ident in re.findall(r"[^\W\d]\w*", text):
         if "_" in ident.strip("_"):
             out.append(ident.lower())
-    return out
+    return tuple(out)
+
+
+def tokenize(text: str) -> list[str]:
+    """Stemmed words of `text` (see `_tokenize`); repeated lines are answered from a cache."""
+    return list(_tokenize(text))
 
 
 def term_counts(fields: Iterable[tuple[str, int]]) -> Counter[str]:

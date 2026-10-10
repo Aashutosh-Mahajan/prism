@@ -89,7 +89,10 @@ class IndexStore:
         root = root.resolve()
         manifest = load_manifest(root)
         if manifest is None:
-            raise IndexMissingError("PRISM is not initialized in this repo.")
+            raise IndexMissingError(
+                "PRISM is not initialized in this repo. If the user wants PRISM here they run "
+                "`prism init`; agents must not run it on their own. Otherwise continue without PRISM."
+            )
         if not manifest.get("last_scan"):
             raise IndexMissingError("The index has not been built yet. Run `prism scan`.")
         return cls(root, manifest, open_cache(root, manifest))
@@ -266,8 +269,9 @@ class IndexStore:
         ]
 
     def test_files(self) -> set[str]:
-        rows = self.conn.execute("SELECT test FROM tests_sym UNION SELECT test FROM tests_file")
-        return {r[0] for r in rows}
+        # Unmapped tests still matter: a framework callback or a placeholder test may
+        # have neither an import edge nor a resolved call to application code.
+        return {path for path in self.all_files() if self._is_test(path)}
 
     def cochanged(self, path: str, limit: int = 5) -> list[tuple[str, float]]:
         rows = self.conn.execute(

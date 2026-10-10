@@ -49,4 +49,4 @@ def request_focus(query: str) -> str:
     # "Fix the parser used by checkout" names the parser as the target;
     # checkout is a caller hint, not another equally weighted edit target.
     first = re.split(r"\s+used\s+(?:by|for)\s+", first, maxsplit=1, flags=re.I)[0]
-    return first if len(re.findall(r"[A-Za-z0-9_]+", first)) >= 4 else text
+    return first if len(re.findall(r"\w+", first)) >= 4 else text
