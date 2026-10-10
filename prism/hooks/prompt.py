@@ -116,6 +116,9 @@ def _retrieve(
     abandoned: threading.Event | None = None,
     inline_build: bool = False,
 ) -> str:
+    from prism.hooks.formats import MAX_CONTEXT_CHARS
+
+    budget = min(budget, MAX_CONTEXT_CHARS // 4)
     from pathlib import Path
 
     from prism.core.tokens import estimate_tokens

@@ -127,6 +127,20 @@ def test_the_budget_is_configurable_and_respected(repo: Path) -> None:
     assert text and estimate_tokens(text) <= 560  # the budget plus the one-line header
 
 
+def test_large_configured_budget_is_bounded_without_cutting_footer(repo: Path) -> None:
+    from prism.maintenance import doctor
+
+    (repo / "prism.toml").write_text("prompt_budget = 6000\n", encoding="utf-8")
+    text = user_prompt(payload(repo, T1))
+    assert text and len(text) <= 9500 and text.splitlines()[-1].startswith("Next:")
+    assert any(c.name == "hook context cap" and c.status == "warn" for c in doctor(repo))
+
+
+def test_format_adapter_rejects_oversized_context() -> None:
+    with pytest.raises(ValueError, match="smaller budget"):
+        render_context("x" * 9501, "text", "UserPromptSubmit")
+
+
 def test_adaptive_packet_remembers_only_delivered_attempt(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

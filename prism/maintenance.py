@@ -55,6 +55,17 @@ def doctor(root: Path) -> list[Check]:
         )
         return checks
     add("initialized", True, (root / AICONTEXT).as_posix())
+    from prism.config import load_config
+    from prism.hooks.formats import MAX_CONTEXT_CHARS
+
+    configured_budget = load_config(root).extra.get("prompt_budget", 2000)
+    if isinstance(configured_budget, int) and configured_budget * 4 > MAX_CONTEXT_CHARS:
+        add(
+            "hook context cap",
+            None,
+            f"prompt_budget={configured_budget} exceeds the {MAX_CONTEXT_CHARS}-character hook cap; retrieval is clamped",
+            warn_only=True,
+        )
     try:
         import jsonschema
 
