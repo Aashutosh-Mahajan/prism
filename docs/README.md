@@ -12,7 +12,6 @@ New to PRISM? Start with [Getting started](getting-started.md).
 | [Auditing](audit.md) | Have your agent audit the codebase with evidence |
 | [CLI reference](cli.md) | Look up a command, an option or an exit code |
 | [Configuration](configuration.md) | Tune ignores, source roots, drift threshold; environment variables |
-| [Graphify integration](graphify-integration.md) | Use graph-assisted retrieval, optional exports and source-aware session memory |
 | [Troubleshooting](troubleshooting.md) | Fix a setup problem |
 
 ## Understanding PRISM

@@ -238,10 +238,7 @@ Confidence comes from exact evidence, the margin between the best block and the 
 much of the request's weight the best block covers.
 
 Explanation/flow requests can expand a bounded slice of the native call graph using
-Graphify-derived diverse seed selection and a hub guard. An optional `graphify_graph` setting
-lets the budgeted pipeline use an existing Graphify export as advisory location hints.
-PRISM verifies source; imported relationships do not become verified call or impact edges.
-See [Graphify integration](graphify-integration.md) for limits and manual checks.
+diverse seed selection and a hub guard (`prism/navigator/graphwalk.py`).
 
 ## Consent
 

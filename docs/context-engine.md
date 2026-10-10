@@ -81,8 +81,7 @@ not required by the product.
 - Full packets without session state are cached locally (maximum 32). Their keys include query,
   budget, mode, cache format, source hashes/stat revisions and artifact versions. Direct library
   queries detect changed source before reusing a packet; CLI/MCP also refresh the index first.
-  Cached delivered source is hash-verified even when timestamps are preserved. Configured external
-  Graphify exports retain their own validation path and bypass full-packet caching.
+  Cached delivered source is hash-verified even when timestamps are preserved.
 - Local caches reduce computation and latency, not remote tokens by themselves. Fewer model
   calls, shorter evidence and session-aware responses are what reduce model input.
 

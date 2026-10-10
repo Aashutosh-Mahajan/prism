@@ -20,7 +20,6 @@ semantic_model = "/models/all-MiniLM-L6-v2"   # local model path or cached model
 worklog = true                       # remember requests, edits and notes for the next session
 prompt_context = true                # let the prompt hook add the code a request needs
 prompt_budget = 2000                 # hard cap; starts small and expands for complete evidence
-# graphify_graph = "graphify-out/graph.json"  # enable only if this export exists
 ```
 
 | Key | Type | Default | Effect |
@@ -35,7 +34,6 @@ prompt_budget = 2000                 # hard cap; starts small and expands for co
 | `worklog` | boolean | `true` | `false` stops recording requests, edited files and notes in `.aicontext/cache/worklog/` (local, gitignored); `PRISM_WORKLOG=0` overrides |
 | `prompt_context` | boolean | `true` | `false` stops `prism hook user-prompt` from adding anything to prompts |
 | `prompt_budget` | integer | `2000` | Hard cap as `ceil(characters/4)` (128-8000); starts at 1200 and expands only if it completes the evidence |
-| `graphify_graph` | string | unset | Existing local Graphify export used as advisory source hints by `prism task`; see [integration guide](graphify-integration.md) |
 
 Invalid values stop the command with a clear error rather than being silently ignored.
 

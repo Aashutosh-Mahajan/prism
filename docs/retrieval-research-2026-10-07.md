@@ -10,7 +10,6 @@ not a published release.
 
 | Primary source inspected | Useful design | Application in PRISM |
 |---|---|---|
-| [Graphify query implementation](https://github.com/Graphify-Labs/graphify/blob/v8/graphify/serve.py) | Seed-first selection, bounded neighborhoods, explicit source locations | Existing attributed seed/traversal adaptation retained; export hints remain optional and advisory |
 | [Aider repository maps](https://aider.chat/docs/repomap.html), [implementation](https://github.com/Aider-AI/aider/blob/main/aider/repomap.py) | Ranked signatures and dependency information inside a small map budget | Query-focused architecture maps with directory diversity, entry points, signatures and static relationships |
 | [Serena symbolic tools](https://github.com/oraios/serena/blob/main/src/serena/tools/symbol_tools.py) | Inspect structure separately from selected symbol bodies; scope retrieval to a known file | Explicit overview/code modes, file outlines, file-qualified symbols and exact source ranges |
 | [Context Mode](https://github.com/mksglu/context-mode) | Independent retrieval channels, reciprocal-rank fusion, relevant windows and session reuse | Body/symbol RRF with one vote per file per channel; exact missing-source windows |
@@ -18,8 +17,7 @@ not a published release.
 | [Serena's Codex evaluation](https://github.com/oraios/serena/blob/main/docs/04-evaluation/030_results/020_codex_on_jbplugin.md) | Symbolic tools can help structural tasks yet cost more for simple substitutions | Instructions allow already-located small edits without broad orientation |
 
 These are architectural ideas, not a claim that upstream tools demonstrate a
-particular end-to-end saving for PRISM. Graphify code reuse is explicitly
-licensed and attributed in `THIRD_PARTY_NOTICES.md`. The Aider/Serena/Context
+particular end-to-end saving for PRISM. The Aider/Serena/Context
 Mode/RTK ideas were independently implemented; their code was not copied and
 their libraries are not dependencies. In particular, Serena's GPL implementation
 was inspected for behavior, not vendored into PRISM.
@@ -97,8 +95,7 @@ uses Typer's own group class while retaining command/flag checks.
 [Typer's explanation](https://github.com/fastapi/typer#click-code).
 
 Final local validation (Windows, Python 3.13): **334/334 full-suite tests passed**,
-plus **4/4 additional Graphify importer checks** for current locations, stale
-source, uncertain edges and outside paths. Lint, format and strict mypy passed.
+Lint, format and strict mypy passed.
 The wheel built successfully, included upstream license/NOTICE files, and its
 retrieval source files were byte-compared with the final working tree. The first
 full run had one golden-file failure caused solely by CRLF versus LF; normalized

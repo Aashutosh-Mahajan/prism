@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "A persistent, local context layer for AI coding agents."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT AND Apache-2.0" }
+license = { text = "MIT" }
 authors = [{ name = "Aashutosh Mahajan" }]
 keywords = ["ai", "coding-agent", "code-index", "mcp", "context"]
 classifiers = [
@@ -59,17 +59,13 @@ Changelog = "https://github.com/Aashutosh-Mahajan/prism/blob/main/CHANGELOG.md"
 [tool.setuptools]
 license-files = [
     "LICENSE",
-    "THIRD_PARTY_NOTICES.md",
-    "prism/_vendor/licenses/graphify/LICENSE",
-    "prism/_vendor/licenses/graphify/LICENSE-MIT",
-    "prism/_vendor/licenses/graphify/NOTICE",
 ]
 
 [tool.setuptools.packages.find]
 include = ["prism*"]
 
 [tool.setuptools.package-data]
-prism = ["schemas/*.json", "templates/**/*", "viewer_dist/**/*", "py.typed", "_vendor/licenses/graphify/*"]
+prism = ["schemas/*.json", "templates/**/*", "viewer_dist/**/*", "py.typed"]
 
 [tool.prism]
 # Fixture repos and local benchmark outputs are not part of PRISM itself.

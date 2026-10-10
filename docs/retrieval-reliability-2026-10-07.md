@@ -16,15 +16,7 @@ return affordable complete code, retain its relationships, and disclose missing
 source. [Aider's repository-map documentation](https://aider.chat/docs/repomap.html)
 describes selecting relevant symbols and dependency information within a budget.
 [Serena](https://github.com/oraios/serena) provides a complementary example of
-symbol-oriented inspection. Existing attributed Graphify traversal remains in PRISM;
-this revision independently implements ranking and CLI reliability improvements.
-
-[Graphify's benchmark implementation](https://github.com/Graphify-Labs/graphify/blob/v8/graphify/benchmark.py)
-compares estimated graph-query context against estimated full-corpus context, using
-characters divided by four for query estimates. It omits queries without matching
-nodes. That comparison does not measure an editing agent's entire conversation,
-retries, output, cached tokens, or correctness. Its reduction ratio is therefore
-not a target PRISM can honestly claim from this agent benchmark.
+symbol-oriented inspection. This revision independently implements ranking and CLI reliability improvements.
 
 ## Implemented changes
 
@@ -92,7 +84,7 @@ Generic regression fixtures cover repeated caller lines versus a short parser,
 absent-topic confidence, URL and qualified-name preservation, operation focus,
 global CLI root/session routing, command-option precedence and session reuse.
 The full suite also exercises consent, freshness, budgets, prompt hooks, literal
-completeness, Graphify hints, exact ranges and previously supported retrieval cases.
+completeness, exact ranges and previously supported retrieval cases.
 
 Final verification on this working tree:
 

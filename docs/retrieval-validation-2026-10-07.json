@@ -11,7 +11,6 @@
       "hostname": "priyanshug"
     }
   ],
-  "additional_graphify_tests": 4,
   "lint": "passed",
   "format": "passed",
   "strict_mypy": "passed",
@@ -21,8 +20,7 @@
     "prism/navigator/overview.py": true,
     "prism/navigator/support.py": true,
     "prism/navigator/fusion.py": true,
-    "prism/navigator/task_pack.py": true,
-    "prism/_vendor/graphify_retrieval.py": true
+    "prism/navigator/task_pack.py": true
   },
   "retrieval_summary": {
     "all": {

@@ -116,8 +116,7 @@ All notable changes to PRISM are documented here. The format follows
 - Exact task targets: `file::Class.method`, `file:line`, and bounded `file:start-end` reads.
 - Local Python definition support and coherent small-class retrieval for cooperating methods;
   precise missing-source ranges and overlap-aware, hash-invalidated session references.
-- Optional existing Graphify export hints and attributed, dependency-free Graphify seed/traversal
-  algorithms. See `THIRD_PARTY_NOTICES.md` for the Apache-2.0 portions.
+- Dependency-free diverse seed selection and bounded call-graph traversal for explanation requests.
 - Reciprocal-rank fusion across body and symbol search, without duplicate per-file votes.
 - Literal-search completeness tracks file/work caps and unavailable source instead of declaring
   partial scans exhaustive. Prompt headers are included in the hook budget.

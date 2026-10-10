@@ -4,7 +4,7 @@ Supersedes the earlier same-day report. Real Antigravity sessions only, model `g
 
 ## 1. Is the knowledge graph used?
 
-Yes, by default: the **call graph** and **import graph** produce the callers, calls and impact lines in every packet, order candidates by PageRank, and drive the architecture map for explain-style requests (a small connected slice, 2 hops, 18 nodes). The **optional external Graphify export** (`graphify_graph` in `prism.toml`) is unset by default and was **not** used in any run. The viewer graph is separate from retrieval.
+Yes, by default: the **call graph** and **import graph** produce the callers, calls and impact lines in every packet, order candidates by PageRank, and drive the architecture map for explain-style requests (a small connected slice, 2 hops, 18 nodes).  The viewer graph is separate from retrieval.
 
 ## 2. What was wrong, and what changed
 

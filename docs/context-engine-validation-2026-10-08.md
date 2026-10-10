@@ -26,7 +26,6 @@ remote model's KV cache locally or claim complete semantic understanding of arbi
   invalidating only ranges whose file hashes changed.
 - Bounded local task-packet caches avoid repeated retrieval computation. Source/artifact/stat
   revisions guard the key; delivered source is hash-verified before a cache hit is returned.
-  External configured Graphify exports bypass these caches and retain their existing checks.
 - `prism knowledge` and full-profile `prism_knowledge` provide a budgeted local inventory.
 - Existing prompt hooks can inject evidence before the model's first turn; the shipped skill
   documents using it once and sharing session IDs. Existing native installers are reused.
@@ -35,7 +34,7 @@ remote model's KV cache locally or claim complete semantic understanding of arbi
 
 - Full offline Python suite: **357 passed** after compiler, constructors and transport changes.
 - Final cache-hardening regression run: **84 passed**, covering the changed engine, hooks,
-  freshness, Graphify behavior, session invalidation and CLI/MCP parity.
+  freshness, session invalidation and CLI/MCP parity.
 - Ruff lint and formatting passed; strict mypy passed; Git whitespace check passed.
 - Network-blocking fixtures were active. Windows asyncio tests ran in the native runtime:
   the restricted subprocess runtime blocked its loopback self-pipe. Tests used an isolated
