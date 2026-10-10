@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-REPLACE_ATTEMPTS = 12
+REPLACE_ATTEMPTS = 40
 REPLACE_PAUSE_SECONDS = 0.01
 
 
@@ -24,7 +24,7 @@ def _replace(tmp: str, path: Path) -> None:
         except PermissionError:
             if attempt == REPLACE_ATTEMPTS - 1:
                 raise
-            time.sleep(REPLACE_PAUSE_SECONDS * (attempt + 1))
+            time.sleep(min(0.05, REPLACE_PAUSE_SECONDS * (attempt + 1)))
 
 
 def dumps(data: Any) -> str:
@@ -56,4 +56,14 @@ def write_json(path: Path, data: Any) -> bool:
 
 
 def read_json(path: Path) -> Any:
-    return json.loads(path.read_text(encoding="utf-8"))
+    # Windows can briefly deny opening a file while an atomic index replacement
+    # is in progress. Readers need the same bounded sharing-violation tolerance
+    # as writers; malformed JSON and permanently denied files still raise.
+    for attempt in range(REPLACE_ATTEMPTS):
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except PermissionError:
+            if attempt == REPLACE_ATTEMPTS - 1:
+                raise
+            time.sleep(min(0.05, REPLACE_PAUSE_SECONDS * (attempt + 1)))
+    raise AssertionError("unreachable")

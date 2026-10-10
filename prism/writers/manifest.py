@@ -6,6 +6,7 @@ This is the only `.aicontext/` file allowed to contain timestamps.
 from __future__ import annotations
 
 import hashlib
+import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +17,9 @@ from prism.core.models import SourceFile
 from prism.core.paths import manifest_path
 from prism.writers.json_writer import read_json, write_json
 
+READ_ATTEMPTS = 20
+READ_PAUSE = 0.025
+
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -25,7 +29,16 @@ def load_manifest(root: Path) -> dict[str, Any] | None:
     path = manifest_path(root)
     if not path.is_file():
         return None
-    data = read_json(path)
+    data = None
+    for attempt in range(READ_ATTEMPTS):
+        try:
+            data = read_json(path)
+            break
+        except PermissionError:
+            # Windows refuses a read while the writer is replacing the file.
+            if attempt == READ_ATTEMPTS - 1:
+                raise
+            time.sleep(READ_PAUSE)
     return data if isinstance(data, dict) else None
 
 
