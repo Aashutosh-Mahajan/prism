@@ -26,9 +26,9 @@ from prism.status import compute_status
 from prism.writers.manifest import load_manifest
 
 INSTRUCTIONS = (
-    "Call prism_task with the user's request first. Use the packet directly; a list marked "
-    "exhaustive needs no grep. When it says Edit-ready, edit the listed sites now. "
-    "After editing, mode=verify lists sites that still match the old value."
+    "Reuse PRISM context already in the prompt. Otherwise call prism_task once with the request; "
+    "use complete evidence directly, read missing ranges, search only if weak. Literal matches "
+    "cover the searched scope only. After an old-value edit, mode=verify lists remaining sites."
 )
 
 
@@ -174,7 +174,14 @@ class PrismTools:
             )
             return pack
 
-        return self.call(retrieve)
+        result = self.call(retrieve)
+        if "error" in result:
+            # A failed call is not a delivery: keep it apart from the successes so a report
+            # cannot credit PRISM for evidence the model never received.
+            from prism.writers.worklog import record_delivery
+
+            record_delivery(self.root, session or self._worklog, "mcp", False, str(result["error"]))
+        return result
 
     def prism_find(
         self,

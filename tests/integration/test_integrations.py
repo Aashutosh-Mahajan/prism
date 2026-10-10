@@ -151,7 +151,7 @@ def test_cursor_rules_are_small_and_procedures_are_on_request(tiny_repo: Path) -
     rules = tiny_repo / ".cursor" / "rules"
     always = (rules / "prism.mdc").read_text(encoding="utf-8")
     assert always.startswith("---\ndescription:") and "alwaysApply: true" in always
-    assert "prism task" in always
+    assert "prism_task" in always
     # Sent on every turn, so it carries only how to start; procedures are asked for by description.
     assert "Codebase Audit" not in always and len(always) < 1500
     for name in ("prism-audit", "prism-refresh", "prism-decisions"):
@@ -257,7 +257,7 @@ def test_antigravity_installs_an_always_active_block_a_hook_and_prints_the_mcp_e
     options = IntegrationOptions()
     install(tiny_repo, "antigravity")
     agents = (tiny_repo / "AGENTS.md").read_text(encoding="utf-8")  # always active, no front matter
-    assert "prism task" in agents and "prism-managed" in agents
+    assert "prism_task" in agents and "prism-managed" in agents
     hooks = json.loads((tiny_repo / ".agents" / "hooks.json").read_text(encoding="utf-8"))
     handler = hooks["prism"]["PreInvocation"][0]
     assert handler["command"] == "prism hook pre-invocation" and handler["type"] == "command"

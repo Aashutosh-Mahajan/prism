@@ -391,3 +391,15 @@ def test_uninstall_removes_the_directories_it_emptied(tmp_path: Path) -> None:
     other.mkdir()
     _prune_empty_parents(root, other)
     assert (kept / "SKILL.md").exists() and not other.exists()
+
+
+def test_mcp_failed_call_is_recorded_as_undelivered(tmp_path: Path) -> None:
+    from prism.mcp.server import PrismTools
+    from prism.writers.worklog import sessions
+
+    repo = make_repo(tmp_path / "r", {"m.py": "def f():\n    return 1\n"})
+    tools = PrismTools(repo)
+    assert "blocks" in tools.prism_task("f", session="s1")
+    assert "error" in tools.prism_task("f", budget=1, session="s1")  # below the budget floor
+    log = next(s for s in sessions(repo) if s.deliveries)
+    assert [ok for via, ok, _ in log.deliveries if via == "mcp"] == [True, False]

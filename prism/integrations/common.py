@@ -14,7 +14,8 @@ INSTRUCTION_BLOCK = """\
 ## PRISM code index
 
 PRISM context may already be in the prompt: use it as given, do not fetch it again.
-Otherwise run `prism task "<user request>"` once (MCP: `prism_task`) and read only the ranges it lists.
+For unknown code, run `prism task "<user request>"` once. Known small edits need no discovery call.
+Use the evidence directly; read `read_next` ranges for partial source, or search narrowly if weak.
 A literal list marked "exhaustive" is complete: no grep for it. Follow its `Patch:`, `Twins:` and
 `Next:` lines; for several searches at once use `prism find "a" "b"`.
 
@@ -28,11 +29,12 @@ INSTRUCTION_BLOCK_MCP = """\
 ## PRISM code index
 
 PRISM context may already be in the prompt: use it as given, do not fetch it again.
-Otherwise call the MCP tool `prism_task` (server `prism`) once with the user's request and read
-only the ranges it lists. If your tools do not list it, search them for "prism"; the shell command
-`prism task "<user request>"` gives the same answer.
+For unknown code, call the native MCP tool `prism_task` (server `prism`) once with the request.
+Known small edits need no discovery call. If tools are deferred, discover "prism" once.
+If unavailable, use ordinary targeted tools; do not try an unverified shell fallback.
+Use the evidence directly; read `read_next` ranges for partial source, or search narrowly if weak.
 A literal list marked "exhaustive" is complete: no grep for it. Follow its `Patch:`, `Twins:` and
-`Next:` lines; `prism_find` runs several searches at once.
+`Next:` lines. Use additional PRISM tools only when the host exposes them.
 
 If PRISM is not enabled or not installed, work normally. Never run `prism init`, `prism scan`,
 `prism enable`, or `prism install --global` unless the user explicitly asks.

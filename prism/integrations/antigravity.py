@@ -30,7 +30,7 @@ from prism.integrations.base import (
     with_block,
     without_block,
 )
-from prism.integrations.common import INSTRUCTION_BLOCK, MCP_ENTRY, skill_text
+from prism.integrations.common import MCP_ENTRY, instruction_block, skill_text
 
 AGENTS_MD = "AGENTS.md"
 HOOKS = ".agents/hooks.json"
@@ -64,7 +64,7 @@ class AntigravityIntegration(Integration):
         changes = [
             FileChange(
                 AGENTS_MD,
-                with_block(read_text(root / AGENTS_MD), INSTRUCTION_BLOCK),
+                with_block(read_text(root / AGENTS_MD), instruction_block(options.mcp)),
                 "PRISM instruction block (always active)",
             ),
             FileChange(SKILL, skill_text("prism-context"), "prism-context skill"),

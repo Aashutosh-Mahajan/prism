@@ -19,6 +19,7 @@ from prism.integrations.base import (
 from prism.integrations.common import (
     INSTRUCTION_BLOCK,
     MCP_ENTRY,
+    instruction_block,
     skill_body,
     skill_description,
 )
@@ -39,15 +40,15 @@ CURSOR_HOOKS_ENTRIES: dict[str, dict[str, Any]] = {
 }
 
 
-def cursor_rule() -> str:
+def cursor_rule(mcp: bool = False) -> str:
     """The always-on rule: only how to start a task. Short, because it is sent on every turn."""
     return (
         "---\n"
-        "description: PRISM code index - start each task with `prism task`\n"
+        "description: PRISM code index - context for unknown code\n"
         "alwaysApply: true\n"
         "---\n"
         f"{MANAGED}\n\n"
-        f"{INSTRUCTION_BLOCK}"
+        f"{instruction_block(mcp)}"
     )
 
 
@@ -73,7 +74,7 @@ class CursorIntegration(Integration):
         return (root / ".cursor").is_dir() or (root / ".cursorrules").is_file()
 
     def plan(self, root: Path, options: IntegrationOptions) -> list[FileChange]:
-        changes = [FileChange(CURSOR_RULE, cursor_rule(), "always-on PRISM rule")]
+        changes = [FileChange(CURSOR_RULE, cursor_rule(options.mcp), "always-on PRISM rule")]
         changes += [
             FileChange(_procedure_path(n), cursor_procedure(n), f"{n} rule (on request)")
             for n in CURSOR_PROCEDURES
@@ -123,7 +124,13 @@ class CursorIntegration(Integration):
         out: list[tuple[str, bool | None, str]] = []
         rule = read_text(root / CURSOR_RULE)
         if rule is not None:
-            out.append(("cursor rule", rule == cursor_rule(), ".cursor/rules/prism.mdc installed"))
+            out.append(
+                (
+                    "cursor rule",
+                    rule in (cursor_rule(), cursor_rule(True)),
+                    ".cursor/rules/prism.mdc installed",
+                )
+            )
         hooks = read_text(root / CURSOR_HOOKS)
         if hooks is not None:
             both = "prism hook session-start" in hooks and "prism hook post-edit" in hooks

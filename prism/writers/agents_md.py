@@ -37,7 +37,8 @@ NAVIGATION = (
 # itself is injected: how to run things, anything a human wrote down, and how to use PRISM.
 COMPACT_FACTS = ("Languages", "Commands")
 COMPACT_NAVIGATION = (
-    'For unknown code use `prism task "<request>"`: architecture maps or edit source. '
+    "Reuse PRISM context already supplied. For unknown code use the configured transport: "
+    'native `prism_task` or CLI `prism task "<request>"`; do not switch transports on failure. '
     "Use complete evidence directly; partial packets list missing ranges."
 )
 
