@@ -111,7 +111,15 @@ class Resolver:
                 if found:
                     return found, "medium"
         enclosing_class = self._enclosing_class(sym)
-        if head in ("self", "cls") and enclosing_class and len(parts) == 2:
+        if len(parts) == 1 and enclosing_class and self.table.files[mod].language == "java":
+            # In Java an unqualified call inside a method is a call on the enclosing class.
+            direct = f"{enclosing_class}.{head}"
+            if direct in self.table.symbols:
+                return direct, "high"
+            found = self.method_in_class(enclosing_class, head)
+            if found:
+                return found, "medium"
+        if head in ("self", "cls", "this") and enclosing_class and len(parts) == 2:
             direct = f"{enclosing_class}.{parts[1]}"
             if direct in self.table.symbols:
                 return direct, "high"

@@ -18,12 +18,9 @@ def manifest_path(root: Path) -> Path:
 
 
 def find_repo_root(start: Path) -> Path:
-    """Nearest ancestor containing `.aicontext/`, else the git root, else `start`."""
+    """Nearest index or Git boundary, else `start`; never cross a nested repository."""
     start = start.resolve()
     for candidate in (start, *start.parents):
-        if (candidate / AICONTEXT).is_dir():
-            return candidate
-    for candidate in (start, *start.parents):
-        if (candidate / ".git").exists():
+        if (candidate / AICONTEXT).is_dir() or (candidate / ".git").exists():
             return candidate
     return start

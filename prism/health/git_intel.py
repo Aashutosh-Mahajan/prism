@@ -6,6 +6,7 @@ Uses the `git` CLI (no GitPython). Optional: without git or history, returns
 
 from __future__ import annotations
 
+import contextlib
 import subprocess
 from collections import Counter
 from itertools import combinations
@@ -37,7 +38,74 @@ def _git(root: Path, *args: str) -> str | None:
     return out.stdout if out.returncode == 0 else None
 
 
+_SHA = frozenset("0123456789abcdef")
+
+
+def _git_dir(root: Path) -> Path | None:
+    """The repository's git directory (following a worktree's `.git` file), or None."""
+    for directory in (root, *root.parents):
+        marker = directory / ".git"
+        if marker.is_dir():
+            return marker
+        if marker.is_file():
+            try:
+                text = marker.read_text(encoding="utf-8").strip()
+            except OSError:
+                return None
+            if text.startswith("gitdir:"):
+                target = Path(text[len("gitdir:") :].strip())
+                return target if target.is_absolute() else (directory / target).resolve()
+            return None
+    return None
+
+
+def _is_sha(text: str) -> bool:
+    return len(text) in (40, 64) and set(text) <= _SHA
+
+
+def _read_head(git_dir: Path) -> str | None:
+    """HEAD's commit from the git directory's files; None when that needs git itself."""
+    try:
+        head = (git_dir / "HEAD").read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    if _is_sha(head):
+        return head  # detached
+    if not head.startswith("ref: "):
+        return None
+    ref = head[len("ref: ") :].strip()
+    common = git_dir
+    with contextlib.suppress(OSError):
+        common = (git_dir / (git_dir / "commondir").read_text(encoding="utf-8").strip()).resolve()
+    for base in dict.fromkeys((git_dir, common)):
+        try:
+            value = (base / ref).read_text(encoding="utf-8").strip()
+        except OSError:
+            continue
+        return value if _is_sha(value) else None
+    try:
+        packed = (common / "packed-refs").read_text(encoding="utf-8")
+    except OSError:
+        return None
+    for line in packed.splitlines():
+        sha, _, name = line.partition(" ")
+        if name.strip() == ref and _is_sha(sha):
+            return sha
+    return None
+
+
 def git_head(root: Path) -> str | None:
+    """The current commit. Read from `.git` directly when possible: spawning git costs tens of
+    milliseconds on every index update, most of an update's budget on some systems."""
+    import os
+
+    git_dir = _git_dir(root)
+    if git_dir is None and "GIT_DIR" not in os.environ:
+        return None  # not a repository: nothing to ask git
+    if git_dir is not None and "GIT_DIR" not in os.environ:
+        found = _read_head(git_dir)
+        if found:
+            return found
     head = _git(root, "rev-parse", "HEAD")
     return head.strip() if head else None
 
