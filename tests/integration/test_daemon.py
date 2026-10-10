@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 import time
 from pathlib import Path
 
@@ -105,3 +106,10 @@ def test_a_wrong_key_is_refused(enabled: Path) -> None:
         assert daemon._call(info, {"op": "task", "query": QUERY}) is None
     finally:
         daemon.stop(enabled)
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="named pipes have no path limit")
+def test_a_deep_checkout_gets_a_short_socket_path(tmp_path: Path) -> None:
+    deep = tmp_path.joinpath(*["very-long-directory-name"] * 6)
+    deep.mkdir(parents=True)
+    assert len(daemon._address(deep).encode("utf-8")) <= 104

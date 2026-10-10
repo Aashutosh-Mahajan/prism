@@ -19,6 +19,7 @@ import os
 import secrets
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from multiprocessing.connection import Client, Listener
@@ -33,6 +34,8 @@ CONNECT_TIMEOUT = 2.0
 INFO = "daemon.json"
 SPAWN_MARK = "daemon.spawning"
 
+UNIX_PATH_LIMIT = 90
+
 
 def _cache(root: Path) -> Path:
     from prism.consent import cache_root
@@ -44,7 +47,15 @@ def _address(root: Path) -> str:
     digest = hashlib.sha256(str(root.resolve()).encode("utf-8")).hexdigest()[:16]
     if sys.platform == "win32":
         return rf"\\.\pipe\prism-{digest}"
-    return str(_cache(root) / "daemon.sock")
+    path = str(_cache(root) / "daemon.sock")
+    if len(path.encode("utf-8")) > UNIX_PATH_LIMIT:
+        # sun_path holds about 104 bytes on macOS, 108 on Linux: a deep checkout or a long
+        # temporary directory needs a short name. The authentication key still guards it.
+        path = str(
+            Path("/tmp" if os.path.isdir("/tmp") else tempfile.gettempdir())
+            / f"prism-{digest}.sock"
+        )
+    return path
 
 
 def enabled(root: Path) -> bool:

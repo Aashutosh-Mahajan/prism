@@ -57,6 +57,8 @@ def test_shape_extension_does_not_request_global_generic_field_search(tmp_path: 
 
 
 def test_contract_without_callers_does_not_reduce_builder_caller_budget(tmp_path: Path) -> None:
+    pytest.importorskip("tree_sitter")
+    pytest.importorskip("tree_sitter_typescript")
     (tmp_path / "metrics.py").write_text(
         "def build_metrics(current, previous):\n"
         "    return {'value': current, 'previous': previous, 'kind': 'count'}\n\n"

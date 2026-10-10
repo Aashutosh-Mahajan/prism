@@ -105,6 +105,7 @@ class FakeEmbedder:
 
 
 def test_semantic_search_blends_embeddings(repo: Path) -> None:
+    pytest.importorskip("numpy")
     store = IndexStore.open(repo)
     data = api.op_search(store, "discount", 5, semantic=True, embedder=FakeEmbedder())
     assert data["mode"] == "hybrid"

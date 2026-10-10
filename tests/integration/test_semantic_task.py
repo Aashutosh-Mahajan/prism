@@ -13,6 +13,8 @@ from prism.lifecycle import apply_init, plan_init, scan
 from prism.navigator import api, semantic
 from prism.navigator.store import IndexStore
 
+pytest.importorskip("numpy")
+
 PARAPHRASE = "split a list into fixed-size groups"
 
 

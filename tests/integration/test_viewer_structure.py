@@ -21,6 +21,7 @@ def _indexed(name: str, tmp_path: Path) -> Path:
 
 
 def test_non_python_files_group_by_folder_not_one_package_each(tmp_path: Path) -> None:
+    pytest.importorskip("tree_sitter")
     model = GraphModel(_indexed("polyglot", tmp_path))
     packages = {n["id"]: n for n in model.graph("import", "package").nodes}
     files = model.graph("import", "file").nodes
