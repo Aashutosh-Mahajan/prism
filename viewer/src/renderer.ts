@@ -3,30 +3,38 @@
 import { createNodeBorderProgram } from "@sigma/node-border";
 import { NodeSquareProgram } from "@sigma/node-square";
 import Sigma from "sigma";
-import { EdgeArrowProgram } from "sigma/rendering";
+import { EdgeArrowProgram, EdgeRectangleProgram } from "sigma/rendering";
 
-import type { App } from "./app";
+import { labelThreshold, type App } from "./app";
 import { edgeKey } from "./graph-utils";
-import { palette } from "./theme";
+import { palette, withAlpha } from "./theme";
 
 export const TRAIL_MS = 20_000;
 const TRAIL_HOT_MS = 4_000;
-const PULSE_MS = 2_400;
+export const PULSE_MS = 2_400;
 const LABEL_FONT = '"Prism Mono", "JetBrains Mono", Consolas, monospace';
 
 type Ctx = CanvasRenderingContext2D;
 interface Drawn { x: number; y: number; size: number; label?: string | null; color: string; focusRing?: boolean }
 
-function drawLabel(ctx: Ctx, d: Drawn, weight = 400): void {
+/** Obsidian-style label: centred under the node, fading in as the node grows on screen. */
+function drawLabel(ctx: Ctx, d: Drawn, textFade: number, weight = 400): void {
   if (!d.label) return;
+  const alpha = weight > 400 ? 1 : Math.max(0, Math.min(1, (d.size - (labelThreshold(textFade) - 3)) / 3));
+  if (alpha <= 0.02) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
   ctx.font = `${weight} 11px ${LABEL_FONT}`;
-  ctx.lineWidth = 3.5;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.lineWidth = 3;
   ctx.lineJoin = "round";
   ctx.strokeStyle = palette.canvas;
   ctx.fillStyle = palette.label;
-  const x = d.x + d.size + 6;
-  ctx.strokeText(d.label, x, d.y + 4);
-  ctx.fillText(d.label, x, d.y + 4);
+  const y = d.y + d.size + 4;
+  ctx.strokeText(d.label, d.x, y);
+  ctx.fillText(d.label, d.x, y);
+  ctx.restore();
 }
 
 function drawHighlight(ctx: Ctx, d: Drawn): void {
@@ -45,19 +53,7 @@ function drawHighlight(ctx: Ctx, d: Drawn): void {
     ctx.stroke();
     ctx.setLineDash([]);
   }
-  if (!d.label) return;
-  ctx.font = `600 12px ${LABEL_FONT}`;
-  const w = ctx.measureText(d.label).width;
-  const x = d.x + d.size + 10;
-  ctx.fillStyle = palette.chrome;
-  ctx.strokeStyle = palette.rule;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.roundRect(x - 7, d.y - 12, w + 14, 24, 6);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = palette.label;
-  ctx.fillText(d.label, x, d.y + 4);
+  drawLabel(ctx, d, 0, 600);
 }
 
 export function createRenderer(app: App, container: HTMLElement): Sigma {
@@ -72,7 +68,7 @@ export function createRenderer(app: App, container: HTMLElement): Sigma {
         ],
       }),
     },
-    edgeProgramClasses: { arrow: EdgeArrowProgram },
+    edgeProgramClasses: { arrow: EdgeArrowProgram, line: EdgeRectangleProgram },
     defaultEdgeType: "arrow",
     renderEdgeLabels: false,
     labelRenderedSizeThreshold: 7,
@@ -80,16 +76,23 @@ export function createRenderer(app: App, container: HTMLElement): Sigma {
     labelGridCellSize: 120,
     labelFont: LABEL_FONT,
     labelSize: 11,
-    defaultDrawNodeLabel: (ctx, data) => drawLabel(ctx, data as Drawn),
+    defaultDrawNodeLabel: (ctx, data) => drawLabel(ctx, data as Drawn, app.display.textFade),
     defaultDrawNodeHover: (ctx, data) => drawHighlight(ctx, data as Drawn),
     zIndex: true,
     allowInvalidContainer: true,
+    // Room for the overlays (scope line, arrangement switch, legend) around the fitted graph.
+    stagePadding: 56,
     minCameraRatio: 0.02,
     maxCameraRatio: 25,
     nodeReducer: (node, data) => {
       const res: Record<string, unknown> = { ...data };
       const now = performance.now();
       let faded = false;
+      // Nodes grow in as a view blooms open.
+      res.size = (data.size as number) * app.display.nodeSize;
+      const enter = data.enter as number | undefined;
+      if (enter !== undefined && enter < 1) res.size = Math.max(0.1, (res.size as number) * enter);
+
       if (s.hovered && node !== s.hovered && !app.neighbors.get(s.hovered)?.has(node)) faded = true;
       if (s.rings) {
         const d = s.rings.get(node);
@@ -140,8 +143,18 @@ export function createRenderer(app: App, container: HTMLElement): Sigma {
     edgeReducer: (edge, data) => {
       const res: Record<string, unknown> = { ...data };
       const [source, target] = app.graph.extremities(edge);
-      res.color = data.confidence === "low" ? palette.edgeWeak : palette.edge;
-      if (s.showCycles && data.cycle) res.color = palette.danger;
+      // Links appear once both ends have (nearly) arrived.
+      const g = app.graph;
+      if (((g.getNodeAttribute(source, "enter") as number | undefined) ?? 1) < 0.85 ||
+          ((g.getNodeAttribute(target, "enter") as number | undefined) ?? 1) < 0.85) {
+        res.hidden = true;
+        return res;
+      }
+      res.color = data.confidence === "low" ? app.edgeTint.weak || palette.edgeWeak : app.edgeTint.strong || palette.edge;
+      res.size = ((data.size as number) ?? 1) * 0.7 * app.display.linkThickness;
+
+      // Cycles are flagged, not shouted: at package level many links can be part of one.
+      if (s.showCycles && data.cycle) res.color = withAlpha(palette.danger, 0.42);
       const focus = s.hovered ?? (s.selected && !s.rings && !s.path && !s.diff ? s.selected : null);
       if (focus) {
         if (source !== focus && target !== focus) {
@@ -172,25 +185,36 @@ export function createRenderer(app: App, container: HTMLElement): Sigma {
 /** Whether the pointer gesture that just ended moved a node (so it wasn't a click). */
 export const drag = { moved: false };
 
-/** Drag to move a node; the node stays pinned where it is dropped. */
+/**
+ * Drag a node as in Obsidian: in the graph layout it follows the pointer while the simulation
+ * pulls its neighbours along, and is let go on release; in the layers layout it simply moves.
+ */
 function bindDragging(app: App, renderer: Sigma): void {
   let dragged: string | null = null;
   renderer.on("downNode", ({ node }) => {
+    app.motion.cancel();
     dragged = node;
     drag.moved = false;
+    // Hold the frame still while dragging, so the node stays under the pointer.
     if (!renderer.getCustomBBox()) renderer.setCustomBBox(renderer.getBBox());
   });
   renderer.on("moveBody", ({ event }) => {
     if (!dragged) return;
+    if (!drag.moved) app.layout.grab(dragged);
     drag.moved = true;
     const pos = renderer.viewportToGraph(event);
-    app.graph.mergeNodeAttributes(dragged, { x: pos.x, y: pos.y, fixed: true });
+    app.layout.drag(dragged, pos.x, pos.y);
+    app.graph.mergeNodeAttributes(dragged, { x: pos.x, y: pos.y });
     event.preventSigmaDefault();
     event.original.preventDefault();
     event.original.stopPropagation();
   });
   const end = () => {
-    if (dragged && drag.moved) app.layout.save();
+    if (dragged && drag.moved) {
+      app.layout.release(dragged);
+      app.layout.save();
+    }
+    if (dragged) renderer.setCustomBBox(null);
     dragged = null;
     window.setTimeout(() => (drag.moved = false), 0);
   };

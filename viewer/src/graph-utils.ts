@@ -68,9 +68,13 @@ const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
  * sunflower. The graph is readable before the force layout runs, the force layout converges
  * in far fewer iterations, and the same data always starts in the same place.
  */
-export function seedPositions(nodes: Pick<GNode, "id" | "group" | "rank">[], spacing = 1): Map<string, { x: number; y: number }> {
+export function seedPositions(nodes: (Pick<GNode, "id" | "group" | "rank"> & { area?: string })[], spacing = 1): Map<string, { x: number; y: number }> {
+  // Areas (or, without them, groups) start as neighbouring discs: what belongs together is together.
   const groups = new Map<string, Pick<GNode, "id" | "group" | "rank">[]>();
-  for (const n of nodes) (groups.get(n.group) ?? groups.set(n.group, []).get(n.group)!).push(n);
+  for (const n of nodes) {
+    const key = n.area ?? n.group;
+    (groups.get(key) ?? groups.set(key, []).get(key)!).push(n);
+  }
   const ordered = [...groups.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
   const out = new Map<string, { x: number; y: number }>();
   const step = 6 * spacing;
@@ -127,4 +131,16 @@ export function percentile(values: number[], value: number): number {
   let below = 0;
   for (const v of values) if (v < value) below++;
   return Math.round((below / values.length) * 100);
+}
+
+/** True when (more than two) points sit on top of each other: a layout that never unfolded. */
+export function collapsed(points: [number, number][]): boolean {
+  if (points.length < 3) return false;
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const [x, y] of points) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return true;
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x);
+    y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  }
+  return x1 - x0 < 1e-3 && y1 - y0 < 1e-3;
 }

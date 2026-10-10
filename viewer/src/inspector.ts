@@ -4,6 +4,8 @@
 import type { App } from "./app";
 import { KIND_LABELS } from "./app";
 import type { Details, GNode, Layer } from "./types";
+import { areaOf } from "./encode";
+import { tierText } from "./hovercard";
 import { $, el, formatAgo, plural, stored, toast } from "./ui";
 
 const LIST_LIMIT = 12;
@@ -108,6 +110,9 @@ function header(app: App, id: string, n: GNode | null, body: HTMLElement): void 
     body.append(el("div", { class: "ins-loc" }, [`${n.file}${lines}`]));
   }
   const badges = el("div", { class: "badges" });
+  if (n) badges.append(el("span", { class: "badge area", style: `--c:${color}` }, [areaOf(n)]));
+  const tiers = app.payload?.tiers ?? 0;
+  if (n && tiers > 1 && n.tier !== undefined) badges.append(el("span", { class: "badge" }, [tierText(n.tier, tiers)]));
   if (n?.entry_point) badges.append(el("span", { class: "badge" }, ["entry point"]));
   if (n?.dead) badges.append(el("span", { class: "badge warn" }, ["possibly unused"]));
   if (n?.findings) badges.append(el("span", { class: "badge bad" }, [plural(n.findings, "open finding")]));

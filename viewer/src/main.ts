@@ -6,12 +6,16 @@ import { bindChrome, renderChrome } from "./chrome";
 import { bindControls, syncFilterInputs } from "./controls";
 import { createSource } from "./data";
 import { HoverCard } from "./hovercard";
+import { renderOverview } from "./insights";
 import { bindLive } from "./live";
 import { NodeList } from "./nodelist";
 import { Animator } from "./renderer";
 import { Search } from "./search";
 import { initTheme, readPalette } from "./theme";
 import { $, toast } from "./ui";
+
+const BOOTED = performance.now();
+const INTRO_MIN_MS = 1700; // long enough for the beam to split; skipped with reduced motion
 
 async function boot(): Promise<void> {
   initTheme();
@@ -56,10 +60,35 @@ async function boot(): Promise<void> {
   if (!source.live) {
     for (const id of ["f-changed", "o-diff", "o-diff-go"]) $<HTMLInputElement>(id).disabled = true;
   }
+  app.on("graph", () => renderOverview(app));
   app.savedPositions = await source.layout().catch(() => ({}));
-  await app.load();
+  $("intro-status").textContent = "Refracting the code";
+  // The graph blooms as the intro clears, so hold the load until the light has split.
+  const wait = endIntroAfterLoad(app);
+  await wait;
   bindLive(app, animator);
   app.on("view", () => animator.kick());
 }
 
-void boot();
+/** The intro hands over to the graph: its rays fan out and the light fades as the nodes bloom. */
+function endIntro(): Promise<void> {
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const wait = still ? 0 : Math.max(0, INTRO_MIN_MS - (performance.now() - BOOTED));
+  return new Promise((resolve) => window.setTimeout(() => {
+    const intro = document.getElementById("intro");
+    intro?.classList.add("leaving");
+    window.setTimeout(() => intro?.remove(), still ? 0 : 900);
+    resolve();
+  }, wait));
+}
+
+async function endIntroAfterLoad(app: App): Promise<void> {
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const hold = still ? 0 : Math.max(0, INTRO_MIN_MS - 450 - (performance.now() - BOOTED));
+  await new Promise((resolve) => window.setTimeout(resolve, hold));
+  const loaded = app.load();
+  await endIntro();
+  await loaded;
+}
+
+void boot().catch(() => void endIntro());

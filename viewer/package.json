@@ -11,15 +11,17 @@
     "test": "tsc -p tsconfig.test.json && node --test tests/*.test.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@sigma/node-border": "3.0.0",
     "@sigma/node-square": "3.0.0",
+    "d3-force": "3.0.0",
     "graphology": "0.26.0",
     "graphology-communities-louvain": "2.0.2",
-    "graphology-layout-forceatlas2": "0.10.1",
     "sigma": "3.0.3"
   },
   "devDependencies": {
+    "@types/d3-force": "3.0.10",
     "graphology-types": "0.24.8",
     "typescript": "5.9.3",
     "vite": "7.3.6"

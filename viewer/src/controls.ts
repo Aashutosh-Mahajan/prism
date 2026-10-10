@@ -1,6 +1,6 @@
 // Toolbar, drawer, canvas pointer/keyboard handling, and saved views.
 import type { App, ViewState } from "./app";
-import { LEVELS, emptyFilters } from "./app";
+import { LAYOUT_MODES, LEVELS, emptyFilters } from "./app";
 import type { ColorBy, SizeBy } from "./encode";
 import type { Direction } from "./graph-utils";
 import type { NodeList } from "./nodelist";
@@ -172,7 +172,7 @@ export function bindControls(app: App, list: NodeList, search: Search): void {
   drawerToggle.addEventListener("click", () => setDrawer(drawer.classList.contains("collapsed"), true));
 
   // Drawer tabs (roving tabindex).
-  const tabs = [$("tab-nodes"), $("tab-explore")];
+  const tabs = [$("tab-overview"), $("tab-nodes"), $("tab-explore")];
   const selectTab = (tab: HTMLElement, focus = false) => {
     for (const t of tabs) {
       const on = t === tab;
@@ -186,11 +186,12 @@ export function bindControls(app: App, list: NodeList, search: Search): void {
   for (const t of tabs) {
     t.addEventListener("click", () => selectTab(t));
     t.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowLeft") selectTab(tabs[(tabs.indexOf(t) + 1) % tabs.length], true);
+      const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? tabs.length - 1 : 0;
+      if (step) selectTab(tabs[(tabs.indexOf(t) + step) % tabs.length], true);
     });
   }
-  const savedTab = stored("prism-tab");
-  if (savedTab === "tab-explore") selectTab(tabs[1]);
+  const savedTab = tabs.find((t) => t.id === stored("prism-tab"));
+  if (savedTab) selectTab(savedTab);
 
   // Filters.
   const kinds = $("f-kinds");
@@ -267,7 +268,24 @@ export function bindControls(app: App, list: NodeList, search: Search): void {
       app.layout.retune();
     });
   }
-  for (const id of ["ph-linlog", "ph-strong"]) input(id).addEventListener("change", () => app.layout.retune());
+  // Display, as in Obsidian.
+  const d = app.display;
+  input("d-arrows").checked = d.arrows;
+  const sliders: [string, keyof typeof d][] = [["d-fade", "textFade"], ["d-size", "nodeSize"], ["d-link", "linkThickness"]];
+  for (const [id, key] of sliders) {
+    input(id).value = String(d[key]);
+    $(`${id}-out`).textContent = String(d[key]);
+    input(id).addEventListener("input", (e) => {
+      const v = Number((e.target as HTMLInputElement).value);
+      (d as unknown as Record<string, number>)[key] = v;
+      $(`${id}-out`).textContent = String(v);
+      app.applyDisplay();
+    });
+  }
+  input("d-arrows").addEventListener("change", (e) => {
+    d.arrows = (e.target as HTMLInputElement).checked;
+    app.applyDisplay();
+  });
   $("ph-reset").addEventListener("click", () => app.layout.rearrange());
   $("ph-unpin").addEventListener("click", () => app.layout.unpinAll());
 
@@ -329,10 +347,15 @@ export function bindControls(app: App, list: NodeList, search: Search): void {
         break;
       case "n": case "N":
         setDrawer(true, true);
-        selectTab(tabs[0]);
+        selectTab(tabs[1]);
         list.focus();
         break;
       case "?": $<HTMLDialogElement>("help-dialog").showModal(); break;
+      case "a": case "A": {
+        const usable = LAYOUT_MODES.filter((m) => m !== "layers" || Boolean(app.payload?.tiers));
+        app.setLayoutMode(usable[(usable.indexOf(s.layoutMode) + 1) % usable.length]);
+        break;
+      }
       case "1": app.setLevel("package"); break;
       case "2": app.setLevel("file"); break;
       case "3": app.setLevel("symbol"); break;
@@ -349,6 +372,9 @@ export function bindControls(app: App, list: NodeList, search: Search): void {
         return;
     }
   });
+  document.querySelectorAll<HTMLButtonElement>("#layout-mode button").forEach((b) =>
+    b.addEventListener("click", () => app.setLayoutMode(LAYOUT_MODES.find((m) => m === b.dataset.mode) ?? "organic")),
+  );
   $("zoom-in").addEventListener("click", () => app.zoom(1));
   $("zoom-out").addEventListener("click", () => app.zoom(-1));
   $("zoom-fit").addEventListener("click", () => app.fit());

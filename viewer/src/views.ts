@@ -3,7 +3,7 @@ import type { ColorBy, SizeBy } from "./encode";
 import type { Filters, Layer, Level } from "./types";
 
 // Local lists (type-checked against the unions) keep this module free of runtime imports.
-const COLOR_VALUES: readonly ColorBy[] = ["group", "community", "risk", "findings", "owner", "recency", "kind", "language"];
+const COLOR_VALUES: readonly ColorBy[] = ["area", "group", "community", "risk", "findings", "owner", "recency", "kind", "language"];
 const SIZE_VALUES: readonly SizeBy[] = ["rank", "loc", "fan_in", "blast"];
 
 export const LEVEL_VALUES: readonly Level[] = ["package", "file", "symbol"];

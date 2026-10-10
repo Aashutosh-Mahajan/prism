@@ -1,6 +1,8 @@
 // Hover card: what a node is, where it lives, and how connected it is — before any click.
 import type { App } from "./app";
 import { KIND_LABELS } from "./app";
+import { areaOf } from "./encode";
+import { bandLabel } from "./layered";
 import { $, el, plural } from "./ui";
 
 export class HoverCard {
@@ -25,11 +27,13 @@ export class HoverCard {
     const outgoing = this.app.rel.outgoing.get(id)?.length ?? 0;
     const color = this.app.graph.getNodeAttribute(id, "color") as string;
     const pct = this.app.importancePercentile(id);
+    const tiers = this.app.payload?.tiers ?? 0;
     const where = n.kind === "cluster" ? plural(n.files ?? 0, "file") : `${n.file ?? ""}${n.lines ? `:${n.lines[0]}` : ""}`;
     const parts: (Node | null)[] = [
       el("div", { class: "hc-kind" }, [el("span", { class: "sw", style: `background:${color}` }), KIND_LABELS[n.kind] ?? n.kind,
         n.entry_point ? " · entry point" : "", n.test ? " · test" : ""]),
       el("div", { class: "hc-name" }, [n.label]),
+      el("div", { class: "hc-area" }, [areaOf(n), tiers && n.tier !== undefined ? ` · ${tierText(n.tier, tiers)}` : ""]),
       where ? el("div", { class: "hc-loc" }, [where]) : null,
       n.doc ? el("div", { class: "hc-doc" }, [n.doc.length > 140 ? `${n.doc.slice(0, 139)}…` : n.doc]) : null,
       el("div", { class: "hc-stats" }, [
@@ -71,4 +75,10 @@ export class HoverCard {
     this.card.hidden = true;
     window.clearTimeout(this.prefetchTimer);
   }
+}
+
+/** "Foundations", "Entry points" or "tier 3 of 6": where a node sits in the dependency stack. */
+export function tierText(tier: number, tiers: number): string {
+  const label = bandLabel(tier, tiers);
+  return label.startsWith("Tier") ? `tier ${tier} of ${tiers - 1}` : label.toLowerCase();
 }

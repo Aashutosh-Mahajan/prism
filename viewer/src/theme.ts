@@ -60,3 +60,20 @@ export function toggleTheme(): Theme {
   readPalette();
   return next;
 }
+
+/** `color` (#rgb, #rrggbb or rgb()) with an alpha channel. */
+export function withAlpha(color: string, alpha: number): string {
+  const a = Math.max(0, Math.min(1, alpha));
+  if (color.startsWith("#")) {
+    let hex = color.slice(1);
+    if (hex.length === 3) hex = [...hex].map((c) => c + c).join("");
+    const n = parseInt(hex.slice(0, 6), 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+  }
+  const m = color.match(/rgba?\(([^)]+)\)/);
+  if (m) {
+    const [r, g, b] = m[1].split(",").map((v) => parseFloat(v));
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  return color;
+}

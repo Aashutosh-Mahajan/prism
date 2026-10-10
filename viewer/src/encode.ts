@@ -2,12 +2,12 @@
 // Colours come from one spectrum (the "prism"), tuned separately for the dark and light canvas.
 import type { GNode } from "./types";
 
-export type ColorBy = "group" | "community" | "risk" | "owner" | "language" | "recency" | "findings" | "kind";
+export type ColorBy = "area" | "group" | "community" | "risk" | "owner" | "language" | "recency" | "findings" | "kind";
 export type SizeBy = "rank" | "loc" | "fan_in" | "blast";
 export type Theme = "dark" | "light";
 
 export const COLOR_BY_LABELS: Record<ColorBy, string> = {
-  group: "Module", community: "Community", risk: "Risk", findings: "Audit findings",
+  area: "Area", group: "Package", community: "Community", risk: "Risk", findings: "Audit findings",
   owner: "Owner", recency: "Recency", kind: "Kind", language: "Language",
 };
 export const SIZE_BY_LABELS: Record<SizeBy, string> = {
@@ -17,8 +17,8 @@ export const SIZE_BY_LABELS: Record<SizeBy, string> = {
 // Twelve hues walked around the spectrum; lighter on dark, deeper on light, for contrast.
 const SPECTRUM: Record<Theme, string[]> = {
   dark: [
-    "#8f9dff", "#5cc8f5", "#6fd3b0", "#a7d46f", "#f0d46a", "#ffb067",
-    "#ff8f85", "#f07fb5", "#c890ff", "#7fb0ff", "#4fd1c5", "#e0a3ff",
+    "#7b8cff", "#4cc9f0", "#5ee6a8", "#b5e655", "#ffe066", "#ffa45c",
+    "#ff6b8b", "#f472d0", "#c77dff", "#6ea8ff", "#3dd6c6", "#e0a3ff",
   ],
   light: [
     "#4f5fe6", "#1486c2", "#10906f", "#5b8f1f", "#9c7a00", "#c96412",
@@ -114,6 +114,7 @@ export interface EncodeContext {
   oldest: number;
   community: Map<string, number>;
   groups: Map<string, string>;
+  areas: Map<string, string>;
   owners: Map<string, string>;
 }
 
@@ -126,9 +127,12 @@ function max(values: number[], floor: number): number {
 export function buildContext(nodes: GNode[], community: Map<string, number>): EncodeContext {
   const times = nodes.map((n) => n.last_changed ?? 0).filter((t) => t > 0);
   const groupCounts = new Map<string, number>();
+  const areaCounts = new Map<string, number>();
   const ownerCounts = new Map<string, number>();
   for (const n of nodes) {
     groupCounts.set(n.group, (groupCounts.get(n.group) ?? 0) + 1);
+    const area = areaOf(n);
+    areaCounts.set(area, (areaCounts.get(area) ?? 0) + 1);
     if (n.owner) ownerCounts.set(n.owner, (ownerCounts.get(n.owner) ?? 0) + 1);
   }
   return {
@@ -140,8 +144,14 @@ export function buildContext(nodes: GNode[], community: Map<string, number>): En
     oldest: times.length ? times.reduce((a, b) => Math.min(a, b)) : 0,
     community,
     groups: categoricalScale(groupCounts.keys(), groupCounts),
+    areas: categoricalScale(areaCounts.keys(), areaCounts),
     owners: categoricalScale(ownerCounts.keys(), ownerCounts),
   };
+}
+
+/** The area a node belongs to (older indexes and exports have none: fall back to the group). */
+export function areaOf(n: GNode): string {
+  return n.area ?? n.group;
 }
 
 export function communityOf(n: GNode, ctx: EncodeContext): number | undefined {
@@ -150,6 +160,8 @@ export function communityOf(n: GNode, ctx: EncodeContext): number | undefined {
 
 export function nodeColor(n: GNode, by: ColorBy, ctx: EncodeContext): string {
   switch (by) {
+    case "area":
+      return ctx.areas.get(areaOf(n)) ?? categorical(areaOf(n));
     case "group":
       return ctx.groups.get(n.group) ?? categorical(n.group);
     case "community": {
@@ -187,12 +199,8 @@ export function nodeSize(n: GNode, by: SizeBy, ctx: EncodeContext): number {
   return MIN_NODE_SIZE + Math.sqrt(Math.max(0, sizeValue(n, by, ctx))) * (MAX_NODE_SIZE - MIN_NODE_SIZE);
 }
 
-/** Shape encodes what a node *is*: squares hold code, rings group or check it, dots are callables. */
-export function nodeType(n: GNode): "square" | "border" | "circle" {
-  if (n.kind === "module") return "square";
-  if (n.kind === "cluster" || n.kind === "package" || n.kind === "test" || n.kind === "route" || n.kind === "class") {
-    return "border";
-  }
+export function nodeType(_n: GNode): "square" | "border" | "circle" {
+  // As in Obsidian, every node is a plain dot; colour and the inspector say what it is.
   return "circle";
 }
 
@@ -221,7 +229,8 @@ export function legend(by: ColorBy, nodes: GNode[], ctx: EncodeContext): LegendI
     return kinds.map((k) => ({ color: kindColor(k), label: k }));
   }
   const keyOf = (n: GNode): string =>
-    by === "group" ? n.group
+    by === "area" ? areaOf(n)
+    : by === "group" ? n.group
     : by === "owner" ? n.owner ?? "Unknown owner"
     : by === "language" ? n.language
     : `Community ${communityOf(n, ctx) ?? "–"}`;

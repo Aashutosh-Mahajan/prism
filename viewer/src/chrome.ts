@@ -23,7 +23,8 @@ export function bindChrome(app: App): void {
   };
   // Open by default only when the canvas has room for it; an explicit toggle is remembered.
   const roomy = () => $("stage").clientWidth >= 820;
-  setOpen(stored("prism-legend") === "1" || (stored("prism-legend") !== "0" && roomy()));
+  // Closed unless asked for: the Overview already names the colours, and the canvas needs the room.
+  setOpen(stored("prism-legend") === "1");
   toggle.addEventListener("click", () => setOpen(body.hidden, true));
   // Opening the inspector on a narrow canvas tucks the legend away (not remembered).
   app.on("selection", () => {
@@ -80,17 +81,11 @@ function renderLegend(app: App): void {
     }
   }
   list.setAttribute("aria-label", `Colour shows ${COLOR_BY_LABELS[app.state.colorBy].toLowerCase()}`);
-  const kinds = new Set(nodes.map((n) => n.kind));
   const shapes = $("shapes");
   shapes.replaceChildren();
   const add = (cls: string, text: string) => shapes.append(el("div", {}, [el("span", { class: `shape ${cls}`, "aria-hidden": "true" }), text]));
-  if (kinds.has("module")) add("square", "Module (file)");
-  if (kinds.has("cluster")) add("ring", "Package");
-  if (kinds.has("class")) add("ring", "Class");
-  if (kinds.has("function") || kinds.has("method")) add("", "Function or method");
-  if (kinds.has("test")) add("ring", "Test");
-  if (kinds.has("route")) add("ring", "Route");
   add("edge", EDGE_MEANING[app.state.layer]);
+  if (app.state.layoutMode === "layers" && app.payload?.tiers) add("edge", "Bands: what depends on more sits higher");
   if (app.state.layer === "call") add("edge weak", "Faint: inferred, lower-confidence call");
   if (app.state.layer === "import" && app.state.showCycles) add("edge cycle", "Red: part of an import cycle");
   shapes.append(el("div", { class: "dim" }, [`Larger = higher ${SIZE_BY_LABELS[app.state.sizeBy].toLowerCase()}`]));
@@ -125,6 +120,11 @@ export function renderChrome(app: App): void {
   $<HTMLSelectElement>("layer").value = s.layer;
   $<HTMLSelectElement>("color-by").value = s.colorBy;
   $<HTMLSelectElement>("size-by").value = s.sizeBy;
+  const directed = Boolean(app.payload?.tiers);
+  document.querySelectorAll<HTMLButtonElement>("#layout-mode button").forEach((b) => {
+    b.setAttribute("aria-checked", String(b.dataset.mode === s.layoutMode));
+    if (b.dataset.mode === "layers") b.disabled = !directed;
+  });
   const p = app.payload;
   $("counts").textContent = p ? `${plural(p.counts.nodes, "node")} · ${plural(p.counts.edges, "link")}` : "";
   $("local-info").textContent = s.root

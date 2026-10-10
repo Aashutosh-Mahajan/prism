@@ -8,9 +8,37 @@
   </head>
   <body>
     <a class="skip" href="#graph">Skip to graph</a>
+    <div class="intro" id="intro" aria-hidden="true">
+      <svg class="intro-optics" viewBox="0 0 520 240">
+        <defs>
+          <linearGradient id="beam-fade" x1="0" x2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity="0" />
+            <stop offset="1" stop-color="#fff" stop-opacity="1" />
+          </linearGradient>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3.2" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        <path class="beam" d="M10 132 L222 118" stroke="url(#beam-fade)" />
+        <g class="rays" filter="url(#glow)">
+          <path style="--i:0" stroke="#ff6b8b" d="M258 112 L510 40" />
+          <path style="--i:1" stroke="#ffa45c" d="M259 114 L510 68" />
+          <path style="--i:2" stroke="#ffe066" d="M260 116 L510 96" />
+          <path style="--i:3" stroke="#5ee6a8" d="M261 118 L510 124" />
+          <path style="--i:4" stroke="#4cc9f0" d="M262 120 L510 152" />
+          <path style="--i:5" stroke="#7b8cff" d="M263 122 L510 180" />
+          <path style="--i:6" stroke="#c77dff" d="M264 124 L510 208" />
+        </g>
+        <path class="prism-glass" d="M240 40 L292 150 L188 150 Z" />
+        <path class="prism-edge" d="M240 40 L292 150 L188 150 Z" />
+      </svg>
+      <p class="intro-word">PRISM</p>
+      <p class="intro-status" id="intro-status">Reading the index</p>
+    </div>
     <header class="toolbar">
       <div class="brand">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 28 26H4z" /><path class="ray" d="M2 15h9" /></svg>
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path class="beam-in" d="M0 18.5 10.5 16" /><path class="out" stroke="#ff6b8b" d="M21 15.5 32 11" /><path class="out" stroke="#5ee6a8" d="M21.3 16.6 32 17" /><path class="out" stroke="#7b8cff" d="M21.6 17.7 32 23" /><path d="M16 5 26 25H6z" /></svg>
         <span class="brand-name">PRISM</span>
         <span class="project" id="project" title="Project"></span>
       </div>
@@ -61,11 +89,14 @@
     <main class="workspace" id="workspace">
       <aside class="drawer" id="drawer" aria-label="Nodes and tools">
         <div class="tabs" role="tablist" aria-label="Drawer">
-          <button type="button" role="tab" id="tab-nodes" aria-controls="pane-nodes" aria-selected="true">Nodes <span class="count" id="node-count"></span></button>
+          <button type="button" role="tab" id="tab-overview" aria-controls="pane-overview" aria-selected="true">Overview</button>
+          <button type="button" role="tab" id="tab-nodes" aria-controls="pane-nodes" aria-selected="false" tabindex="-1">Nodes <span class="count" id="node-count"></span></button>
           <button type="button" role="tab" id="tab-explore" aria-controls="pane-explore" aria-selected="false" tabindex="-1">Explore</button>
         </div>
 
-        <section class="pane" id="pane-nodes" role="tabpanel" aria-labelledby="tab-nodes">
+        <section class="pane" id="pane-overview" role="tabpanel" aria-labelledby="tab-overview"></section>
+
+        <section class="pane" id="pane-nodes" role="tabpanel" aria-labelledby="tab-nodes" hidden>
           <div class="list-tools">
             <input id="list-filter" type="search" placeholder="Filter this list" aria-label="Filter the node list" spellcheck="false" autocomplete="off" />
             <label class="select-field compact">
@@ -125,16 +156,22 @@
             <p class="hint" id="p-info" aria-live="polite"></p>
           </details>
 
-          <details>
-            <summary>Layout</summary>
-            <label class="check"><input type="checkbox" id="ph-run" /> Keep arranging</label>
-            <label class="field"><span>Pull to centre <output id="ph-gravity-out" for="ph-gravity">1</output></span><input type="range" id="ph-gravity" min="0.05" max="10" step="0.05" value="1" /></label>
-            <label class="field"><span>Spread <output id="ph-scaling-out" for="ph-scaling">12</output></span><input type="range" id="ph-scaling" min="1" max="80" step="1" value="12" /></label>
-            <label class="field"><span>Link strength <output id="ph-weight-out" for="ph-weight">1</output></span><input type="range" id="ph-weight" min="0" max="2" step="0.1" value="1" /></label>
-            <label class="field"><span>Settling speed <output id="ph-slow-out" for="ph-slow">4</output></span><input type="range" id="ph-slow" min="1" max="30" step="1" value="4" /></label>
-            <label class="check"><input type="checkbox" id="ph-linlog" checked /> Tighter clusters</label>
-            <label class="check"><input type="checkbox" id="ph-strong" /> Keep loose nodes close</label>
-            <div class="row"><button type="button" id="ph-reset">Rearrange</button><button type="button" id="ph-unpin">Unpin all</button></div>
+          <details open>
+            <summary>Forces</summary>
+            <label class="field"><span>Center force <output id="ph-gravity-out" for="ph-gravity">0.5</output></span><input type="range" id="ph-gravity" min="0" max="1" step="0.01" value="0.5" /></label>
+            <label class="field"><span>Repel force <output id="ph-scaling-out" for="ph-scaling">10</output></span><input type="range" id="ph-scaling" min="0" max="20" step="0.5" value="10" /></label>
+            <label class="field"><span>Link force <output id="ph-weight-out" for="ph-weight">1</output></span><input type="range" id="ph-weight" min="0" max="1" step="0.01" value="1" /></label>
+            <label class="field"><span>Link distance <output id="ph-slow-out" for="ph-slow">120</output></span><input type="range" id="ph-slow" min="30" max="500" step="5" value="120" /></label>
+            <label class="check"><input type="checkbox" id="ph-run" /> Keep moving</label>
+            <div class="row"><button type="button" id="ph-reset">Animate</button><button type="button" id="ph-unpin">Unpin all</button></div>
+          </details>
+
+          <details open>
+            <summary>Display</summary>
+            <label class="check"><input type="checkbox" id="d-arrows" /> Arrows</label>
+            <label class="field"><span>Text fade threshold <output id="d-fade-out" for="d-fade">0</output></span><input type="range" id="d-fade" min="-3" max="3" step="0.1" value="0" /></label>
+            <label class="field"><span>Node size <output id="d-size-out" for="d-size">1</output></span><input type="range" id="d-size" min="0.3" max="3" step="0.05" value="1" /></label>
+            <label class="field"><span>Link thickness <output id="d-link-out" for="d-link">1</output></span><input type="range" id="d-link" min="0.2" max="4" step="0.1" value="1" /></label>
           </details>
 
           <details>
@@ -160,7 +197,8 @@
             <div class="encoding-selects">
               <label class="select-field compact"><span>Colour</span>
                 <select id="color-by">
-                  <option value="group">Module</option>
+                  <option value="area">Area</option>
+                  <option value="group">Package</option>
                   <option value="community">Community</option>
                   <option value="risk">Risk</option>
                   <option value="findings">Audit findings</option>
@@ -182,6 +220,12 @@
             <ul class="swatches" id="legend"></ul>
             <div class="shapes" id="shapes"></div>
           </div>
+        </div>
+        <div class="arrange" role="radiogroup" aria-label="Arrangement" id="layout-mode">
+          <button type="button" role="radio" data-mode="organic" aria-checked="true" title="Network: related code pulls together">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="7" r="2.2" /><circle cx="17" cy="6" r="2.2" /><circle cx="12" cy="17" r="2.2" /><path d="M8 8l3 7m2 0 3-7M8.2 6.8h6.6" /></svg>Network</button>
+          <button type="button" role="radio" data-mode="layers" aria-checked="false" title="Layers: foundations at the bottom, entry points at the top (key: A)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M6 12h12M8 18h8" /></svg>Layers</button>
         </div>
         <div class="camera" role="group" aria-label="Camera">
           <button type="button" class="icon" id="zoom-in" title="Zoom in (+)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14" /></svg><span class="sr-only">Zoom in</span></button>
@@ -224,11 +268,12 @@
         <dt><kbd>B</kbd></dt><dd>Show what depends on the selected node</dd>
         <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Packages, files, symbols</dd>
         <dt><kbd>+</kbd> <kbd>-</kbd> <kbd>0</kbd></dt><dd>Zoom in, out, fit</dd>
-        <dt><kbd>Space</kbd></dt><dd>Start or stop arranging</dd>
+        <dt><kbd>A</kbd></dt><dd>Switch between graph and layers</dd>
+        <dt><kbd>Space</kbd></dt><dd>Start or stop the physics</dd>
         <dt><kbd>Esc</kbd></dt><dd>Clear selection and overlays</dd>
         <dt><kbd>?</kbd></dt><dd>Show these shortcuts</dd>
         <dt>Double-click</dt><dd>Open a package, or a file's symbols</dd>
-        <dt>Drag</dt><dd>Move and pin a node</dd>
+        <dt>Drag</dt><dd>Move a node; its neighbours follow</dd>
       </dl>
       <form method="dialog"><button class="primary">Close</button></form>
     </dialog>

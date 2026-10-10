@@ -4,17 +4,20 @@ import louvain from "graphology-communities-louvain";
 import type Sigma from "sigma";
 
 import { ApiError, type DataSource } from "./data";
-import { buildContext, nodeColor, nodeSize, nodeType, type ColorBy, type EncodeContext, type SizeBy } from "./encode";
+import { areaOf, buildContext, nodeColor, nodeSize, nodeType, type ColorBy, type EncodeContext, type SizeBy } from "./encode";
 import {
-  adjacency, nearestInDirection, pathEdges, percentile, relations, RequestGeneration, seedPositions,
+  adjacency, collapsed, nearestInDirection, pathEdges, percentile, relations, RequestGeneration, seedPositions,
   type Direction, type Relations,
 } from "./graph-utils";
+import { Fx } from "./fx";
 import { renderInspector } from "./inspector";
+import { layeredPositions, type Band, type LayerNode } from "./layered";
 import { LayoutController } from "./layout";
+import { Motion, type Point } from "./motion";
 import { createRenderer } from "./renderer";
 import { palette } from "./theme";
 import type { Details, Filters, GNode, GraphPayload, Layer, Level } from "./types";
-import { $, announce, plural, toast } from "./ui";
+import { $, announce, plural, store, stored, toast } from "./ui";
 
 export const LEVELS: Level[] = ["package", "file", "symbol"];
 export const LAYERS: Layer[] = ["import", "call", "tests", "cochange", "routes"];
@@ -31,8 +34,36 @@ export const emptyFilters = (): Filters => ({
   path: "", kinds: [], hide_tests: false, orphans_only: false, min_rank: 0, min_risk: 0, changed_since: "",
 });
 
+/** Obsidian's "Display" group: how the graph is drawn, kept per person. */
+export interface Display {
+  arrows: boolean;
+  textFade: number; // -3 (labels early) .. 3 (labels only when close)
+  nodeSize: number; // multiplier
+  linkThickness: number; // multiplier
+}
+
+export const DEFAULT_DISPLAY: Display = { arrows: false, textFade: 0, nodeSize: 1, linkThickness: 1 };
+
+export function loadDisplay(): Display {
+  try {
+    const raw = JSON.parse(stored("prism-display") ?? "{}") as Partial<Display>;
+    return {
+      arrows: typeof raw.arrows === "boolean" ? raw.arrows : DEFAULT_DISPLAY.arrows,
+      textFade: typeof raw.textFade === "number" ? Math.max(-3, Math.min(3, raw.textFade)) : 0,
+      nodeSize: typeof raw.nodeSize === "number" ? Math.max(0.3, Math.min(3, raw.nodeSize)) : 1,
+      linkThickness: typeof raw.linkThickness === "number" ? Math.max(0.2, Math.min(4, raw.linkThickness)) : 1,
+    };
+  } catch {
+    return { ...DEFAULT_DISPLAY };
+  }
+}
+
+export type LayoutMode = "organic" | "layers";
+export const LAYOUT_MODES: LayoutMode[] = ["organic", "layers"];
+
 export interface ViewState {
   level: Level;
+  layoutMode: LayoutMode;
   layer: Layer;
   root: string | null;
   depth: number;
@@ -78,7 +109,17 @@ export class App {
   readonly graph = new Graph({ type: "directed", multi: false, allowSelfLoops: false });
   readonly renderer: Sigma;
   readonly layout: LayoutController;
+  readonly motion: Motion;
+  readonly fx: Fx;
   readonly state: ViewState;
+  display: Display = loadDisplay();
+  /** Link colours for the current density (see tuneRenderer). */
+  edgeTint = { strong: "", weak: "" };
+  /** Tier bands of the layers layout, in graph coordinates (empty in the network layout). */
+  bands: Band[] = [];
+  private organicPositions = new Map<string, Point>();
+  /** Where the next view blooms from (graph coordinates), e.g. the package being opened. */
+  private bloomOrigin: Point | null = null;
   payload: GraphPayload | null = null;
   rel: Relations = { incoming: new Map(), outgoing: new Map() };
   neighbors = new Map<string, Set<string>>();
@@ -94,15 +135,27 @@ export class App {
 
   constructor(readonly source: DataSource, container: HTMLElement, initial: Partial<ViewState>) {
     this.state = {
-      level: "package", layer: "import", root: null, depth: 2, filters: emptyFilters(),
-      colorBy: "group", sizeBy: "rank", drill: null, selected: null, focused: null, hovered: null,
+      level: "package", layoutMode: oneOf(stored("prism-layout-mode"), LAYOUT_MODES, "organic"), layer: "import", root: null, depth: 2, filters: emptyFilters(),
+      colorBy: "area", sizeBy: "rank", drill: null, selected: null, focused: null, hovered: null,
       rings: null, path: null, pathEdges: new Set(), diff: null,
       showCycles: true, showDead: false, showActivity: true, showLabels: true,
       trail: new Map(), pulses: new Map(),
       ...initial,
     };
     this.renderer = createRenderer(this, container);
+    this.motion = new Motion(this);
+    this.fx = new Fx(this, this.renderer);
     this.layout = new LayoutController(this);
+    // Layers wrap to the canvas width: re-flow them when panels open or the window resizes.
+    let reflow: number | undefined;
+    this.renderer.on("resize", () => {
+      window.clearTimeout(reflow);
+      reflow = window.setTimeout(() => {
+        if (this.state.layoutMode === "layers" && this.bands.length && !this.motion.running) {
+          this.motion.tween(this.layeredTargets(), { duration: 450 });
+        }
+      }, 180);
+    });
   }
 
   on(event: keyof App["listeners"], fn: Listener): void {
@@ -166,22 +219,28 @@ export class App {
     this.state.hovered = null;
     this.neighbors = adjacency(payload.edges);
     this.rel = relations(payload.edges);
-    const previous = new Map<string, { x: number; y: number }>();
+    const previous = new Map<string, Point>();
     g.forEachNode((id, a) => previous.set(id, { x: a.x as number, y: a.y as number }));
     const pinned = new Set(g.filterNodes((_, a) => Boolean(a.fixed)));
     this.layout.stop();
+    this.motion.cancel();
 
-    // Place nodes: saved position > position in the previous view > near placed neighbours > seeded cluster.
+    // Where each node belongs: saved position > position in the previous view > near placed
+    // neighbours > a seeded sunflower per area.
+    const flatMode = this.state.layoutMode === "organic";
+    // A saved layout that collapsed to one point (saved before it unfolded) is no layout.
+    const savedHere = payload.nodes.map((n) => this.savedPositions[n.id]).filter((p): p is [number, number] => Boolean(p));
+    if (collapsed(savedHere)) for (const n of payload.nodes) delete this.savedPositions[n.id];
     const unplaced = payload.nodes.filter((n) => !this.savedPositions[n.id] && !previous.has(n.id));
     const mostlyNew = unplaced.length > payload.nodes.length * 0.3;
     const seeds = mostlyNew ? seedPositions(unplaced, payload.nodes.length > 1500 ? 1.4 : 1) : null;
-    const place = (n: GNode): { x: number; y: number } => {
+    const place = (n: GNode): Point => {
       const saved = this.savedPositions[n.id];
       if (saved) return { x: saved[0], y: saved[1] };
-      const prev = previous.get(n.id);
+      const prev = flatMode ? previous.get(n.id) : this.organicPositions.get(n.id) ?? previous.get(n.id);
       if (prev) return prev;
       if (seeds) return seeds.get(n.id)!;
-      const pts: { x: number; y: number }[] = [];
+      const pts: Point[] = [];
       for (const other of this.neighbors.get(n.id) ?? []) {
         const p = previous.get(other) ?? (this.savedPositions[other] && { x: this.savedPositions[other][0], y: this.savedPositions[other][1] });
         if (p) pts.push(p);
@@ -193,16 +252,22 @@ export class App {
       }
       return seedPositions([n]).get(n.id)!;
     };
+    const targets = new Map<string, Point>(payload.nodes.map((n) => [n.id, place(n)]));
+    const entering = new Set(payload.nodes.filter((n) => !previous.has(n.id)).map((n) => n.id));
 
+    // New nodes bloom out of one point: the package being opened, or the middle of the view.
+    const origin = this.bloomOrigin ?? centroid(targets.values());
+    this.bloomOrigin = null;
     g.clear();
     for (const n of payload.nodes) {
-      g.addNode(n.id, { ...place(n), label: n.label, data: n, fixed: pinned.has(n.id) || undefined });
+      const start = entering.has(n.id) ? origin : previous.get(n.id)!;
+      g.addNode(n.id, { ...start, label: n.label, data: n, fixed: pinned.has(n.id) || undefined, enter: entering.has(n.id) ? 0.001 : 1 });
     }
     for (const e of payload.edges) {
       if (g.hasNode(e.source) && g.hasNode(e.target) && !g.hasEdge(e.source, e.target)) {
         g.addEdgeWithKey(e.id, e.source, e.target, {
           weight: e.weight, confidence: e.confidence, cycle: Boolean(e.cycle),
-          size: Math.min(2.4, 0.5 + Math.log1p(e.weight) * 0.35),
+          size: Math.min(2.6, 0.5 + Math.log1p(e.weight) * 0.4),
         });
       }
     }
@@ -212,6 +277,7 @@ export class App {
     if (this.state.colorBy === "community") this.ensureCommunities();
     this.encode();
     this.tuneRenderer();
+    this.organicPositions = new Map(targets);
 
     const s = this.state;
     if (s.selected && !g.hasNode(s.selected)) this.closeInspector();
@@ -220,9 +286,90 @@ export class App {
 
     this.emit("graph");
     this.emit("view");
-    if (unplaced.length > 0) this.layout.run(unplaced.length === payload.nodes.length);
-    if (!opts.keepCamera) this.fit();
-    if (s.root && g.hasNode(s.root) && s.selected !== s.root) this.select(s.root, { moveCamera: false });
+    const layered = s.layoutMode === "layers" && (payload.tiers ?? 0) > 0;
+    const destination = layered ? this.layeredTargets() : targets;
+    if (!layered) this.bands = [];
+    if (entering.size) this.fx.burstAt(origin);
+    if (!opts.keepCamera) void this.renderer.getCamera().animatedReset({ duration: this.duration(500) });
+    this.motion.tween(destination, {
+      duration: entering.size ? 1100 : 700,
+      entering,
+      delay: entering.size ? this.refractionDelay(destination, origin, entering) : undefined,
+      onDone: () => {
+        if (!layered && unplaced.length > 0) this.layout.run(unplaced.length === payload.nodes.length);
+        if (s.root && g.hasNode(s.root) && s.selected !== s.root) this.select(s.root, { moveCamera: false });
+      },
+    });
+  }
+
+  /**
+   * The bloom is a refraction: nodes leave the origin in a sweep around it, like a spectrum
+   * fanning out of a prism, important nodes first. Bounded so large views still open fast.
+   */
+  private refractionDelay(targets: Map<string, Point>, origin: Point, entering: Set<string>): (id: string) => number {
+    const span = Math.min(650, 120 + entering.size * 4);
+    const delays = new Map<string, number>();
+    for (const id of entering) {
+      const p = targets.get(id);
+      if (!p) continue;
+      const angle = (Math.atan2(p.y - origin.y, p.x - origin.x) + Math.PI) / (Math.PI * 2);
+      const importance = 1 - this.importancePercentile(id) / 100;
+      delays.set(id, angle * span * 0.75 + importance * span * 0.25);
+    }
+    return (id) => delays.get(id) ?? 0;
+  }
+
+  /** Positions and bands for the architecture (layers) layout of the current graph. */
+  private layeredTargets(): Map<string, Point> {
+    const nodes: LayerNode[] = [];
+    this.graph.forEachNode((id, a) => {
+      const n = a.data as GNode;
+      // Dense views only label a few nodes, so slots there are sized for the node alone.
+      const label = this.state.showLabels && this.graph.order <= 400 ? Math.min(28, n.label.length) : 0;
+      nodes.push({ id, tier: n.tier ?? 0, size: (a.size as number) ?? 6, area: areaOf(n), rank: n.rank, label });
+    });
+    const { width, height } = this.renderer.getDimensions();
+    const result = layeredPositions(nodes, this.payload?.edges ?? [], { width, height });
+    this.bands = result.bands;
+    return result.positions;
+  }
+
+  /** Switch between the force-directed graph and the layered architecture view. */
+  setLayoutMode(mode: LayoutMode, animate = true): void {
+    const s = this.state;
+    if (mode === "layers" && !(this.payload?.tiers ?? 0)) {
+      toast("Layers need a layer with direction: imports, calls or routes.", true);
+      return;
+    }
+    if (s.layoutMode === mode) return;
+    if (s.layoutMode === "organic") {
+      // Keep the organic arrangement: it is the basis of the other two and where we come back to.
+      this.layout.stop(true);
+      this.organicPositions = new Map(this.graph.mapNodes((id, a) => [id, { x: a.x as number, y: a.y as number }] as const));
+    }
+    s.layoutMode = mode;
+    store("prism-layout-mode", mode);
+    this.emit("view");
+    if (mode !== "layers") this.bands = [];
+    if (!animate) return;
+    const destination = mode === "layers" ? this.layeredTargets() : this.organicPositions;
+    void this.renderer.getCamera().animatedReset({ duration: this.duration(700) });
+    this.motion.tween(destination, {
+      duration: 1000,
+      delay: this.sweepDelay(destination),
+      onDone: () => mode === "organic" && s.layoutMode === "organic" && this.layout.run(false, 900),
+    });
+  }
+
+  /** Layout changes ripple from the top of the view down, so the eye can follow the move. */
+  private sweepDelay(targets: Map<string, Point>): (id: string) => number {
+    const ys = [...targets.values()].map((p) => p.y);
+    const lo = Math.min(...ys);
+    const hi = Math.max(...ys);
+    return (id) => {
+      const p = targets.get(id);
+      return p && hi > lo ? ((hi - p.y) / (hi - lo)) * 260 : 0;
+    };
   }
 
   /** Denser graphs hide edges while panning and show fewer labels, so interaction stays smooth. */
@@ -230,8 +377,18 @@ export class App {
     const n = this.graph.order;
     const e = this.graph.size;
     this.renderer.setSetting("hideEdgesOnMove", e > 1500);
-    this.renderer.setSetting("labelRenderedSizeThreshold", n > 3000 ? 11 : n > 800 ? 9 : 6);
-    this.renderer.setSetting("labelDensity", n > 3000 ? 0.35 : 0.7);
+    this.applyDisplay(n);
+  }
+
+  /** Apply the display settings (labels fade in as nodes grow on screen, as in Obsidian). */
+  applyDisplay(n = this.graph.order): void {
+    const d = this.display;
+    this.renderer.setSetting("defaultEdgeType", d.arrows ? "arrow" : "line");
+    this.renderer.setSetting("labelRenderedSizeThreshold", labelThreshold(d.textFade) - 3 + (n > 3000 ? 3 : n > 800 ? 1.5 : 0));
+    this.renderer.setSetting("labelDensity", n > 3000 ? 0.5 : 1);
+    this.renderer.setSetting("labelGridCellSize", 70);
+    store("prism-display", JSON.stringify(d));
+    this.refresh();
   }
 
   ensureCommunities(): void {
@@ -244,6 +401,10 @@ export class App {
   }
 
   encode(): void {
+    // Thousands of links at full strength wash the view out; dim them as they multiply.
+    const e = this.graph.size;
+    const dim = e > 2000 ? 0.38 : e > 800 ? 0.6 : 1;
+    this.edgeTint = { strong: scaleAlpha(palette.edge, dim), weak: scaleAlpha(palette.edgeWeak, dim) };
     const nodes: GNode[] = this.graph.mapNodes((_, a) => a.data as GNode);
     const ctx = buildContext(nodes, this.community);
     this.encoding = ctx;
@@ -417,7 +578,14 @@ export class App {
     void this.load();
   }
 
+  private originFrom(id: string): void {
+    if (!this.graph.hasNode(id)) return;
+    const a = this.graph.getNodeAttributes(id);
+    this.bloomOrigin = { x: a.x as number, y: a.y as number };
+  }
+
   drillInto(n: GNode): void {
+    this.originFrom(n.id);
     const s = this.state;
     s.drill = n.group;
     s.root = null;
@@ -430,6 +598,7 @@ export class App {
     if (!n) return;
     if (n.kind === "cluster") this.drillInto(n);
     else if (this.state.level === "file") {
+      this.originFrom(id);
       this.state.root = id;
       this.setLevel("symbol");
     }
@@ -485,6 +654,7 @@ export class App {
       s.rings = new Map(Object.entries(r.rings));
       s.path = null;
       s.diff = null;
+      this.fx.rippleFrom(id);
       this.refresh();
       this.emit("view");
       const tests = r.tests.length ? `, ${plural(r.tests.length, "test")} to run` : "";
@@ -549,4 +719,27 @@ export class App {
     bar.classList.add("flash");
     window.setTimeout(() => bar.classList.remove("flash"), 900);
   }
+}
+
+/** An rgba() colour with its alpha multiplied by `k`. */
+function scaleAlpha(color: string, k: number): string {
+  const m = color.match(/rgba\(([^)]+)\)/);
+  if (!m) return color;
+  const [r, g, b, a = "1"] = m[1].split(",").map((v) => v.trim());
+  return `rgba(${r},${g},${b},${(parseFloat(a) * k).toFixed(3)})`;
+}
+
+function centroid(points: Iterable<Point>): Point {
+  let x = 0, y = 0, n = 0;
+  for (const p of points) {
+    x += p.x;
+    y += p.y;
+    n++;
+  }
+  return n ? { x: x / n, y: y / n } : { x: 0, y: 0 };
+}
+
+/** Rendered node size (px) at which a label is fully shown, from the text-fade setting. */
+export function labelThreshold(textFade: number): number {
+  return 7 + textFade * 2.2;
 }

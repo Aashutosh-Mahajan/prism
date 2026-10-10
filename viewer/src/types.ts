@@ -8,6 +8,10 @@ export interface GNode {
   file: string | null;
   module?: string;
   group: string;
+  /** Top-level part of the repository (`prism/hooks`, `tests`), for colour. */
+  area?: string;
+  /** Dependency tier in view: 0 = depends on nothing shown (foundation). */
+  tier?: number;
   dir?: string;
   lines?: [number, number];
   rank: number;
@@ -49,6 +53,8 @@ export interface GraphPayload {
   nodes: GNode[];
   edges: GEdge[];
   truncated: number;
+  /** Number of dependency tiers (0 when the layer has no direction). */
+  tiers?: number;
   counts: { nodes: number; edges: number };
 }
 

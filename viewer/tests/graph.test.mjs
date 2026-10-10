@@ -94,10 +94,8 @@ test("legend summarises a long tail instead of dropping it silently", () => {
   assert.match(items.at(-1).label, /^6 more/);
 });
 
-test("shapes encode node kinds", () => {
-  assert.equal(nodeType({ kind: "module" }), "square");
-  assert.equal(nodeType({ kind: "cluster" }), "border");
-  assert.equal(nodeType({ kind: "function" }), "circle");
+test("every node is drawn as a plain dot, as in Obsidian", () => {
+  for (const kind of ["module", "cluster", "function", "test"]) assert.equal(nodeType({ kind }), "circle");
 });
 
 test("saved views are validated before use", () => {
