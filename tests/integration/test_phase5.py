@@ -109,7 +109,7 @@ def test_semantic_search_blends_embeddings(repo: Path) -> None:
     data = api.op_search(store, "discount", 5, semantic=True, embedder=FakeEmbedder())
     assert data["mode"] == "hybrid"
     assert data["hits"][0]["id"] == "shop.pricing.discounts.apply_discount"
-    assert list((repo / ".aicontext" / "cache").glob("embeddings-*.json"))
+    assert list((repo / ".aicontext" / "cache").glob("vectors-*.npz"))
     again = api.op_search(store, "discount", 5, semantic=True, embedder=FakeEmbedder())
     assert again["hits"] == data["hits"]  # served from the vector cache
     store.close()
@@ -123,6 +123,12 @@ def test_semantic_search_without_model_is_a_clear_error(
     def missing(model: str) -> None:
         raise UserError(f"embedding model '{model}' is not available locally")
 
+    from prism.navigator import bert_numpy
+
+    def unsupported(model: str) -> None:
+        raise bert_numpy.UnsupportedModel(model)
+
+    monkeypatch.setattr(bert_numpy, "NumpyBertEmbedder", unsupported)
     monkeypatch.setattr(semantic, "SentenceTransformerEmbedder", missing)
     semantic._EMBEDDERS.clear()
     store = IndexStore.open(repo)

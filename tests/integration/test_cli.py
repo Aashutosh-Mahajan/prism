@@ -32,7 +32,15 @@ def test_global_root_and_session_work_before_the_task_command(tiny_repo: Path) -
     assert first.exit_code == 0, first.output
     initial = json.loads(first.output)
     assert any("source" in b for b in initial["blocks"])
-    again = run("task", "apply_discount", "--root", root, "--session", "global-flags", "--json")
+    again = run(
+        "task",
+        "where is apply_discount used",
+        "--root",
+        root,
+        "--session",
+        "global-flags",
+        "--json",
+    )
     assert again.exit_code == 0, again.output
     repeated = json.loads(again.output)
     assert any(b.get("seen") for b in repeated["blocks"]), (initial, repeated)

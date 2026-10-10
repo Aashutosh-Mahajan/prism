@@ -64,6 +64,20 @@ def doctor(root: Path) -> list[Check]:
         add("manifest schema", True, f"schema {manifest.get('schema_version')}")
     except Exception as exc:  # jsonschema.ValidationError and friends
         add("manifest schema", False, f"invalid manifest: {str(exc).splitlines()[0]}")
+    broken = {
+        path: entry["parse_error"]
+        for path, entry in manifest.get("files", {}).items()
+        if isinstance(entry, dict) and entry.get("parse_error")
+    }
+    add(
+        "parse errors",
+        not broken,
+        f"{len(broken)} file(s) with syntax errors (symbols may be missing): "
+        + ", ".join(sorted(broken)[:5])
+        if broken
+        else "none",
+        warn_only=True,
+    )
     if manifest.get("schema_version") != SCHEMA_VERSION or _version_tuple(
         str(manifest.get("prism_version", "0"))
     ) < _version_tuple(__version__):
@@ -108,6 +122,21 @@ def doctor(root: Path) -> list[Check]:
         else "changed outside PRISM: " + ", ".join(tampered[:5]),
         warn_only=True,
     )
+
+    from prism.integrations.base import managed_block, read_text
+    from prism.integrations.common import INSTRUCTION_BLOCK, INSTRUCTION_BLOCK_MCP
+
+    current = {INSTRUCTION_BLOCK.strip(), INSTRUCTION_BLOCK_MCP.strip()}
+    for rel in ("CLAUDE.md", "AGENTS.md", "GEMINI.md"):
+        block = managed_block(read_text(root / rel))
+        # A stale convention file costs more than none: agents follow it (arXiv 2608.16630).
+        if block is not None and block not in current:
+            add(
+                "instructions",
+                None,
+                f"the PRISM block in {rel} is out of date: run `prism init --yes` to refresh it",
+                warn_only=True,
+            )
 
     from prism.integrations import all_integrations
 
@@ -257,3 +286,83 @@ def watch(
             if not result.skipped and on_update is not None:
                 on_update(result)
         time.sleep(interval)
+
+
+HOOK_FILES = {
+    "antigravity": ".agents/hooks.json",
+    "claude-code": ".claude/settings.json",
+    "codex": ".codex/hooks.json",
+    "gemini": ".gemini/settings.json",
+    "cursor": ".cursor/hooks.json",
+}
+
+
+def session_report(root: Path, session: str) -> list[Check]:
+    """Was PRISM used in one agent session, and if not, why not (`prism doctor --session`)."""
+    from prism.writers.worklog import _digest, sessions
+
+    checks: list[Check] = []
+
+    def add(name: str, status: str, detail: str) -> None:
+        checks.append(Check(name, status, detail))
+
+    logs = sessions(root)
+    if session == "latest":
+        log = logs[0] if logs else None
+    else:
+        log = next((entry for entry in logs if entry.digest == _digest(session)), None)
+    if log is None:
+        add(
+            "session",
+            "warn",
+            "no work log for it: the hooks never ran there, the work log is off "
+            "(`worklog = false`), or PRISM was not enabled for you in this repo",
+        )
+        return checks
+    add(
+        "session",
+        "ok",
+        f"{log.digest}: {len(log.requests)} request(s), {len(log.edits)} file(s) edited",
+    )
+
+    hook = [d for d in log.deliveries if d[0] == "hook"]
+    delivered = [d for d in hook if d[1]]
+    tools = [d for d in log.deliveries if d[0] in ("cli", "mcp") and d[1]]
+    if delivered:
+        add("hook", "ok", f"delivered a packet {len(delivered)} time(s)")
+    elif hook:
+        reasons = sorted({d[2] for d in hook if d[2]})
+        add(
+            "hook",
+            "warn",
+            "fired but added nothing: " + "; ".join(reasons or ["no reason recorded"]),
+        )
+    else:
+        present = [f for f in HOOK_FILES.values() if (root / f).is_file()]
+        where = ", ".join(present) if present else "none of " + ", ".join(HOOK_FILES.values())
+        add(
+            "hook",
+            "fail",
+            f"never fired in this session. Hook config files here: {where}. "
+            "Run `prism init --hooks` for your agent, then restart it.",
+        )
+    if tools:
+        by = sorted({d[0] for d in tools})
+        add("tool calls", "ok", f"{len(tools)} call(s) via {', '.join(by)}")
+    else:
+        add("tool calls", "warn", "the agent never called `prism task` / `prism_task`")
+    if not delivered and not tools:
+        block = (root / "AGENTS.md").is_file() or (root / "CLAUDE.md").is_file()
+        add(
+            "verdict",
+            "fail",
+            "PRISM was not used here. "
+            + (
+                "The instruction block exists, so the agent ignored it: prefer the hook."
+                if block
+                else "No instruction block was found: run `prism init`."
+            ),
+        )
+    else:
+        add("verdict", "ok", "PRISM was used in this session")
+    return checks

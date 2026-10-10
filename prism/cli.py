@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import sqlite3
 import sys
 from collections.abc import Callable
 from contextvars import ContextVar
@@ -12,6 +13,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Annotated, Any, TypeVar
 
+import click
 import typer
 from rich.console import Console
 
@@ -79,16 +81,29 @@ def _output(data: dict[str, Any], as_json: bool, renderer: Callable[[dict[str, A
 
 
 def _root(root: Path | None) -> Path:
-    return (root or _defaults().root or find_repo_root(Path.cwd())).resolve()
+    chosen = root or _defaults().root
+    if chosen is not None and not Path(chosen).is_dir():
+        raise UserError(f"--root {chosen} is not a directory.")
+    return (chosen or find_repo_root(Path.cwd())).resolve()
 
 
 def handle_errors(fn: F) -> F:
     @wraps(fn)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
-            return fn(*args, **kwargs)
+            try:
+                return fn(*args, **kwargs)
+            except sqlite3.DatabaseError:
+                # A damaged disposable cache: drop every cache and answer from the artifacts.
+                from prism.navigator.cache_db import purge_disposable_caches
+
+                purge_disposable_caches(_root(kwargs.get("root")))
+                return fn(*args, **kwargs)
         except typer.Exit:
             raise
+        except (typer.Abort, click.exceptions.Abort):
+            err.print("Aborted; nothing was changed.")
+            raise typer.Exit(1) from None
         except PrismError as exc:
             if kwargs.get("as_json"):
                 emit_json(exc.to_dict())
@@ -150,6 +165,17 @@ def init(
         bool | None,
         typer.Option("--git-hooks/--no-git-hooks", help="Git post-commit/merge/checkout hooks."),
     ] = None,
+    all_skills: Annotated[
+        bool,
+        typer.Option("--all-skills", help="Also install the audit, refresh and decisions skills."),
+    ] = False,
+    dedupe_reads: Annotated[
+        bool,
+        typer.Option(
+            "--dedupe-reads",
+            help="Claude Code: refuse to re-read an unchanged file already in context (opt-in).",
+        ),
+    ] = False,
     yes: Annotated[bool, typer.Option("--yes", "-y", help="Skip prompts (scripted use).")] = False,
     run_scan: Annotated[
         bool | None,
@@ -194,6 +220,8 @@ def init(
             mcp,
             bool(HAS_MCP & set(agents)),
         ),
+        all_skills=all_skills,
+        dedupe_reads=dedupe_reads,
     )
     use_git_hooks = ask(
         "Install git hooks (update the index after commit/merge/checkout)?",
@@ -572,7 +600,11 @@ def task(
     root: RootOption = None,
     budget: Annotated[int, typer.Option("--budget", min=128, max=32000)] = 2000,
     mode: Annotated[
-        str, typer.Option("--mode", help="auto | overview (signatures/map) | code (edit context)")
+        str,
+        typer.Option(
+            "--mode",
+            help="auto | overview (signatures/map) | code (edit context) | verify (after editing: sites that still match)",
+        ),
     ] = "auto",
     session: Annotated[
         str | None,
@@ -581,23 +613,137 @@ def task(
             help="Remember returned code in this session; repeats become one-line references.",
         ),
     ] = None,
+    detail: Annotated[
+        str,
+        typer.Option("--detail", help="full | brief (sites and tests only, at most 800 tokens)."),
+    ] = "full",
     as_json: JsonOption = False,
 ) -> None:
     """One call: the matching code, every exact string match, call sites, tests and impact."""
-    from prism.navigator import api as nav
-    from prism.navigator.session import load_seen, save_seen, session_id
-    from prism.navigator.task_pack import render_task
+    from prism.navigator import daemon
+    from prism.navigator.taskrun import open_fresh_store, run_task
 
-    store = _store(root)
-    sid = session_id(session if session is not None else _defaults().session)
-    seen = load_seen(store.root, sid, store.manifest) if sid else None
+    repo = _root(root)
+    request = {
+        "op": "task",
+        "query": query,
+        "budget": budget,
+        "mode": mode,
+        "session": session if session is not None else _defaults().session,
+        "json": as_json,
+        "detail": detail,
+    }
+    answer = daemon.ask(repo, request)  # a warm process, when one is running
+    if answer is not None:
+        emit(answer)
+        return
+    store = open_fresh_store(repo)
     try:
-        pack = nav.op_task(store, query, budget, seen, mode)
-        _output(pack, as_json, render_task)
-        if sid and seen is not None:
-            save_seen(store.root, sid, seen, store.manifest)
+        emit(run_task(repo, store, query, budget, mode, request["session"], as_json, detail))  # type: ignore[arg-type]
     finally:
         store.close()
+    daemon.ensure_running(repo)  # the next call is answered by a warm process
+
+
+@app.command("find")
+@handle_errors
+def find_cmd(
+    patterns: Annotated[list[str], typer.Argument(help="One or more texts to find (substring).")],
+    root: RootOption = None,
+    regex: Annotated[
+        bool, typer.Option("--regex", help="Treat patterns as regular expressions.")
+    ] = False,
+    ignore_case: Annotated[bool, typer.Option("-i", "--ignore-case")] = False,
+    glob: Annotated[
+        list[str] | None, typer.Option("--glob", help="Only files matching this glob (repeatable).")
+    ] = None,
+    budget: Annotated[int, typer.Option("--budget", min=128, max=32000)] = 1500,
+    as_json: JsonOption = False,
+) -> None:
+    """Several searches in one call, grouped by file, within a token budget."""
+    from prism.navigator.find import render_find, run_find
+
+    store = _store(root)
+    try:
+        pack = run_find(store, patterns, regex, ignore_case, glob, budget)
+    finally:
+        store.close()
+    _output(pack, as_json, render_find)
+
+
+@app.command("diff")
+@handle_errors
+def diff_cmd(
+    query: Annotated[
+        str, typer.Argument(help='The request, e.g. "change the limit from 23 to 25".')
+    ],
+    root: RootOption = None,
+    show: Annotated[bool, typer.Option("--show", help="Print the patch text as well.")] = False,
+    as_json: JsonOption = False,
+) -> None:
+    """Write a checked patch for an explicit old -> new change at its exhaustive sites.
+
+    The patch goes under .aicontext/cache/patches/; apply it with the printed git command.
+    PRISM never edits your files itself."""
+    from prism.navigator.patchcmd import patch_for_request
+
+    store = _store(root)
+    try:
+        result = patch_for_request(store, query)
+        text = (
+            (store.root / result["patch"]["path"]).read_text(encoding="utf-8")
+            if show and result.get("patch")
+            else ""
+        )
+    finally:
+        store.close()
+    if as_json:
+        emit_json(result)
+        return
+    if result.get("patch"):
+        patch = result["patch"]
+        emit(
+            f"Patch: {patch['old']} -> {patch['new']} at {patch['sites']} sites in {patch['files']} files.\n"
+            f"Apply: {result['apply']}"
+        )
+        if show:
+            emit(text)
+    else:
+        emit(f"No patch: {result['reason']}")
+
+
+@app.command()
+@handle_errors
+def note(
+    text: Annotated[str, typer.Argument(help="What changed, what is left, what to watch for.")],
+    root: RootOption = None,
+    session: Annotated[
+        str | None, typer.Option("--session", help="Session id the note belongs to.")
+    ] = None,
+) -> None:
+    """Leave a short handoff note for the next agent session (local, gitignored)."""
+    from prism.navigator.session import session_id
+    from prism.writers.worklog import record_note
+
+    record_note(
+        _root(root), session_id(session if session is not None else _defaults().session), text
+    )
+    emit("Noted for the next session.")
+
+
+@app.command()
+@handle_errors
+def recall(
+    query: Annotated[str | None, typer.Argument(help="Only sessions about this.")] = None,
+    root: RootOption = None,
+    limit: Annotated[int, typer.Option("--limit", min=1, max=50)] = 5,
+    as_json: JsonOption = False,
+) -> None:
+    """What earlier sessions asked, edited and noted (from the local work log)."""
+    from prism.navigator.recall import recall as recall_sessions
+    from prism.navigator.recall import render_recall
+
+    _output(recall_sessions(_root(root), query, limit), as_json, render_recall)
 
 
 @app.command()
@@ -965,11 +1111,24 @@ def watch(
 
 @app.command()
 @handle_errors
-def doctor(root: RootOption = None, as_json: JsonOption = False) -> None:
+def doctor(
+    root: RootOption = None,
+    as_json: JsonOption = False,
+    session: Annotated[
+        str | None,
+        typer.Option(
+            "--session",
+            help="Report whether PRISM was used in this agent session (an id, or `latest`).",
+        ),
+    ] = None,
+) -> None:
     """Diagnose the setup: install, index, consent, hooks, MCP, git, parsers, viewer."""
     from prism.maintenance import doctor as run_doctor
+    from prism.maintenance import session_report
 
-    checks = run_doctor(_root(root))
+    checks = (
+        session_report(_root(root), session) if session is not None else run_doctor(_root(root))
+    )
     if as_json:
         emit_json({"checks": [c.to_dict() for c in checks]})
     else:
@@ -979,6 +1138,32 @@ def doctor(root: RootOption = None, as_json: JsonOption = False) -> None:
             out.print(c.detail, markup=False, highlight=False)
     if any(c.status == "fail" for c in checks):
         raise typer.Exit(1)
+
+
+@app.command("filter", context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+def filter_cmd(ctx: typer.Context, root: RootOption = None) -> None:
+    """Run a command and print only what matters of its output (failures, summaries).
+
+    Usage: prism filter -- <command>. The full output is saved under .aicontext/cache/tee/ and
+    its path is printed last; the exit status is the command's. Off unless PRISM is enabled for
+    you in this repo: otherwise the command's output is printed unchanged."""
+    from prism.consent import RepoState
+    from prism.hooks.runner import _state
+    from prism.outputfilter import run_filtered
+
+    command = list(ctx.args)
+    if not command:
+        raise UserError("give a command: prism filter -- pytest -q")
+    repo = _root(root)
+    if _state(repo) is not RepoState.ENABLED:
+        import subprocess
+
+        raise typer.Exit(
+            subprocess.run(
+                command[0] if len(command) == 1 else command, shell=len(command) == 1
+            ).returncode
+        )
+    raise typer.Exit(run_filtered(repo, command))
 
 
 @app.command()
@@ -1042,7 +1227,7 @@ def mcp_cmd(
         str | None,
         typer.Option(
             "--profile",
-            help="lean (default: task, context, impact, status) or full (adds search, audit, ...).",
+            help="lean (default: prism_task only), standard (adds context, impact, status) or full.",
         ),
     ] = None,
 ) -> None:
@@ -1061,4 +1246,18 @@ def main() -> None:
         if reconfigure is not None:
             with contextlib.suppress(OSError, ValueError):
                 reconfigure(encoding="utf-8")
-    app()
+    import click
+
+    try:
+        # `windows_expand_args=False`: click would otherwise expand `*` in arguments itself on
+        # Windows (a `--glob 'backend/*'` became a list of files), which a shell never does for
+        # quoted text. Returns an `Exit` code rather than raising it.
+        code = app(standalone_mode=False, windows_expand_args=False)
+    except click.exceptions.Exit as exc:
+        sys.exit(exc.exit_code)
+    except click.exceptions.Abort:
+        sys.exit(130)
+    except click.ClickException as exc:
+        exc.show()
+        sys.exit(1)  # usage mistakes are user errors (1); 2 is reserved for "index missing"
+    sys.exit(code if isinstance(code, int) else 0)
