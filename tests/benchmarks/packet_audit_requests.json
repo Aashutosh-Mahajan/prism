@@ -1,0 +1,16 @@
+{
+  "first_source_commit": "9f74f92151d655f308de08b165aa0fc6a239a983",
+  "note": "Fixed T00 request texts. Original 10 October audit wording was not saved; these are new comparisons, not exact replications.",
+  "requests": [
+    {"kind": "broad", "query": "Improve graph community detection so related modules are grouped together"},
+    {"kind": "bug", "query": "Fix ClaudeCodeIntegration.plan so running the installer twice preserves existing hooks"},
+    {"kind": "docs", "query": "Clarify the diff command help to explain how a patch is previewed and applied"},
+    {"kind": "edit-default", "query": "Change the default budget of prism_task from 2000 to 1200"},
+    {"kind": "edit-fn", "query": "make the hook skip prompts shorter than 6 words"},
+    {"kind": "explain-arch", "query": "Explain how the index, navigator, hooks and writers fit together"},
+    {"kind": "feature", "query": "Extend add_decision to record an optional superseded decision identifier"},
+    {"kind": "find", "query": "Where are a session's already seen source ranges saved?"},
+    {"kind": "rename", "query": "rename render_task to render_packet everywhere"},
+    {"kind": "tests", "query": "Add a test for _store that checks what happens when the index is missing"}
+  ]
+}
