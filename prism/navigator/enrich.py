@@ -354,17 +354,17 @@ def _patch_prefix(root: Path) -> str:
 
 def build_patch(
     store: IndexStore, reader: SourceReader, query: str, evidence: Any
-) -> dict[str, Any] | None:
+) -> dict[str, Any] | str:
     """A checked patch for the request's explicit replacements at their exhaustive sites.
 
-    Returns {path, sites, files, old, new} or None when there is nothing safe to offer: no explicit
+    Returns {path, sites, files, old, new} or a reason code when there is nothing safe to offer: no explicit
     old → new, a literal list that is not exhaustive, a line that no longer matches the index, a
     new name that already exists, or a diff `git apply --check` rejects."""
     replacements = parse_replacements(query)
     if not replacements:
-        return None
+        return "no_replacement"
     if len({item.old for item in replacements}) != len(replacements):
-        return None  # conflicting destinations must never be guessed
+        return "conflicting_destinations"  # conflicting destinations must never be guessed
     edits: dict[str, set[int]] = {}
     used: list[Replacement] = []
     for item in replacements:
@@ -382,19 +382,19 @@ def build_patch(
             for occ in lit.occurrences:
                 sites[(occ.file, occ.line)] = occ.text
         if not sites:
-            return None  # never offer only part of the explicitly requested substitutions
+            return "not_exhaustive"  # never offer only part of the explicitly requested substitutions
         if item.kind == "identifier" and item.new not in set(evidence.absent):
-            return None  # the new name already exists: a blind rename could merge two things
+            return "new_name_exists"  # the new name already exists: a blind rename could merge two things
         for (file, line), indexed_text in sorted(sites.items()):
             indexed = reader.lines(file)
             if indexed is None or line > len(indexed):
-                return None
+                return "line_changed"
             if " ".join(indexed[line - 1].split()) != " ".join(indexed_text.split()):
-                return None
+                return "line_changed"
             edits.setdefault(file, set()).add(line)
         used.append(item)
     if not edits or not used:
-        return None
+        return "not_exhaustive"
 
     patch = bytearray()
     prefix = _patch_prefix(store.root)
@@ -405,18 +405,18 @@ def build_patch(
             data = path.read_bytes()
             raw = _split_raw(data)
         except OSError:
-            return None
+            return "line_changed"
         changed: dict[int, bytes] = {}
         for line in sorted(edits[file]):
             if line > len(raw):
-                return None
+                return "line_changed"
             original = raw[line - 1]
             body = original.rstrip(b"\r\n")
             eol = original[len(body) :]
             try:
                 text = body.decode("utf-8")
             except UnicodeDecodeError:
-                return None
+                return "line_changed"
             # All substitutions inspect the original text, so 10 -> 20 and
             # 20 -> 30 cannot cascade into 10 -> 30.
             pattern = re.compile(
@@ -424,12 +424,12 @@ def build_patch(
             )
             new_text = pattern.sub(lambda match: used[int((match.lastgroup or "r0")[1:])].new, text)
             if new_text == text:
-                return None  # the indexed line does not contain the old value any more
+                return "line_changed"  # the indexed line does not contain the old value any more
             changed[line] = new_text.encode("utf-8") + eol
         total_sites += len(changed)
         patch += unified_diff(prefix + file, raw, changed)
     if not patch:
-        return None
+        return "line_changed"
 
     from prism.consent import cache_root
 
@@ -440,10 +440,10 @@ def build_patch(
         directory.mkdir(parents=True, exist_ok=True)
         target.write_bytes(bytes(patch))
     except OSError:
-        return None
+        return "cache_unavailable"
     if not _git_accepts(store.root, target):
         target.unlink(missing_ok=True)
-        return None
+        return "git_rejected"
     _prune(directory)
     try:
         shown = target.relative_to(store.root).as_posix()
