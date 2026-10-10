@@ -7,6 +7,22 @@ import json
 from pathlib import Path
 
 
+def cost_table(analysis: dict) -> str:
+    """Cost-aware campaign summary; unknown-model dollars remain clearly marked proxies."""
+    lines = [
+        "| Arm | Passed | New context | Cache reads | Output | Turns | USD estimate | Fixed-cache USD | pass@1 | pass^k |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    for arm, result in analysis["arms"].items():
+        cost = result["cost"]
+        label = arm + (" (price proxy)" if cost["pricing_fallback"] else "")
+        lines.append(
+            f"| {label} | {result['solved']}/{result['sessions']} | {cost['new_context_tokens']} | {cost['cache_read_tokens']} | {cost['output_tokens']} | {cost['model_turns']} | {cost['estimated_dollars']:.6f} | {cost['fixed_cache_dollars']:.6f} | {result['pass_at_1']:.3f} | {result['pass_power_k']:.3f} |"
+        )
+    lines += ["", "USD estimates are frozen price-table comparisons, not subscription charges.", ""]
+    return "\n".join(lines)
+
+
 def report(
     base: Path, destination: Path, transport: str = "cli", comparison: Path | None = None
 ) -> None:

@@ -18,12 +18,18 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from tests.benchmarks.costs import usage_cost
+
 Cell = tuple[str, str, int]
 Task = tuple[str, str]
-METRICS = ("fresh_input", "processed_input", "total_tokens")
+METRICS = ("fresh_input", "processed_input", "total_tokens", "cost_dollars", "fixed_cache_dollars")
 
 
 def _metric(row: dict[str, Any], metric: str) -> float:
+    if metric == "cost_dollars":
+        return float(row["_cost"]["dollars"])
+    if metric == "fixed_cache_dollars":
+        return float(row["_cost"]["fixed_cache_dollars"])
     value = float(row["input_tokens"])
     if metric != "fresh_input":
         value += row["cache_read_tokens"]
@@ -75,7 +81,10 @@ def validate(rows: list[dict[str, Any]]) -> dict[str, dict[Cell, dict[str, Any]]
 def analyze(rows: list[dict[str, Any]], *, draws: int = 4000, seed: int = 7) -> dict[str, Any]:
     if draws < 100:
         raise ValueError("At least 100 bootstrap draws are required")
-    arms = validate(rows)
+    arms = {
+        arm: {cell: {**row, "_cost": usage_cost(row)} for cell, row in cells.items()}
+        for arm, cells in validate(rows).items()
+    }
     base = arms["baseline"]
     tasks: dict[Task, list[Cell]] = defaultdict(list)
     for cell in sorted(base):
@@ -105,6 +114,29 @@ def analyze(rows: list[dict[str, Any]], *, draws: int = 4000, seed: int = 7) -> 
             else None,
             "metrics": {},
         }
+        costs = [usage_cost(row) for row in sessions]
+        result["cost"] = {
+            "estimated_dollars": sum(c["dollars"] for c in costs),
+            "fixed_cache_dollars": sum(c["fixed_cache_dollars"] for c in costs),
+            "dollars_by_class": {
+                key: sum(c["dollars_by_class"][key] for c in costs)
+                for key in costs[0]["dollars_by_class"]
+            },
+            "new_context_tokens": sum(c["new_context_tokens"] for c in costs),
+            "cache_read_tokens": sum(row["cache_read_tokens"] for row in sessions),
+            "output_tokens": sum(row["output_tokens"] for row in sessions),
+            "model_turns": sum(row.get("model_turns", row.get("turns", 0)) for row in sessions)
+            if all("model_turns" in row or "turns" in row for row in sessions)
+            else None,
+            "pricing_fallback": any(c["pricing_fallback"] for c in costs),
+            "pricing_warning": next(
+                (c["pricing_warning"] for c in costs if c["pricing_warning"]), None
+            ),
+            "dollars_per_solved_task": sum(c["dollars"] for c in costs) / solved
+            if solved
+            else None,
+        }
+        result["pass_at_1"] = result["pass_rate"]
         for metric in METRICS:
             denominator = sum(_metric(row, metric) for row in base.values())
             if denominator <= 0:

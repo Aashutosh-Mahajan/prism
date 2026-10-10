@@ -95,6 +95,17 @@ class TaskResult:
     def saving(self) -> float:
         return 1 - self.with_prism / self.without if self.without else 0.0
 
+    def orientation_cost_proxy(self, model: str) -> dict[str, Any]:
+        """Modelled cold-input cost only; output and cached usage are not observed here."""
+        from tests.benchmarks.costs import usage_cost
+
+        return {
+            label: usage_cost(
+                {"model": model, "input_tokens": tokens, "cache_read_tokens": 0, "output_tokens": 0}
+            )
+            for label, tokens in (("without", self.without), ("with_prism", self.with_prism))
+        }
+
 
 def _read(root: Path, rel: str) -> str:
     try:
