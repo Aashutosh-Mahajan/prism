@@ -9,7 +9,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from prism.config import load_config
 from prism.writers.json_writer import write_json
 
 FORMAT = 7
@@ -52,10 +51,6 @@ def source_stamp(root: Path, manifest: dict[str, Any]) -> str | None:
 def _compute_stamp(root: Path, manifest: dict[str, Any]) -> str | None:
     rows = []
     try:
-        # External graph exports have their own revision/verification path; do
-        # not mask a changed advisory relationship with a source-only cache key.
-        if load_config(root).extra.get("graphify_graph") is not None:
-            return None
         for file, facts in sorted(manifest.get("files", {}).items()):
             stat = (root / file).stat()
             rows.append((file, facts.get("sha256"), stat.st_size, stat.st_mtime_ns))

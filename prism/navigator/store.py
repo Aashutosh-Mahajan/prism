@@ -6,7 +6,7 @@ import json
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from prism.core.errors import IndexMissingError
 from prism.core.paths import AICONTEXT
@@ -14,9 +14,6 @@ from prism.extractors.tests_map import is_test_file
 from prism.navigator.cache_db import fingerprint, open_cache
 from prism.navigator.text import bm25, tokenize
 from prism.writers.manifest import load_manifest
-
-if TYPE_CHECKING:
-    from prism.navigator.graphify import GraphifyGraph
 
 TEST_DEMOTION = 0.5
 MIGRATION_DEMOTION = 0.35
@@ -81,8 +78,6 @@ class IndexStore:
         self.conn = conn
         self._fingerprint = fingerprint(manifest)
         self._findings: list[dict[str, Any]] | None = None
-        self.graphify_graph: GraphifyGraph | None = None
-        self.graphify_revision: tuple[str, int, int, int] | None = None
 
     @classmethod
     def open(cls, root: Path) -> IndexStore:

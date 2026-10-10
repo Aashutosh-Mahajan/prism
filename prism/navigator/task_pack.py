@@ -18,11 +18,11 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
 
-from prism._vendor.graphify_retrieval import pick_seeds, walk_graph
 from prism.core.errors import UserError
 from prism.core.tokens import estimate_tokens
 from prism.navigator import enrich
 from prism.navigator.fusion import fuse_files
+from prism.navigator.graphwalk import pick_seeds, walk_graph
 from prism.navigator.impact import dependents
 from prism.navigator.literals import EvidenceResult, find_literals
 from prism.navigator.overview import overview_items, render_overview, wants_overview
@@ -699,8 +699,6 @@ def _fill(
     if not tight:
         if _FLOW_REQUEST.search(query):
             blocks.extend(_flow_blocks(store, reader, blocks, terms))
-        if not exact and not producers:
-            blocks.extend(_graphify_blocks(store, reader, query, blocks))
         blocks = _select(blocks)
     structural = pack["intent"] == "structural"
 
@@ -1081,8 +1079,8 @@ def _flow_blocks(
 ) -> list[_Block]:
     """Include a small connected implementation for explanation/flow requests.
 
-    Graphify's diverse seeds avoid a single lexical collision monopolizing the
-    graph. Its hub guard is paired with hard node, fan-out and two-hop caps.
+    Diverse seeds keep a single lexical collision from monopolizing the graph, and a
+    hub guard is paired with hard node, fan-out and two-hop caps.
     Only non-low-confidence outgoing calls are traversed; graph neighbors never
     outrank the source evidence that selected the starting point.
     """
@@ -1149,35 +1147,6 @@ def _flow_blocks(
                 weights[sid],
                 [symbol.start],
                 role="dependency",
-                whole=whole,
-            )
-        )
-    return extra
-
-
-def _graphify_blocks(
-    store: IndexStore, reader: SourceReader, query: str, blocks: list[_Block]
-) -> list[_Block]:
-    from prism.navigator.graphify import graphify_hints
-
-    hints = graphify_hints(store, reader, query)
-    existing = {block.symbol.id for block in blocks if block.symbol}
-    weight = max((block.score for block in blocks), default=2.0) * 0.45
-    extra: list[_Block] = []
-    for hint in hints:
-        if hint.symbol and hint.symbol.id in existing:
-            continue
-        whole = hint.end - hint.start + 1 <= WHOLE_SYMBOL_MAX
-        end = hint.end if whole else min(hint.end, hint.start + 14)
-        extra.append(
-            _Block(
-                hint.file,
-                hint.start,
-                end,
-                hint.symbol,
-                weight,
-                [hint.start],
-                role="graphify hint",
                 whole=whole,
             )
         )
@@ -1712,7 +1681,7 @@ def _confidence(
             level = "low"
     if not shown and not literals:
         level = "low"
-    graph_led = bool(shown and shown[0]["role"] in ("graphify hint", "similar"))
+    graph_led = bool(shown and shown[0]["role"] in ("similar",))
     if graph_led:
         # Likewise for a block only the embedding model found: a candidate, never a proof.
         # Verified locations are useful candidates even without lexical source
