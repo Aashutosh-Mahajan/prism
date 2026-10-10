@@ -1,3 +1,6 @@
 # Golden artifacts are compared byte-for-byte with PRISM's LF writers.
 # Keep checkout line endings identical on Windows, macOS and Linux.
 tests/golden/** text eol=lf
+
+# The shipped viewer bundle is compared byte-for-byte with a fresh Linux build.
+prism/viewer_dist/** text eol=lf

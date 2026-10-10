@@ -104,16 +104,18 @@ def decide(raw_stdin: str, now: float | None = None) -> str:
         except (OSError, ValueError):
             state = {}
         key = target.resolve().as_posix()
-        entry = state.get(key)
-        fresh = (
-            isinstance(entry, dict)
-            and entry.get("m") == stat.st_mtime_ns
-            and entry.get("s") == stat.st_size
-            and 0 <= now - float(entry.get("t", 0)) < EXPIRY_SECONDS
-        )
-        if event == "PreToolUse" and fresh and lo <= entry.get("total", 0):
+        raw = state.get(key)
+        entry: dict[str, Any] | None = None
+        if (
+            isinstance(raw, dict)
+            and raw.get("m") == stat.st_mtime_ns
+            and raw.get("s") == stat.st_size
+            and 0 <= now - float(raw.get("t", 0)) < EXPIRY_SECONDS
+        ):
+            entry = raw
+        if event == "PreToolUse" and entry is not None and lo <= entry.get("total", 0):
             hi = min(hi, entry["total"])
-        if event == "PreToolUse" and fresh and _covered(entry["cov"], lo, hi):
+        if event == "PreToolUse" and entry is not None and _covered(entry["cov"], lo, hi):
             try:
                 shown = target.relative_to(root).as_posix()
             except ValueError:
@@ -133,12 +135,12 @@ def decide(raw_stdin: str, now: float | None = None) -> str:
             )
         if event == "PreToolUse":
             return ""  # permission denial or a failed Read must leave no coverage
-        coverage = entry["cov"] if fresh else []
+        coverage = entry["cov"] if entry is not None else []
         state[key] = {
             "m": stat.st_mtime_ns,
             "s": stat.st_size,
             "total": total,
-            "t": entry["t"] if fresh else now,
+            "t": entry["t"] if entry is not None else now,
             "cov": _merge([*coverage, [lo, hi]]),
         }
         if len(state) > MAX_FILES:
