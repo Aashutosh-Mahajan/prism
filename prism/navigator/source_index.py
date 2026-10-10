@@ -96,12 +96,12 @@ class SourceIndex:
         self._text: Any = None
         try:
             self._sync()
+            n_docs, avg_len = self._conn.execute(
+                "SELECT COUNT(*), COALESCE(AVG(length),0) FROM files WHERE length > 0"
+            ).fetchone()
         except BaseException:
             self._conn.close()
             raise
-        n_docs, avg_len = self._conn.execute(
-            "SELECT COUNT(*), COALESCE(AVG(length),0) FROM files WHERE length > 0"
-        ).fetchone()
         self.n_docs: int = n_docs
         self.avg_len: float = avg_len
 

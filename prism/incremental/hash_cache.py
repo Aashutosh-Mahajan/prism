@@ -60,10 +60,14 @@ class StateCache:
         path = root / AICONTEXT / "cache" / "state.sqlite"
         path.parent.mkdir(parents=True, exist_ok=True)
         self.conn = sqlite3.connect(path)
-        self.conn.execute(
-            "CREATE TABLE IF NOT EXISTS parsed (path TEXT PRIMARY KEY, sha TEXT, version TEXT, data TEXT)"
-        )
-        self.conn.execute("CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT)")
+        try:
+            self.conn.execute(
+                "CREATE TABLE IF NOT EXISTS parsed (path TEXT PRIMARY KEY, sha TEXT, version TEXT, data TEXT)"
+            )
+            self.conn.execute("CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT)")
+        except BaseException:
+            self.conn.close()  # a locked or damaged cache must not leak the handle
+            raise
 
     def close(self) -> None:
         self.conn.commit()

@@ -285,15 +285,15 @@ def ranking(
 ) -> list[tuple[str, float]]:
     """Symbols most similar to `query` as (id, cosine), best first. Empty when the channel is
     unavailable (not enabled, no model, cache cold): retrieval then works lexically as before."""
-    import numpy as np
-
     if embedder is None:
         if not semantic_enabled(store.root):
-            return []
+            return []  # before numpy: a disabled channel must not pay its import
         try:
             embedder = get_embedder(semantic_model(store.root))
         except Exception:
             return []
+    import numpy as np
+
     found = vectors(store, embedder, max_new)
     if found is None or not found[0]:
         return []
