@@ -417,7 +417,16 @@ def build_server(root: Path, profile: str | None = None) -> Any:
         return render_task(pack)
 
     for name in enabled_tools(tools.root, profile):
-        server.tool(name=name)(task if name == "prism_task" else getattr(tools, name))
+        handler = task if name == "prism_task" else getattr(tools, name)
+        if name == "prism_task":
+            # The handler returns finished text or a ready result: an SDK that derives an
+            # output schema from its annotation would reject the ready result (Python 3.10).
+            try:
+                server.tool(name=name, structured_output=False)(handler)
+                continue
+            except TypeError:  # pragma: no cover - SDK without structured_output
+                pass
+        server.tool(name=name)(handler)
     return server
 
 
