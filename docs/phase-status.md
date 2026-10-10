@@ -1,5 +1,25 @@
 # Implementation status against CLAUDE.md
 
+## P0 delivery reliability — 2026-10-10
+
+Follows [the token-efficiency research](prism-token-research-2026-10-10.md).
+
+- Installed guidance names only the selected transport: MCP installs no longer mention a CLI
+  fallback that may not exist; non-MCP installs no longer mention MCP tools.
+- Hook-supplied context is reused rather than retrieved again. Implicit reuse stops when the
+  session is ambiguous (two chats in one repo); explicit session IDs still reuse.
+- Requests that add a new type or name no longer rank by that name's existing occurrences
+  (the Flask `PurePath` detour); offline regression in `tests/unit/test_addition_retrieval.py`.
+- `Edit-ready` is scoped to the searched text. Literal completeness does not claim behaviour.
+- A failed `prism_task` MCP call is logged as an undelivered `mcp` delivery.
+- MCP instructions shortened to stay inside the 330-token lean-profile test.
+- Validation: full suite passes (excluding benchmarks), Ruff and strict mypy clean.
+
+Not measured: live token use or success rate for any of this. No fresh installed-host run,
+and no real Flask snapshot was available locally (the replay is a synthetic reproduction).
+Delivery accounting vocabulary (cache categories counted once, unknown usage kept unknown)
+in `tests/benchmarks/agent_stats.py` was not revisited.
+
 ## Phase 7 follow-up — 2026-10-10
 
 The research-driven packet, patch, search, overview and host-hook implementation has been
