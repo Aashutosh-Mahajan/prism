@@ -175,11 +175,40 @@ def test_concurrent_updaters_end_with_a_consistent_index(repo: Path) -> None:
 def test_session_remembers_returned_code_across_cli_calls(repo: Path) -> None:
     args = ["task", "apply_discount", "--root", str(repo), "--session", "s1", "--json"]
     first = json.loads(runner.invoke(app, args).output)
-    again = json.loads(runner.invoke(app, args).output)
+    # A *different* next request proves the first reply was received, so overlapping code is
+    # returned as a reference instead of being sent again.
+    follow = [*args[:1], "where is apply_discount used", *args[2:]]
+    again = json.loads(runner.invoke(app, follow).output)
     other = json.loads(runner.invoke(app, [*args[:-3], "--session", "s2", "--json"]).output)
     assert any("source" in b for b in first["blocks"])
-    assert all(b.get("seen") and "source" not in b for b in again["blocks"])
+    assert any(b.get("seen") for b in again["blocks"])
     assert any("source" in b for b in other["blocks"])  # a different session sees it afresh
+
+
+def test_identical_retry_resends_source_because_the_reply_may_have_been_lost(repo: Path) -> None:
+    args = ["task", "apply_discount", "--root", str(repo), "--session", "retry", "--json"]
+    first = json.loads(runner.invoke(app, args).output)
+    retry = json.loads(
+        runner.invoke(app, args).output
+    )  # same request again: reply may never have arrived
+    assert any("source" in b for b in first["blocks"])
+    assert any("source" in b for b in retry["blocks"])
+    assert not any(b.get("seen") for b in retry["blocks"])
+
+
+def test_unread_reply_is_never_treated_as_delivered_across_a_new_session_file(repo: Path) -> None:
+    from prism.navigator.session import load_seen, save_seen
+
+    store_root = repo
+    manifest = json.loads((repo / ".aicontext" / "manifest.json").read_text(encoding="utf-8"))
+    some = next(iter(manifest["files"]))
+    save_seen(store_root, "p", {(some, 1, 3)}, manifest, "query one", set())
+    assert load_seen(store_root, "p", manifest) == set()  # pending: not delivered
+    assert load_seen(store_root, "p", manifest, "query one") == set()  # identical retry: dropped
+    save_seen(store_root, "p", {(some, 1, 3)}, manifest, "query one", set())
+    assert load_seen(store_root, "p", manifest, "query two") == {
+        (some, 1, 3)
+    }  # new request commits
 
 
 def test_compact_brief_drops_overview_and_placeholders(repo: Path) -> None:

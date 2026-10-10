@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from prism.core.errors import NotFoundError
+from prism.core.errors import NotFoundError, UserError
 from prism.core.paths import AICONTEXT
 from prism.navigator.context_pack import DEFAULT_BUDGET, build_context
 from prism.navigator.impact import DEFAULT_DEPTH, impact
@@ -17,6 +17,8 @@ from prism.navigator.resolve import locate, resolve_target
 from prism.navigator.store import IndexStore
 from prism.status import compute_status
 from prism.writers.activity import record_activity
+
+BRIEF_BUDGET = 800  # `--detail brief`: sites and tests only, no map of callers
 
 
 def op_locate(store: IndexStore, name: str, limit: int = 10) -> dict[str, Any]:
@@ -48,9 +50,16 @@ def op_task(
     budget: int = 2000,
     seen: set[tuple[str, int, int]] | None = None,
     mode: str = "auto",
+    session: str | None = None,
+    use_cache: bool = True,
+    detail: str = "full",
 ) -> dict[str, Any]:
     """One-call retrieval for a request. `seen` (a session's already-returned code ranges)
-    makes repeats cost a reference line instead of the source again."""
+    makes repeats cost a reference line instead of the source again. Earlier sessions (other
+    than `session`) that changed the same code are noted when the line fits the budget."""
+    if mode == "verify":
+        return _verify(store, query, budget, session)
+    from prism.navigator.semantic import semantic_enabled
     from prism.navigator.task_pack import build_task
     from prism.writers.task_cache import (
         load_packet,
@@ -60,20 +69,91 @@ def op_task(
         source_stamp,
     )
 
-    stamp = source_stamp(store.root, store.manifest) if seen is None else None
-    path = packet_path(store.root, stamp, query.strip(), budget, mode) if stamp else None
-    pack = load_packet(path) if path else None
-    if pack is not None and not packet_current(store.root, store.manifest, pack):
-        pack = None
+    if detail not in ("full", "brief"):
+        raise UserError("task detail must be full or brief")
+    if detail == "brief":
+        budget = min(budget, BRIEF_BUDGET)
+    stamp = source_stamp(store.root, store.manifest) if seen is None and use_cache else None
+    # Answers with and without the embedding channel differ, so they are cached apart.
+    cache_mode = f"{mode}+semantic" if semantic_enabled(store.root) else mode
+    cache_mode = f"{cache_mode}+{detail}"
+    path = packet_path(store.root, stamp, query.strip(), budget, cache_mode) if stamp else None
+    cached = load_packet(path) if path else None
+    pack = None
+    if cached is not None and packet_current(store.root, store.manifest, cached[0], cached[1]):
+        pack = cached[0]
+        offered = (pack.get("patch") or {}).get("path")
+        if offered and not (store.root / offered).is_file():
+            pack = None  # the patch file was pruned: build the packet (and the patch) again
     if pack is None:
-        pack = build_task(store, query, budget, seen, mode)
+        pack = build_task(store, query, budget, seen, mode, detail)
         if (
             path
             and not pack.get("stale_sources")
             and source_stamp(store.root, store.manifest) == stamp
         ):
-            save_packet(path, pack)
+            save_packet(path, pack, store.root, store.manifest)
     record_activity(store.root, "task", [b["symbol"] for b in pack["blocks"] if b["symbol"]])
+    return _with_history(store, pack, session)
+
+
+def _verify(store: IndexStore, query: str, budget: int, session: str | None) -> dict[str, Any]:
+    """After editing: the same request again, reduced to the exact sites that still match.
+
+    It re-reads the working tree (queries refresh the index first), so a changed value that is
+    still present anywhere shows up with its file and line, with no grep and no source blocks."""
+    pack = op_task(store, query, max(budget, 1600), None, "auto", session, use_cache=False)
+    # A generic phrase of the request ("minimum doctor age") legitimately remains after the edit.
+    literals = [
+        lit for lit in pack.get("literals", []) if lit["kind"] not in ("identifier", "phrase")
+    ]
+    remaining = sum(lit["total"] for lit in literals)
+    verify: dict[str, Any] = {
+        "query": pack.get("query", query),
+        "intent": "verify",
+        "blocks": [],
+        "stale_sources": pack.get("stale_sources", 0),
+        "confidence": pack.get("confidence", "low"),
+        "sufficient": bool(literals) is False,
+        "budget": pack["budget"],
+    }
+    if literals:
+        verify["literals"] = literals
+        verify["next"] = (
+            f"{remaining} site(s) still match the old value: change the ones that belong to "
+            "this request, then verify again."
+        )
+    else:
+        verify["next"] = "No remaining matches of the old value(s) in the indexed source."
+    from prism.navigator.task_pack import _size
+
+    verify["budget"] = dict(pack["budget"], used_est=_size(verify))
+    return verify
+
+
+def _with_history(store: IndexStore, pack: dict[str, Any], session: str | None) -> dict[str, Any]:
+    """Attach `history` lines (time-relative, so never part of a cached packet) within budget."""
+    from prism.navigator.recall import related_history
+    from prism.navigator.task_pack import _size
+
+    blocks = pack["blocks"][:2]
+    lines = related_history(
+        store.root,
+        {b["file"] for b in blocks},
+        {b["symbol"] for b in blocks if b["symbol"]},
+        exclude=session,
+    )
+    if not lines:
+        return pack
+    pack = dict(pack, budget=dict(pack["budget"]))
+    while lines:
+        pack["history"] = lines
+        if _size(pack) <= pack["budget"]["requested"]:
+            pack["budget"]["used_est"] = _size(pack)
+            return pack
+        lines = lines[:-1]
+    del pack["history"]
+    pack["budget"]["used_est"] = _size(pack)
     return pack
 
 

@@ -50,6 +50,12 @@ def warm_caches(root: Path) -> None:
             store.close()
     except Exception:
         return
+    try:
+        from prism.navigator.semantic import warm_vectors
+
+        warm_vectors(root)  # only embeds when the user enabled semantic retrieval
+    except Exception:
+        return
 
 
 def refresh_if_stale(

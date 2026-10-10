@@ -264,6 +264,9 @@ def test_native_mcp_compact_text_matches_cli(small_repo: Path) -> None:
         )
         if structured is None:
             structured = getattr(raw, "structuredContent", None)
+        if structured is None:  # one copy only, as text content
+            blocks = raw[0] if isinstance(raw, tuple) else raw.content
+            structured = json.loads("".join(b.text for b in blocks if hasattr(b, "text")))
         assert structured["blocks"]
 
     asyncio.run(scenario())

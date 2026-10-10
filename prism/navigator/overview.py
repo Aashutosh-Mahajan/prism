@@ -57,7 +57,7 @@ def overview_items(store: IndexStore, reader: SourceReader, query: str) -> dict[
     """Return bounded candidates; the task assembler fits every row to its budget."""
     terms = {
         term
-        for word in re.findall(r"[A-Za-z0-9]+", query)
+        for word in re.findall(r"[^\W_]+", query)
         if word.lower() not in FILLER_WORDS
         for term in tokenize(word)
         if word.lower() not in _MAP_WORDS
@@ -78,7 +78,12 @@ def overview_items(store: IndexStore, reader: SourceReader, query: str) -> dict[
         modules, key=lambda m: (-scores[m.file], not bool(m.entry_point), -m.rank, m.file)
     )
     if terms:
-        ranked = [m for m in ranked if scores[m.file] > 0]
+        matching = [m for m in ranked if scores[m.file] > 0]
+        # Words that name nothing in the repository ("explain", "components") must not leave the
+        # map empty: with no match at all, show the global map.
+        ranked = matching or ranked
+        if not matching:
+            terms = set()
     selected: list[ModuleRow] = []
     # Global maps represent distinct directories before taking more files from
     # a central package; PageRank alone can let one utility own the whole map.

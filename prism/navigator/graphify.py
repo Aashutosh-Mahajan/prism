@@ -114,7 +114,7 @@ class GraphifyGraph:
         terms = sorted(
             {
                 term
-                for word in re.findall(r"[A-Za-z0-9]+", query)
+                for word in re.findall(r"[^\W_]+", query)
                 if word.lower() not in FILLER_WORDS
                 for term in tokenize(word)
                 if term not in _RELATION_WORDS
