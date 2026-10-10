@@ -198,5 +198,101 @@
     10
    ]
   ]
+ },
+ {
+  "repo": "small",
+  "tier": "paraphrase",
+  "kind": "paraphrase",
+  "query": "how is an amount rounded when it is multiplied",
+  "expect": [
+   [
+    "src/shop/money.py",
+    15
+   ]
+  ]
+ },
+ {
+  "repo": "small",
+  "tier": "paraphrase",
+  "kind": "paraphrase",
+  "query": "charge the customer at checkout and return the transaction reference",
+  "expect": [
+   [
+    "src/shop/checkout/payment.py",
+    11
+   ]
+  ]
+ },
+ {
+  "repo": "small",
+  "tier": "paraphrase",
+  "kind": "paraphrase",
+  "query": "split a list into fixed-size groups",
+  "expect": [
+   [
+    "src/shop/utils.py",
+    11
+   ]
+  ]
+ },
+ {
+  "repo": "small",
+  "tier": "paraphrase",
+  "kind": "paraphrase",
+  "query": "which promotions qualify given how much the shopper spent",
+  "expect": [
+   [
+    "src/shop/pricing/rules.py",
+    19
+   ]
+  ]
+ },
+ {
+  "repo": "seeded",
+  "tier": "paraphrase",
+  "kind": "paraphrase",
+  "query": "pagination of the account statement",
+  "expect": [
+   [
+    "ledger/report.py",
+    6
+   ]
+  ]
+ },
+ {
+  "repo": "seeded",
+  "tier": "paraphrase",
+  "kind": "paraphrase",
+  "query": "persist a new transaction row to the database",
+  "expect": [
+   [
+    "ledger/storage.py",
+    17
+   ]
+  ]
+ },
+ {
+  "repo": "seeded",
+  "tier": "paraphrase",
+  "kind": "paraphrase",
+  "query": "convert a dollar amount to whole integer pennies",
+  "expect": [
+   [
+    "ledger/utils.py",
+    10
+   ]
+  ]
+ },
+ {
+  "repo": "seeded",
+  "tier": "paraphrase",
+  "kind": "paraphrase",
+  "query": "open the sqlite database file",
+  "expect": [
+   [
+    "ledger/storage.py",
+    6
+   ]
+  ]
  }
 ]
