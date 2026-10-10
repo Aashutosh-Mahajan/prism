@@ -43,9 +43,12 @@ page says it can't reach the server, restart `prism view` and open the new link 
 └──────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Drawer (left):** the *Nodes* tab is a searchable, sortable list of every node on screen
-  (most important, most depended on, riskiest, largest, name). *Explore* holds filters, focus,
-  overlays, the path finder, layout controls and saved views.
+- **Drawer (left):** *Overview* summarises the view before you click anything: counts, the
+  areas of the repository as one colour bar, the most depended-on code, import cycles, the
+  riskiest code, entry points and unconnected nodes, each one click from the graph. *Nodes* is a
+  searchable, sortable list of every node on screen (most important, most depended on, riskiest,
+  largest, name). *Explore* holds filters, focus, overlays, the path finder, forces, display
+  settings and saved views.
 - **Stage (centre):** the graph, a scope line with breadcrumbs, the legend card where you pick
   colour and size encodings, and zoom controls.
 - **Inspector (right):** details of the selected node.
@@ -125,13 +128,35 @@ Saved views store filters, encodings, focus and camera under a name, in
 
 ## Layout
 
-Nodes start grouped by package in a deterministic arrangement, then a ForceAtlas2 layout refines
-it in a Web Worker for a bounded time and stops. Positions are saved to
-`.aicontext/cache/layout.json`, so the map is stable between sessions and new nodes appear next
-to their neighbours.
+Two arrangements, switched at the top right of the canvas (or with `A`):
 
-Under *Layout* you can keep arranging (Space), tune pull to centre, spread, link strength and
-settling speed, tighten clusters, rearrange from scratch, and unpin nodes you dragged into place.
+- **Network** behaves like Obsidian's graph view. A live force simulation (d3-force) settles the
+  graph into a round cloud: related code pulls together, unconnected nodes orbit the edge.
+  Drag a node and its neighbours follow; let go and the graph settles again. Every node is a
+  plain dot sized by importance, links are thin lines (arrows optional), and labels sit under
+  the nodes and fade in as you zoom. Hovering a node keeps it and its neighbours lit and dims
+  the rest.
+- **Layers** draws the architecture: one band per dependency tier, *Foundations* (code that
+  depends on nothing in view) at the bottom and *Entry points* at the top, with cycles sharing a
+  band. Rows are ordered to avoid crossing links and wrap to the canvas width.
+
+Views open with a short bloom (new nodes fan out from where you came from, such as the package
+you opened). Settled network positions are saved to `.aicontext/cache/layout.json`, so the map
+is stable between sessions; a saved layout that never unfolded is ignored.
+
+*Explore → Forces* has Obsidian's controls: centre force, repel force, link force and link
+distance, *Keep moving* (Space), *Animate* (settle again from scratch) and *Unpin all*.
+*Display* sets arrows, the text fade threshold, node size and link thickness. Both are
+remembered in your browser.
+
+## Areas and tiers
+
+Nodes are coloured by **area** by default: the top-level part of the repository a file belongs
+to (`prism/hooks`, `tests`, `viewer`; a dominant top folder or a container such as `src/` is
+split one level down). Files outside Python packages (TypeScript, Go, scripts) are grouped by
+folder at the *Packages* level, so a folder is one package rather than one per file. On
+directed layers (imports, calls, routes) every node also has a **tier**, shown in the hover card
+and inspector, and used by the *Layers* arrangement.
 
 ## Live updates
 
@@ -182,7 +207,7 @@ flowchart LR
         UI["UI modules<br/>inspector · node list · search ·<br/>controls · legend"]
         APP["App core<br/>state · loading · overlays"]
         R["Sigma.js WebGL renderer"]
-        L["ForceAtlas2<br/>Web Worker"]
+        L["d3-force simulation<br/>· layered layout"]
         UI <--> APP --> R
         APP <--> L
     end

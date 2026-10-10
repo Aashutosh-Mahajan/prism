@@ -74,6 +74,22 @@ consent, freshness, artifact integrity, MCP SDK, git, parsers and the viewer bun
  ✓ viewer bundle    present
 ```
 
+### `prism doctor --session ID|latest`
+
+Was PRISM used in one agent session, and if not, why not: whether the prompt hook fired (and why
+it stayed silent), how many `prism task` / `prism_task` calls the agent made, which hook config
+files exist, and a one-line verdict. Reads the local work log, so it works for sessions in which
+the hooks ran.
+
+### `prism filter -- <command>`
+
+Run a command and print only what matters of its output: pytest, jest/vitest/mocha, flutter, go,
+cargo, npm/yarn installs and builds, and git. Failure lines (and 3 lines around each) are never
+dropped; output under 60 lines is unchanged; `git diff`/`log` are never cut in the middle. The
+full output is saved under `.aicontext/cache/tee/` and its path is printed last; the exit status
+is the command's own. Active only where PRISM is enabled for you, otherwise it just runs the
+command. See `docs/adr/0004-output-filtering.md`.
+
 ## Index
 
 ### `prism scan [--full] [--json]`
@@ -122,7 +138,7 @@ languages and top modules. Default budget 600 estimated tokens. This is an on-de
 not an extra orientation step before editing. Use `prism task` for the requested change.
 `prism_knowledge` is available in the full MCP profile.
 
-### `prism task "<request>" [--mode auto|overview|code] [--budget N] [--session ID] [--json]`
+### `prism task "<request>" [--mode auto|overview|code|verify] [--detail full|brief] [--budget N] [--session ID] [--json]`
 
 Start a coding task with one local call. Pass the request in the user's own words, a symbol
 name, or a file path. `auto` selects a signature/relationship map for architecture requests
@@ -183,6 +199,53 @@ Targets for the follow-up commands can be a symbol id (`shop.pricing.discounts.a
 a file path, `file:line`, a module, or a route (`"GET /orders"`). An ambiguous target returns
 ranked candidates instead of guessing.
 
+Further lines a packet can carry (edit requests; each only when it fits the budget):
+
+- **Patch**: for an explicit old → new change ("from 23 to 25", "rename a to b") at sites the
+  exact-match search listed exhaustively, a unified diff written under
+  `.aicontext/cache/patches/` and checked with `git apply --check`. The packet prints the one
+  command that applies it: `git -c core.autocrlf=false apply <path>` (byte-exact, so Windows line-ending
+  conversion cannot rewrite whole files). PRISM only writes the patch text into its own cache; it never edits
+  a source file. Nothing is offered when the old value has no complete list, a new name already
+  exists, or a listed line no longer matches the index.
+- **Twins**: the same function (same name and signature, bodies at least 65–80% alike) defined in
+  more than one file; the change usually belongs in all of them. Generic names (`get`, `run`) and
+  names defined in more than six places are ignored.
+- **Large files, read only**: `offset`/`limit` windows around the listed sites in files over 600
+  lines, so a 1,700-line locale file is not read whole.
+- **Batch** and **Done when**: the listed files are independent (read and edit them together in one turn),
+  and the condition that ends the task.
+- Archived or vendored code (`archive/`, `legacy/`, `vendor/`) and the other area of a monorepo
+  than the request names (frontend when it says backend) rank lower. Related tests fall back to the
+  nearest test file when nothing links to the code.
+
+`--detail brief` (MCP `detail="brief"`) returns sites and tests only, at most 800 tokens.
+`--mode verify` re-asks the request after editing and lists only the sites that still match the
+old value (numbers and quantities); it never uses the packet cache.
+
+### `prism find PATTERN... [--regex] [-i] [--glob G] [--budget N] [--json]`
+
+Up to eight searches in one call, over the indexed code and the text/data files (translations,
+config, docs). Substring by default (`--regex` for expressions), grouped by file with the exact
+lines, application code before tests, archives and migrations, and cut to `--budget` (default
+1,500 tokens) with a count of what was left out. One call replaces several greps, each of which
+would carry the whole conversation again. MCP: `prism_find` (standard and full profiles).
+
+### `prism diff "<request>" [--show] [--json]`
+
+Write the checked patch for a request without the rest of the packet and print the command that
+applies it (see **Patch** above). Prints why when there is nothing safe to offer.
+
+### `prism note "<text>" [--session ID]`
+
+Leave a one-line handoff for the next session: what changed, what is left, what to watch for
+(at most 600 characters). Stored in the local work log; see [configuration](configuration.md#work-log).
+
+### `prism recall [QUERY] [--limit N] [--json]`
+
+Earlier sessions from the work log, most recent first, or those whose requests, notes, files
+or symbols match `QUERY`: what was asked, which files and functions were edited, and notes.
+
 ### `prism brief [--full]`
 
 Print the compact session brief and a one-line freshness status. This is what the session-start
@@ -195,7 +258,7 @@ tokens every turn). `--full` prints the whole `.aicontext/AGENTS.md`.
 
 Ranked free-text search over names, qualified ids, docstrings, paths and routes (BM25, local).
 `--limit` 1–100, default 10. `--semantic` blends in a local embedding model and needs
-`prism-ctx[semantic]`.
+`prism-ctx[semantic]` (see [semantic retrieval](configuration.md#semantic-retrieval)).
 
 ### `prism locate NAME [--limit N] [--json]`
 
@@ -283,9 +346,10 @@ Mermaid and DOT exports without `--around` are capped at 150 nodes to stay reada
 
 | Command | Used by |
 |---|---|
-| `prism mcp [--profile lean\|full]` | The agent, from `.mcp.json`: runs the MCP server over stdio. `lean` (default) exposes `prism_status`, `prism_task`, `prism_context`, `prism_impact`; `full` adds search, locate, brief, module and the refresh/audit/decision tools. Also `PRISM_MCP_PROFILE`. |
+| `prism mcp [--profile lean\|standard\|full]` | The agent, from `.mcp.json`: runs the MCP server over stdio. `lean` (default) exposes only `prism_task` (its schema is re-sent on every model call, so it stays tiny); `standard` adds `prism_status`, `prism_context`, `prism_impact`; `full` adds search, locate, brief, module and the refresh/audit/decision tools. Also `PRISM_MCP_PROFILE`. |
 | `prism hook session-start [--format text\|json\|cursor] [--event NAME]` | Session-start hook: consent check, catch-up update, prints the compact brief |
 | `prism hook user-prompt [--format ...] [--event NAME]` | Prompt hook: looks up the user's request and adds the matching code to the prompt; silent when there is nothing worth adding |
+| `prism hook pre-invocation` · `prism hook stop` | Antigravity: the first injects the packet for the user's request as a persistent message; the second, when a value change still leaves the old value in the code, sends the agent back once with the remaining lines |
 | `prism hook post-edit` | Post-edit hook: starts an index update for the edited files in a detached process and returns at once; silent, always exits 0 |
 
 `--format text` prints plain context (Claude Code); `json` prints

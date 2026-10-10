@@ -216,6 +216,38 @@ to `.aicontext/cache/hook.log`), and do nothing if PRISM is missing, not enabled
   `prism update` for it in a detached process and returns immediately. A question asked before it
   finishes waits for the same lock and then sees the edit.
 
+## Finish-time check and read dedupe
+
+- **Stop hook** (`prism hook stop`; Claude Code, Codex, Antigravity): for a request that changes a
+  value everywhere it appears, the prompt hook notes that its answer was an exhaustive list. When
+  the agent is about to finish, the hook re-runs the request in verify mode; if the old number or quantity
+  is still in the code, it sends the agent back **once** with the remaining lines, otherwise it says
+  nothing and costs nothing. It never loops (`stop_hook_active` is honoured) and protects the result
+  rather than shortening the session. Verified against Codex 0.162 and documented for Claude Code.
+- **Read dedupe** (`prism hook dedupe-read`; Claude Code `PreToolUse` on `Read`; install with
+  `prism init --dedupe-reads`, off by default): refuses a re-read of an unchanged range the agent
+  already has, with a reason saying so. It only ever **denies**; it never approves a call, so it cannot widen
+  what the agent may do. Entries expire after 20 minutes (a compaction may have dropped the text), an edited
+  file is always readable, and `PRISM_DEDUPE=0` switches it off. A matching `PostToolUse`
+  hook records only text actually returned by a successful read; failed or denied reads never
+  block a retry. `SessionStart` clears coverage on startup, resume, clear and compaction.
+  Unknown response formats remain readable. Reinstall the integration to add these companion hooks.
+- **Skills**: only `prism-context` is installed by default, because every skill's name and description sit
+  in the agent's context on every call. `prism init --all-skills` adds audit, refresh and decisions.
+
+## Settings that belong to the host
+
+PRISM cannot change these, but they matter for cost:
+
+- **Claude Code**: route exploration to a cheaper model (`CLAUDE_CODE_SUBAGENT_MODEL=haiku`, or a
+  `model:` in a subagent file). Delegation overhead can outweigh the saving on small tasks.
+- **Codex**: `model_reasoning_effort` and `model_verbosity` are cost levers; a compaction replaces the cached prefix
+  and each retry re-sends the whole context; AGENTS.md stops being read at 32 KiB (`project_doc_max_bytes`).
+  MCP tools are loaded on demand, so an agent only finds `prism_task` if it searches for it: the prompt hook is the
+  reliable delivery there.
+- **Gemini CLI**: prompt caching applies with API-key authentication, and short prompts under the model's minimum
+  (4,096 tokens on newer Flash models) do not qualify.
+
 ## Consent
 
 PRISM runs in a repository only after a user enables it there, and each user decides for

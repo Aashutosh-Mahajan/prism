@@ -7,6 +7,89 @@ All notable changes to PRISM are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Delivery parity: CLI and MCP return identical packet text (`tests/integration/test_surface_parity.py`);
+  a tool call after the prompt hook shares the hook's session, so delivered code is a reference.
+- MCP default profile is one tool, `prism_task` (`standard` adds status/context/impact).
+- `prism doctor --session ID|latest`: whether PRISM was used in an agent session and why not.
+- `prism filter -- <command>`: shortened test/build/git output that never drops a failure line,
+  with the full output saved under `.aicontext/cache/tee/`.
+- Packets name the exact test command (`Run: ...`); literal lists are grouped per file and a
+  complete list may use up to 80% of the budget before occurrences are dropped.
+- Antigravity: a `Stop` hook (`prism hook stop`) that sends the agent back once when a value
+  change still leaves the old value in the code.
+- Dart, Kotlin and Swift symbols, imports and calls (dependency-free declaration scanner).
+- Warm local query process (`daemon = false` / `PRISM_DAEMON=0` to disable) and a light
+  `prism task` entry that skips loading the full command line when it is running.
+- Local ranking feedback from edits (`ranking_feedback = false` / `PRISM_FEEDBACK=0` to disable).
+- ADRs 0003 (warm process), 0004 (output filtering), 0005 (ranking feedback).
+- Benchmark runner support for parallel sessions with a private agent home per session.
+
+- Packets: **Patch** (a checked, byte-exact diff for an explicit old → new change at the exhaustive sites, applied
+  with one `git -c core.autocrlf=false apply`), **Twins** (the same function defined in several files), **Large
+  files, read only** windows, **Batch** and **Done when** lines, archive/other-area demotion, nearest-test fallback.
+- `prism find` (several searches in one call), `prism diff` (the patch alone), `prism task --detail brief`, MCP
+  `prism_find` and `detail`.
+- Finish-time check (`prism hook stop`) for Claude Code and Codex as well as Antigravity; opt-in `prism hook
+  dedupe-read` (deny-only) and `prism init --dedupe-reads`; `prism init --all-skills` (only `prism-context` is
+  installed by default).
+- The prompt hook answers "explain the architecture" requests with the map (`prompt_overview`); the hook waits up
+  to 16 s (installed timeouts 20 s).
+- `prism doctor` warns when a managed instruction block is older than the running engine.
+- Benchmark tooling: `analyze.py` (bootstrap intervals, pass^k, tokens per solved task), campaign folder and repository
+  name overrides, hook-delivery records for every runner.
+
+### Fixed
+- Read dedupe remembers successful returned ranges rather than attempted reads, expires old
+  coverage without extending it on new reads, and resets after compaction/resume.
+- Test selection follows caller distance, includes unmapped fallback tests and discloses missing
+  tests; an unrelated subproject's runner is never used, and test paths with spaces are quoted.
+- Nested Git boundaries prevent ancestor-index discovery and ancestor-hook installation.
+  Generated diffs include Git's subdirectory prefix and a skipped empty check is rejected.
+- Scattered read hints remain bounded; numeric patch substitutions preserve decimal prefixes
+  and multiple replacements cannot cascade into each other's newly written values.
+- Added a balanced-session benchmark diagnostic with actual task-cluster resampling,
+  missing-cell rejection, failure costs and explicit input/output token accounting.
+- Cached task packets that quoted a translation, config or docs file (anything the code index
+  does not list) were never served, so every such request was rebuilt. They are now verified by
+  stored content hashes and served in about 0.04 s on a warm process. `--mode verify` never uses
+  the packet cache.
+- A block of a packet could be marked "shown earlier" because of another block of the same
+  packet whenever a session was active.
+- The overview map was empty when the request contained words that match nothing in the repository ("explain",
+  "components"); it now falls back to the global map. `prism find --glob 'x/*'` no longer has its wildcard expanded by
+  click on Windows.
+- A gate or verify result no longer counts generic words of the request ("minimum doctor age") as the old value.
+- Compact JSON is what the packet budget is measured against (indentation no longer shrinks the
+  text form); `--json` output of `prism task` is compact.
+- The directory tree was walked twice per query; stemming and tokenizing are cached.
+
+### Added (earlier)
+- Graph viewer: an Obsidian-style network arrangement (live d3-force simulation with centre,
+  repel, link force and link distance; neighbours follow a dragged node; labels under nodes fade
+  in with zoom; plain dots; optional arrows) and a *Layers* arrangement that draws dependency
+  tiers as bands from foundations to entry points. An *Overview* tab names the most depended-on
+  code, cycles, riskiest code, entry points and unconnected nodes. Nodes carry an `area` (colour
+  by default) and, on directed layers, a dependency `tier`; payloads report `tiers`.
+- Viewer motion: an intro in which a beam splits through a prism, views that bloom out of the
+  package being opened, animated layout switches, and a light layer (selection ring, flows along
+  the selected node's links, blast-radius ripples, live-update shockwaves). Reduced motion is
+  respected throughout.
+- Work log: hooks record each session's requests, edited files (resolved to functions) and
+  retrieved symbols in `.aicontext/cache/worklog/` (local, gitignored, pruned after 30 days).
+  The session-start brief adds a short summary of the most recent other session (≤ about 140
+  tokens), task answers note earlier work on the same code when it fits the budget, and
+  `prism note` / `prism recall` (MCP full profile: `prism_note`, `prism_recall`) add handoff
+  notes and search older sessions. `worklog = false` or `PRISM_WORKLOG=0` turns it off.
+- Optional semantic channel in `prism task` and the prompt hook (`semantic = true`): local
+  embeddings of each symbol's name words, signature, docstring and first body lines are fused
+  with lexical evidence. On the retrieval benchmark, paraphrased requests located 62% → 88%
+  with no regression elsewhere (all cases 82% → 91%). Similarity-only blocks are marked
+  `similar` and capped at medium confidence.
+- A NumPy implementation of mean-pooled BERT sentence encoders (the default MiniLM model),
+  numerically identical to sentence-transformers (max abs. difference ~1e-7), loading in
+  about 0.2 s instead of importing PyTorch. `prism-ctx[semantic]` no longer needs PyTorch;
+  `prism-ctx[semantic-full]` keeps sentence-transformers for other models.
+- Incremental vector cache keyed by embedded-text hash; queries never embed the repository.
 - Adaptive prompt delivery starts small and expands within the configured cap only when it
   completes edit evidence; undelivered attempts cannot consume session ranges. Default cap:
   2,000 estimated tokens. Explicit lower caps remain supported.
@@ -71,6 +154,16 @@ All notable changes to PRISM are documented here. The format follows
   contributing guide, security policy and code of conduct.
 
 ### Changed
+- Viewer packages group files outside Python packages by folder (a TypeScript or Go folder is
+  one package, not one per file); on this repository, 106 package nodes became 27.
+- The viewer's own detail, search and impact lookups are no longer written to the agent activity
+  trail, which had made the viewer report its user's clicks as agent activity.
+- `graphology-layout-forceatlas2` is replaced by `d3-force` in the viewer bundle.
+- One-file index update on the 124k-line benchmark: 0.77 s → 0.42–0.43 s (target ≤ 0.5 s met);
+  the no-change check run before every query: 52 ms → 10–20 ms; full scan 15.6 s → 9.9 s.
+  Discovery reuses directory-listing stat data, skips reading files whose extension is never
+  indexed, and HEAD is read from `.git` instead of spawning git (falling back to git for
+  unusual layouts).
 - The session brief an agent receives is compact (languages, commands, anything written by a
   human or agent, one line on using PRISM; ~100-150 tokens). Generated overviews, key
   dependencies, entry points, module rankings and placeholders are no longer injected, and the

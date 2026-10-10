@@ -155,7 +155,8 @@ Committed to git by default so the whole team (and every AI session) benefits fr
 │   ├── REPORT.md             # rendered by `prism audit report`
 │   ├── history/              # previous reports for diffing
 │   └── scratch/              # repro tests etc. (gitignored)
-└── cache/                    # gitignored: SQLite query index, embeddings, parse cache,
+└── cache/                    # gitignored: SQLite query index, embeddings (vectors-*.npz),
+                              #   parse cache, worklog/ (per-session requests, edits, notes),
                               #   viewer layout.json and saved views/
 ```
 
@@ -216,6 +217,8 @@ Audit finding (see Section 10.4 for the full schema).
 | `prism search "<text>"` | `prism_search` | Free-text search over symbol names, qualified IDs, docstrings, paths, comments, routes. BM25 locally (Phase 2); optional local embeddings (Phase 5, `prism-ctx[semantic]`, offline model). |
 | `prism module <name>` | `prism_module` | Module summary from `.aicontext/modules/`. |
 | `prism status` | `prism_status` | Index freshness, changed files, drift score, stale sections, last audit. |
+| `prism recall ["<topic>"]` | `prism_recall` | Earlier sessions from the local work log (Section 9.4): what was asked, edited and noted. |
+| `prism note "<text>"` | `prism_note` | Leave a one-line handoff note for the next session. |
 
 ### 8.2 Context pack assembly rules
 
@@ -260,6 +263,8 @@ The MCP server lets the host agent call PRISM as native tools instead of shellin
 | `prism_audit_update` | `id`, `status` | updated finding |
 | `prism_audit_report` | — | report path + summary counts |
 | `prism_graph_view_url` | `focus?`, `depth?` | local viewer URL (starts the viewer if the user allowed it) |
+| `prism_recall` | `query?`, `limit?` | earlier sessions: requests, edited files/symbols, notes |
+| `prism_note` | `text`, `session?` | records a handoff note in the local work log |
 
 ### 8.5 Request retrieval (`prism task`)
 
@@ -281,7 +286,7 @@ Every navigator query first compares the working tree with the manifest and, for
 |---|---|
 | Every navigator query (CLI and MCP) | **Working-tree check**: compare the tree with the manifest (a stat walk; unchanged files are not re-read) and, if the user has enabled PRISM and not paused it, update just the changed files under the update lock before answering (up to 300 files). Freshness therefore never depends on a hook or on the agent remembering `prism update`. |
 | Host-agent hook after file edits (Claude Code/Codex `PostToolUse`, Gemini `AfterTool`, Cursor `afterFileEdit`) | `prism hook post-edit` → reads the hook JSON (any agent's shape, including Codex `apply_patch` text), starts `prism update` for those files in a **detached process** and returns at once (~0.2 s). Must never block or fail the agent. |
-| Session start hook | `prism hook session-start` → bounded catch-up of anything changed outside the agent (e.g. `git pull`), then prints the **compact brief** into the agent's context. |
+| Session start hook | `prism hook session-start` → bounded catch-up of anything changed outside the agent (e.g. `git pull`), then prints the **compact brief** into the agent's context, plus a ≤ 140-token summary of the most recent other session from the work log (Section 9.4). |
 | Prompt hook (Claude Code/Codex `UserPromptSubmit`, Gemini `BeforeAgent`) | `prism hook user-prompt` → runs `prism task` for the user's own words and adds the answer to the prompt (≤ `prompt_budget`, default 1,200 tokens). Silent for greetings, confirmations, slash commands and weak matches; code is sent once per session; if the query caches are cold it warms them in the background and stays silent once. Opt-out: `prompt_context = false` or `PRISM_PROMPT_CONTEXT=0`. Agents whose prompt hook cannot inject context (Cursor) rely on the tool. |
 | Git `post-commit` / `post-merge` / `post-checkout` hooks | `prism update --quiet` |
 | Manual / file watcher | `prism update`, `prism watch` |
@@ -323,6 +328,10 @@ Hybrid: PRISM writes facts, the agent writes prose, inside marked regions. PRISM
 **What is injected is not the whole file.** Research on repository context files (Gloaguen et al., 2026, *Evaluating AGENTS.md*) found that generated overviews do not help agents find the relevant files faster and raise cost by about 20% with no gain in success, because agents follow them with extra exploration. So the session brief an agent receives (`prism brief`, the SessionStart hook) is **compact**: the title, the `Languages` and `Commands` facts, any narrative section someone has actually written, and one line on how to use PRISM (≈ 100-150 tokens). Placeholders, key dependencies, entry points and module rankings stay in the file but are not injected. The narrative sections are **optional**: they are written only if a human or agent chooses to (the `prism-refresh` skill), and staleness is reported only for sections that exist.
 
 `prism refresh prepare [--sections ...]` emits exactly what the agent needs to write each stale section (relevant context packs, structural diff since last narration, token budget per section). `prism refresh commit <section> --file <md>` validates length/markers and writes it, resetting that section's drift. This keeps the agent's work bounded and verifiable.
+
+### 9.4 Work log — continuity between sessions
+
+The index says how the code is built; it does not say what the last session was doing. Hooks therefore append small events per agent session to `.aicontext/cache/worklog/<session>.jsonl` (local, gitignored, pruned after 30 days, written only when enabled and not paused): the request (prompt hook), each edited file with the first line of new text (post-edit hook; resolved to the enclosing symbol when displayed), the symbols retrieved, and optional one-line notes (`prism note`). The next session start includes a short summary of the most recent other session; `prism task` answers add `history` lines when an earlier session changed the same code and the line fits the budget; `prism recall` searches older sessions. Off with `worklog = false` / `PRISM_WORKLOG=0`.
 
 ## 10. Auditor — Agent-Driven Codebase Audit
 
@@ -435,7 +444,7 @@ The viewer reads the same `.aicontext/` data the agent uses. It never parses cod
 ### 11.4 Implementation
 
 - **Frontend:** TypeScript app in `viewer/` (repo root), built with Vite into a static bundle shipped as package data in `prism/viewer_dist/`. End users never need Node; only PRISM developers do.
-- **Rendering:** WebGL via **Sigma.js + Graphology** (recommended: handles tens of thousands of nodes, ForceAtlas2 layout in a Web Worker, Louvain community detection via `graphology-communities-louvain`). Alternatives: Cytoscape.js (richer layouts, slower at scale), `force-graph`/`3d-force-graph` (optional 3D mode later). Record the final choice as an ADR in `docs/adr/`.
+- **Rendering:** WebGL via **Sigma.js + Graphology** (handles tens of thousands of nodes; live `d3-force` layout with Obsidian's forces, plus a deterministic layered tier layout; Louvain community detection via `graphology-communities-louvain`). Alternatives: Cytoscape.js (richer layouts, slower at scale), `force-graph`/`3d-force-graph` (optional 3D mode later). Record the final choice as an ADR in `docs/adr/`.
 - **All JS/CSS/fonts vendored in the bundle.** No CDN, no external requests — the viewer must work with the network unplugged.
 - **Backend:** stdlib-only HTTP server (`http.server` + SSE) in `prism/viewer/server.py`; no FastAPI/uvicorn dependency. Endpoints map 1:1 to library functions:
   - `GET /api/graph?layer=import&level=module|file|symbol&root=<id>&depth=N&filters=…` → nodes + edges, already aggregated to the requested level.
@@ -508,7 +517,7 @@ An agent only knows what is in its context when the session starts, so PRISM has
 | 4. Skill | `prism-context` skill description triggers at the start of coding tasks. | Claude Code |
 | 5. Plain files | `.aicontext/AGENTS.md` and JSON are readable with no PRISM install at all. | All, as fallback |
 
-**Hook robustness:** every hook must exit 0 quickly (post-edit returns in ~0.2 s because the update runs detached; user-prompt is bounded to 4 s and says nothing on timeout), never print errors into the agent's context, and do nothing if `prism` isn't installed, the repo isn't enabled for this user, or PRISM is paused. A broken or missing PRISM must never break or slow an agent session.
+**Hook robustness:** every hook must exit 0 quickly (post-edit returns in ~0.2 s because the update runs detached; user-prompt is bounded to 16 s (installed hook timeout 20) and says nothing on timeout), never print errors into the agent's context, and do nothing if `prism` isn't installed, the repo isn't enabled for this user, or PRISM is paused. A broken or missing PRISM must never break or slow an agent session.
 
 | Situation | What the agent sees |
 |---|---|
@@ -575,6 +584,8 @@ prism update [--files ...] [--quiet]                incremental update
 prism status [--json]                               freshness, drift, stale sections, audit summary
 prism brief                                         AGENTS.md + freshness line
 prism locate <name> | context <target> | impact <target> | search "<q>" | module <name>
+prism task "<request>" [--budget N] [--session ID]  one-call retrieval (Section 8.5)
+prism note "<text>" | recall ["<topic>"]           work log: handoff notes, earlier sessions (9.4)
 prism refresh prepare [--sections ...] | refresh commit <section> --file <md>
 prism audit plan | record | update | report
 prism hook session-start | post-edit               called by host-agent hooks (stdin JSON)
@@ -593,7 +604,7 @@ Exit codes: 0 ok, 1 user error, 2 index missing/stale beyond repair, 3 internal 
 - CLI: `typer` (or `click`). Output: `rich` for humans, plain for `--quiet/--json`.
 - Parsing: stdlib `ast` (Phase 1); `tree-sitter` + language grammars (Phase 5) behind `BaseParser`.
 - Graph: `networkx` (PageRank) — or a small in-house implementation if dependency weight matters.
-- Search: in-house BM25 or `rank-bm25`; optional `[semantic]` extra with a small local embedding model.
+- Search: in-house BM25 or `rank-bm25`; optional `[semantic]` extra with a small local embedding model (mean-pooled BERT run on NumPy; `[semantic-full]` adds sentence-transformers), used by `prism task` when `semantic = true`.
 - Graph viewer: TypeScript + Vite + Sigma.js/Graphology (WebGL), prebuilt and shipped as package data; stdlib `http.server` + SSE backend (Section 11).
 - Query cache: stdlib `sqlite3`.
 - MCP: official MCP Python SDK (stdio server).

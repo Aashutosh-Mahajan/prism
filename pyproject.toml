@@ -39,8 +39,11 @@ treesitter = [
     "tree-sitter-go>=0.23",
     "tree-sitter-java>=0.23",
 ]
-# Optional local embeddings for `prism search --semantic` (the model must already be on disk).
-semantic = ["sentence-transformers>=2.2", "numpy>=1.24"]
+# Optional local embeddings for `prism task` and `prism search --semantic` (the model must
+# already be on disk). BERT models with mean pooling, such as the default all-MiniLM-L6-v2, run
+# on NumPy alone; `semantic-full` adds sentence-transformers (PyTorch) for any other model.
+semantic = ["numpy>=1.24", "tokenizers>=0.15", "safetensors>=0.4"]
+semantic-full = ["numpy>=1.24", "tokenizers>=0.15", "safetensors>=0.4", "sentence-transformers>=2.2"]
 dev = ["pytest>=7", "ruff>=0.5", "mypy>=1.8"]
 
 [project.scripts]
@@ -89,7 +92,7 @@ strict = true
 packages = ["prism"]
 
 [[tool.mypy.overrides]]
-module = ["jsonschema", "jsonschema.*", "tree_sitter", "tree_sitter_javascript", "tree_sitter_typescript", "tree_sitter_go", "tree_sitter_java", "sentence_transformers", "numpy"]
+module = ["jsonschema", "jsonschema.*", "tree_sitter", "tree_sitter_javascript", "tree_sitter_typescript", "tree_sitter_go", "tree_sitter_java", "sentence_transformers", "numpy", "tokenizers", "safetensors", "safetensors.*"]
 ignore_missing_imports = true
 follow_imports = "skip"
 

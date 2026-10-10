@@ -1,5 +1,44 @@
 # Implementation status against CLAUDE.md
 
+## Phase 7 follow-up — 2026-10-10
+
+The research-driven packet, patch, search, overview and host-hook implementation has been
+validated and hardened. Test weighting now follows caller distance, read dedupe records only
+successful returned lines and resets on compaction, nested Git boundaries are respected,
+numeric patches are simultaneous and decimal-safe, and read windows stay bounded. The
+development statistics diagnostic now actually resamples tasks and rejects missing cells.
+
+Installed MiniLM evaluation on eight paraphrases: top-three source recall **62.5% -> 75%**;
+complete packet coverage **62.5% -> 87.5%**. These are offline retrieval measurements.
+See [the Phase 7 validation report](phase7-validation-2026-10-10.md) for exact tests and the
+remaining live-host, external-repository and clearable-result acceptance work. The owner-authorized
+[ArogyaTrack Codex Luna benchmark](benchmarks/phase7/codex-luna-arogya-2026-10-10.md) is complete:
+60 sandboxed sessions using Claude's existing tasks and scoring. CLI+hook and MCP passed 12/12;
+MCP+hook passed 11/12. The wider multi-repository proof remains unmeasured.
+
+## Session memory, semantic retrieval, update latency — 2026-10-09
+
+- **Work log** (`prism/writers/worklog.py`, `prism/navigator/recall.py`): hooks record each
+  session's requests, edits (file + anchor, resolved to the enclosing symbol on display),
+  retrieved symbols and `prism note` handoffs. Session start adds a summary of the most recent
+  other session (≤ 140 estimated tokens); task answers carry `history` lines when they fit the
+  budget; `prism recall` / `prism_recall` search older sessions. Consent and pause gating as
+  for every hook; local and gitignored.
+- **Semantic channel in `prism task`** (opt-in, `semantic = true`): fused as a third ranking,
+  agreement boost, and up to two `similar` blocks when the request names nothing exactly
+  (confidence capped at medium). Retrieval benchmark with the real local MiniLM model: new
+  `paraphrase` tier 62% → 88% located; all 22 cases 82% → 91%; other tiers unchanged; mean
+  answer +33 estimated tokens. NumPy BERT encoder matches sentence-transformers to ~1e-7 and
+  loads in ~0.2 s (sentence-transformers' import took 50-100 s on this machine).
+- **Update latency**: one-file update on the 124k-line benchmark 0.774 s → 0.420-0.434 s over
+  three runs (target met on this machine); no-change check 52 ms → 10-20 ms; scan 15.6 s →
+  9.9 s. Changes keep scan ≡ scan + updates (incremental equivalence tests pass).
+- Validation: full suite **381 passed**; Ruff and strict mypy pass.
+
+Not measured: live-agent token use with these features (no new agent benchmark run), the
+semantic channel on large real repositories, and update latency on Linux/macOS or with Git
+history on the 100k-line fixture. The 70% orientation-token target remains unproven.
+
 ## Context engine upgrade — 2026-10-08
 
 Latest follow-up: the actual checkout is enabled and indexed, with 21 narratives refreshed
