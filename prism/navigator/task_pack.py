@@ -142,6 +142,8 @@ def render_task(pack: dict[str, Any]) -> str:
             f"{patch['sites']} listed sites in {patch['files']} files (checked with git apply --check); "
             "it edits only those lines. Review with git diff."
         )
+    elif pack.get("patch_reason"):
+        parts.append(f"Patch: none ({pack['patch_reason']})")
     for twin in pack.get("twins", []):
         where = ", ".join(
             [_loc(twin["primary"]["file"], *twin["primary"]["lines"])]
@@ -762,11 +764,19 @@ def _fill(
     if not literals:
         del pack["literals"]
     source_budget = max(MIN_BUDGET, int(budget * 0.80)) if budget >= 256 else budget
-    patch = _safely(enrich.build_patch, store, reader, query, evidence) if literals else None
+    patch = (
+        _safely(enrich.build_patch, store, reader, query, evidence)
+        if enrich.parse_replacements(query)
+        else None
+    )
+    if isinstance(patch, str):
+        pack["patch_reason"] = patch
+        patch = None
     if patch is not None:
         pack["patch"] = patch
         if _size(pack) > budget:
             del pack["patch"]
+            pack["patch_reason"] = "budget_exceeded"
             patch = None
         else:
             # The patch carries the edit; code beside it is only context, so keep that short.
