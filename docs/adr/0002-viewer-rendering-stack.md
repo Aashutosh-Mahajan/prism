@@ -15,7 +15,13 @@ recorded as an ADR.
   `@sigma/node-border` for node shapes that encode kind.
 - **Layout:** ForceAtlas2 from `graphology-layout-forceatlas2`, run in its Web Worker for a
   bounded time, starting from a deterministic, package-grouped seed layout. Barnes–Hut is enabled
-  above 300 nodes.
+  above 300 nodes. *Superseded 2026-10-09:* the network layout is now a live `d3-force`
+  simulation with Obsidian's four forces (centre, repel, link force, link distance), because
+  people expect the graph to behave like Obsidian's (dragging pulls neighbours, the graph
+  settles into a round cloud with unconnected nodes orbiting it). Barnes–Hut is built into
+  d3's many-body force. A second, deterministic *Layers* arrangement places dependency tiers as
+  bands. All nodes are drawn as plain dots, so the square and border programs are no longer used
+  for kind.
 - **Communities:** Louvain from `graphology-communities-louvain`, computed on demand for the
   *Community* colouring.
 - **Frontend:** TypeScript with no UI framework, built by Vite into one JS and one CSS file in
