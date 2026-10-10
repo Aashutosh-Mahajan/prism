@@ -18,7 +18,7 @@ replace generated regions and carry narrative regions over without guessing wher
 
 ## Entry points live in `dependency_graph.json`
 
-The artifact list in CLAUDE.md Section 7 has no file for entry points. They are stored as a
+The [index artifact specification](../spec/07-index-artifacts.md) has no file for entry points. They are stored as a
 top-level `entry_points` list in `dependency_graph.json`, and each module node carries an
 `entry_point` kind. No new artifact file was added.
 
