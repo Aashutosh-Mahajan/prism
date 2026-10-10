@@ -179,12 +179,18 @@ def _target_numbers(query: str) -> set[str]:
     return {number for number, target in roles if target} - old_values
 
 
+# Calls, dotted member chains and backticked spans: code the request mentions, whose names and
+# arguments are not quantities.
+_CODE_SPAN = re.compile(r"`[^`\n]*`|[\w$]*(?:\.[\w$]+)*\([^()\n]*\)|\b\w+(?:\.\w+)+\b")
+
+
 def _quantities(query: str) -> list[tuple[str, str]]:
     """(number, unit) pairs: every searchable number crossed with every unit the request names,
     so "stay valid for 15 minutes instead of 10" looks for "10 minutes"."""
-    skip = _target_numbers(query)
-    numbers = [n for n in _NUMBER.findall(query) if n not in skip]
-    words = {w.lower() for w in _QUERY_WORD.findall(query)}
+    prose = _CODE_SPAN.sub(" ", query)  # `min(3)` is an API call, not "3 minutes"
+    skip = _target_numbers(prose)
+    numbers = [n for n in _NUMBER.findall(prose) if n not in skip]
+    words = {w.lower() for w in _QUERY_WORD.findall(prose)}
     units = sorted(w for w in words if w in QUANTITY_UNITS)
     seen: set[tuple[str, str]] = set()
     pairs = []

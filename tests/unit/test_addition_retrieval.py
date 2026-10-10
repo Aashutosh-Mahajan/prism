@@ -69,3 +69,12 @@ def test_feature_addition_prefers_provider_and_includes_its_helper(
     assert not packet.get("read_next")
     assert any(lit["text"] == "pathlib.PurePath" for lit in packet["literals"])
     assert packet["budget"]["used_est"] <= budget
+
+
+def test_api_calls_in_a_request_are_not_quantities() -> None:
+    from prism.navigator.literals import _quantities
+
+    # `.min(3)` names an API, not "3 minutes"; only the prose quantity survives.
+    query = "z.string().min(3) accepts a string that has only 2 characters"
+    assert _quantities(query) == [("2", "characters")]
+    assert _quantities("stay valid for 15 minutes instead of 10") == [("10", "minutes")]
