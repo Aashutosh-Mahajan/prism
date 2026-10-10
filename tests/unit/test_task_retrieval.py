@@ -74,7 +74,10 @@ def test_every_site_of_a_quantity_is_found_in_one_call(store: IndexStore) -> Non
     assert covered(pack, "frontend/src/pages/auth/ForgotPasswordPage.tsx", 12)
     ten = next(lit for lit in pack["literals"] if lit["text"] == "10 minutes")
     assert ten["total"] == 3 and ten["complete"]
-    assert pack["confidence"] == "high" and "re-grepping" in pack["next"]
+    # "15 instead of 10" is an explicit mechanical change at exhaustive sites: a checked patch is offered.
+    assert pack["confidence"] == "high"
+    assert pack["patch"]["old"] == "10" and pack["patch"]["new"] == "15"
+    assert pack["patch"]["sites"] >= 3 and "Mechanical change" in pack["next"]
 
 
 def test_paraphrased_request_finds_the_same_sites(store: IndexStore) -> None:
@@ -152,7 +155,7 @@ def test_unknown_request_is_honest_about_a_weak_match(store: IndexStore) -> None
 @pytest.mark.parametrize("query", [T1, T2, T3, "EmailCode.verify", "who calls build_kpis"])
 def test_budget_is_a_hard_cap_on_json_and_text(store: IndexStore, query: str, budget: int) -> None:
     pack = op_task(store, query, budget)
-    assert estimate_tokens(json.dumps(pack, indent=2, ensure_ascii=False)) <= budget
+    assert estimate_tokens(json.dumps(pack, separators=(",", ":"), ensure_ascii=False)) <= budget
     assert estimate_tokens(render_task(pack)) <= budget
     assert pack["budget"]["used_est"] <= budget
 

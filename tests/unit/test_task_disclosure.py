@@ -41,7 +41,9 @@ def test_architecture_is_a_budgeted_map_not_source_dump(small_repo: Path, budget
         assert pack["intent"] == "overview"
         assert not pack["blocks"] and not pack["sufficient"]
         assert estimate_tokens(render_task(pack)) <= budget
-        assert estimate_tokens(json.dumps(pack, indent=2, ensure_ascii=False)) <= budget
+        assert (
+            estimate_tokens(json.dumps(pack, separators=(",", ":"), ensure_ascii=False)) <= budget
+        )
         if budget >= 1200:
             assert pack["overview"]["files"]
             assert any(row["symbols"] for row in pack["overview"]["files"])
@@ -119,7 +121,9 @@ def test_small_packet_does_not_hide_undelivered_lines(tmp_path: Path) -> None:
         }
         assert added and not added & delivered
         assert 97 in added
-        assert estimate_tokens(json.dumps(second, indent=2, ensure_ascii=False)) <= 4000
+        assert (
+            estimate_tokens(json.dumps(second, separators=(",", ":"), ensure_ascii=False)) <= 4000
+        )
     finally:
         store.close()
 
@@ -142,7 +146,9 @@ def test_capped_match_search_never_claims_exhaustive_or_absent(
         assert "repository-wide coverage" in render_task(pack)
         assert all(not literal["complete"] for literal in pack.get("literals", []))
         assert estimate_tokens(render_task(pack)) <= budget
-        assert estimate_tokens(json.dumps(pack, indent=2, ensure_ascii=False)) <= budget
+        assert (
+            estimate_tokens(json.dumps(pack, separators=(",", ":"), ensure_ascii=False)) <= budget
+        )
     finally:
         store.close()
 

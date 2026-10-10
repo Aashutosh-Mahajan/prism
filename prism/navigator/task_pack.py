@@ -14,12 +14,14 @@ from __future__ import annotations
 
 import json
 import re
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
 
 from prism._vendor.graphify_retrieval import pick_seeds, walk_graph
 from prism.core.errors import UserError
 from prism.core.tokens import estimate_tokens
+from prism.navigator import enrich
 from prism.navigator.fusion import fuse_files
 from prism.navigator.impact import dependents
 from prism.navigator.literals import EvidenceResult, find_literals
@@ -44,8 +46,8 @@ MAX_STRUCTURAL_CALLERS = 12
 MAX_TESTS = 3
 MIN_TEST_NAME = 5  # shorter names (get, post, run) would match every test
 NEXT_RESERVE = 150  # characters set aside for the closing `next` guidance
-LITERAL_SHARE = 0.40
-LITERAL_WIDTHS = (110, 80, 56)  # snippet widths tried, widest first
+LITERAL_SHARE = 0.50
+LITERAL_WIDTHS = (220, 150, 110, 80, 56)  # snippet widths tried, widest first
 EXPLICIT_BONUS = 60.0  # a symbol or file the request names outright
 MENTIONED_BONUS = 25.0  # a code-like name in the request that resolves to one or two symbols
 CODE_KINDS = ("function", "method", "class")
@@ -63,10 +65,22 @@ MIN_RELATIVE_SCORE = 0.25  # blocks scoring below this share of the best are noi
 # When exact literal evidence is complete it already answers "where"; code beside it is only
 # context, so fewer and stronger blocks are shown.
 TIGHT_RELATIVE_SCORE = 0.5
+# Local embeddings (optional): candidates considered, the similarity below which a symbol is
+# ignored, the stronger similarity needed to add a block no word matched, how many such blocks,
+# their score relative to the best lexical block, and the boost when both channels agree.
+SEMANTIC_CANDIDATES = 30
+SEMANTIC_MIN_COSINE = 0.25
+SEMANTIC_ADD_COSINE = 0.40
+SEMANTIC_ADDED = 2
+SEMANTIC_SHARE = 0.6
+SEMANTIC_AGREEMENT = 0.5
+SEMANTIC_LEAD_COSINE = 0.28  # a clear leader (SEMANTIC_LEAD x the runner-up) above this counts
+SEMANTIC_LEAD = 1.4
+SEMANTIC_LEADER_SHARE = 0.9
 TIGHT_MAX_BLOCKS = 3
 _IMPORT_LINE = re.compile(r"^\s*(?:import|from|package|using|require)|^\s*#include")
 
-_WORDS = re.compile(r"[A-Za-z0-9]+")
+_WORDS = re.compile(r"[^\W_]+")
 _STRUCTURAL = re.compile(
     r"\b(?:who|what|which)\s+(?:calls|uses|depends|imports)\b|\bcallers?\s+of\b"
     r"|\bwhere\s+(?:is|are)\b[^?]*\bused\b|\busages?\s+of\b|\bimpact\s+of\b"
@@ -115,12 +129,40 @@ def render_task(pack: dict[str, Any]) -> str:
         )
     if pack.get("overview"):
         parts.extend(render_overview(pack["overview"]))
+    if pack.get("literals") and pack.get("scope") and not pack.get("search_limited"):
+        code, text = pack["scope"]
+        parts.append(
+            f"Scope: searched {code} code + {text} text/data files (JSON, YAML, Markdown, HTML, ...); "
+            "skipped: binaries, lockfiles, ignored paths. No other line in them matches."
+        )
+    if pack.get("patch"):
+        patch = pack["patch"]
+        parts.append(
+            f"Patch: `{enrich.APPLY_COMMAND} {patch['path']}` changes {patch['old']} -> {patch['new']} at all "
+            f"{patch['sites']} listed sites in {patch['files']} files (checked with git apply --check); "
+            "it edits only those lines. Review with git diff."
+        )
+    for twin in pack.get("twins", []):
+        where = ", ".join(
+            [_loc(twin["primary"]["file"], *twin["primary"]["lines"])]
+            + [_loc(c["file"], *c["lines"]) for c in twin["copies"]]
+        )
+        parts.append(
+            f"Twins: {twin['name']} is defined in {len(twin['copies']) + 1} files (same name and "
+            f"signature, bodies {round(100 * min(c['similarity'] for c in twin['copies']))}%+ alike); "
+            f"a change usually belongs in all of them: {where}"
+        )
     for lit in pack.get("literals", []):
         shown = len(lit["occurrences"])
         total = f"at least {lit['total']}" if lit.get("scan_limited") else str(lit["total"])
         scope = "exhaustive" if lit["complete"] else f"{shown} of {total} shown"
         parts.append(f'Literal "{lit["text"]}" ({lit["kind"]}, {lit["total"]} found, {scope}):')
-        parts.extend(f"  {_loc(o['file'], o['line'])}: {o['text']}" for o in lit["occurrences"])
+        last_file = None
+        for o in lit["occurrences"]:
+            if o["file"] != last_file:
+                last_file = o["file"]
+                parts.append(f"  {last_file}")
+            parts.append(f"    {o['line']}: {o['text']}")
     if pack.get("absent"):
         parts.append("Not in the source (new names): " + ", ".join(pack["absent"]))
     for block in pack["blocks"]:
@@ -154,8 +196,12 @@ def render_task(pack: dict[str, Any]) -> str:
     if callees:
         parts.append("Calls: " + ", ".join(callees))
     tests = [link["file"] for link in links if link["role"] == "test"]
-    if tests:
+    if pack.get("run"):
+        parts.append("Run: " + pack["run"])
+    elif tests:
         parts.append("Tests: " + ", ".join(tests))
+    if pack.get("test_warning"):
+        parts.append("Tests: " + pack["test_warning"])
     impact = pack.get("impact")
     if impact and impact["symbols"]:
         parts.append(
@@ -167,9 +213,26 @@ def render_task(pack: dict[str, Any]) -> str:
             )
             + (f" (e.g. {', '.join(impact['top'])})" if impact["top"] else "")
         )
+    for line in pack.get("history", []):
+        parts.append(f"Earlier work: {line}")
     if pack.get("read_next"):
         parts.append("Missing source (read only these ranges if needed):")
         parts.extend(f"  {_loc(item['file'], *item['lines'])}" for item in pack["read_next"])
+    if pack.get("read_ranges"):
+        parts.append(
+            "Large files, read only: "
+            + "; ".join(
+                f"{r['file']} offset={r['offset']} limit={r['limit']} ({r['total']} lines)"
+                for r in pack["read_ranges"]
+            )
+        )
+    if pack.get("batch"):
+        parts.append(
+            f"Batch: the {pack['batch']} files above are independent; read them together in one "
+            "turn, then edit them together in one turn."
+        )
+    if pack.get("done"):
+        parts.append(f"Done when: {pack['done']}")
     if not pack["blocks"] and not pack.get("literals") and not pack.get("overview"):
         parts.append("No source fits or matches; refine the query or increase the budget.")
     parts.append(f"Next: {pack['next']}")
@@ -180,8 +243,10 @@ def _size(pack: dict[str, Any]) -> int:
     # Reserve digits for the final estimate itself. Includes JSON keys/escaping, source
     # line numbers, graph links and Markdown. MCP transport envelopes are host overhead.
     pack["budget"]["used_est"] = 999999
+    # The JSON form is measured compact: it is only produced on request (`--json`, format=json),
+    # and its indentation must not shrink what the default text form can carry.
     return max(
-        estimate_tokens(json.dumps(pack, indent=2, ensure_ascii=False)),
+        estimate_tokens(json.dumps(pack, separators=(",", ":"), ensure_ascii=False)),
         estimate_tokens(render_task(pack)),
     )
 
@@ -317,6 +382,7 @@ def build_task(
     budget: int = 2000,
     seen: set[tuple[str, int, int]] | None = None,
     mode: str = "auto",
+    detail: str = "full",
 ) -> dict[str, Any]:
     if not MIN_BUDGET <= budget <= MAX_BUDGET:
         raise UserError(
@@ -347,7 +413,7 @@ def build_task(
         _overview(store, query, budget, pack)
         return pack
     with SourceIndex(store) as index:
-        _fill(store, index, query, budget, staged_seen, pack)
+        _fill(store, index, query, budget, staged_seen, pack, brief=detail == "brief")
     if seen is not None:
         # Only the final delivered source counts. Recovery metadata may displace
         # a peripheral block that was staged while fitting the answer.
@@ -442,13 +508,16 @@ def _fill(
     budget: int,
     seen: set[tuple[str, int, int]] | None,
     pack: dict[str, Any],
+    brief: bool = False,
 ) -> None:
     reader = SourceReader(store)
     terms = _query_terms(query, index)
     operations = request_operations(query)
-    evidence = find_literals(index, reader, query, context_fields=_output_fields(query))
+    evidence = _evidence(store, index, reader, query)
     if evidence.limited:
         pack["search_limited"] = True
+    if evidence.literals:
+        pack["scope"] = list(evidence.scope)
     exact_symbol = store.symbol(query)
     named = store.symbols_named(query) if query.isidentifier() else []
     exact_file = query if store.file_exists(query) else None
@@ -502,10 +571,17 @@ def _fill(
             hit_file = hit.ref
         if hit_file:
             metadata_files.append(hit_file)
-    prior = dict(fuse_files([[file for file, _ in ranked], metadata_files], MAX_FILE_CANDIDATES))
+    # Optional third channel: code the request describes in other words (local embeddings).
+    similar = [] if requested_range is not None else _similar(store, query)
+    similar_files = [sym.file for sym, _ in similar]
+    channels = [[file for file, _ in ranked], metadata_files]
+    if similar_files:
+        channels.append(similar_files)
+    prior = dict(fuse_files(channels, MAX_FILE_CANDIDATES))
     literal_lines = evidence.hit_lines()
     for file, _ in literal_lines:
-        prior.setdefault(file, 0.2)
+        if store.file_exists(file):  # text/data files hold literals, never code blocks
+            prior.setdefault(file, 0.2)
     definitions = _definitions(store, query, evidence, exact_symbol, named, exact_file)
     if requested_range is not None:
         file, start, end = requested_range
@@ -573,6 +649,8 @@ def _fill(
                 operations,
             )
         )
+    if similar:
+        _semantic_blocks(blocks, similar, exact or any(lit.complete for lit in evidence.literals))
     pack["stale_sources"] = len(reader.stale)
     wants_tests = bool(
         re.search(
@@ -583,7 +661,13 @@ def _fill(
     )
     wants_migrations = any(t.startswith("migrat") for t in terms)
     wants_docs = any(t in ("doc", "docs", "document", "documentation", "readme") for t in terms)
+    from prism.navigator.feedback import boosts
+
+    edited_before = boosts(store.root)
     for block in blocks:
+        if edited_before:
+            block.score *= 1.0 + edited_before.get(block.file, 0.0)
+        block.score *= enrich.scope_factor(query, block.file)
         # Application code is what gets changed; tests and generated migrations rank below it
         # unless the request is about them (the same rule `prism search` applies).
         if not wants_tests and store._is_test(block.file):
@@ -630,19 +714,26 @@ def _fill(
         # Most relevant files first, so a list that has to be cut loses the least useful lines.
         ev.occurrences.sort(
             key=lambda o: (
-                store._is_test(o.file) or o.file.split("/", 1)[0] in DOC_DIRS,
+                store._is_test(o.file)
+                or o.file.split("/", 1)[0] in DOC_DIRS
+                or enrich.scope_factor(query, o.file) < 1.0,
                 -prior.get(o.file, 0.0),
                 o.file,
                 o.line,
             )
         )
         placed = False
-        for width in LITERAL_WIDTHS:  # a narrower snippet beats a missing occurrence
-            literals.append(ev.to_dict(width))
-            if _size(pack) <= literal_budget:
-                placed = True
+        # A complete list is what lets an agent edit without searching, so before dropping
+        # occurrences it may take a larger share of the budget than the code excerpts.
+        for limit in (literal_budget, int(budget * 0.65), int(budget * 0.8)):
+            for width in LITERAL_WIDTHS:  # a narrower snippet beats a missing occurrence
+                literals.append(ev.to_dict(width))
+                if _size(pack) <= limit:
+                    placed = True
+                    break
+                literals.pop()
+            if placed:
                 break
-            literals.pop()
         for count in range(len(ev.occurrences) - 1, 0, -1):
             if placed:
                 break
@@ -654,14 +745,28 @@ def _fill(
     if not literals:
         del pack["literals"]
     source_budget = max(MIN_BUDGET, int(budget * 0.80)) if budget >= 256 else budget
-    _fit_blocks(pack, blocks, reader, source_budget, seen, structural)
+    patch = _safely(enrich.build_patch, store, reader, query, evidence) if literals else None
+    if patch is not None:
+        pack["patch"] = patch
+        if _size(pack) > budget:
+            del pack["patch"]
+            patch = None
+        else:
+            # The patch carries the edit; code beside it is only context, so keep that short.
+            source_budget = min(source_budget, _size(pack) + max(120, int(budget * 0.22)))
+    # What earlier responses delivered, fixed before this packet adds to `seen`: a block of this
+    # same packet must never turn another block of it into a "shown earlier" reference.
+    earlier = set(seen) if seen is not None else None
+    _fit_blocks(pack, blocks, reader, source_budget, seen, structural, earlier)
     support: list[_Block] = []
-    if pack["intent"] == "edit":
-        support = _support_blocks(store, reader, pack, source_budget, seen)
+    if pack["intent"] == "edit" and not brief and patch is None:
+        support = _support_blocks(store, reader, pack, source_budget, seen, earlier)
 
     primaries = _primaries(pack, blocks)
     if primaries:
         _links(store, index, reader, pack, primaries, budget, structural)
+        if brief or patch is not None:
+            _drop_graph_lines(pack)
     pack["stale_sources"] = len(reader.stale)
     _confidence(pack, evidence, blocks, terms, exact, query)
     _read_next(
@@ -673,7 +778,29 @@ def _fill(
         else set(seen)
         - {(b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"] if b.get("source")},
     )
+    if pack["intent"] == "edit":
+        _enrich(store, reader, pack, primaries, budget)
     pack["budget"]["used_est"] = _size(pack)
+
+
+_EVIDENCE_MEMO: dict[tuple[str, int, str], Any] = {}
+_EVIDENCE_MEMO_LIMIT = 4
+
+
+def _evidence(store: IndexStore, index: SourceIndex, reader: SourceReader, query: str) -> Any:
+    """`find_literals` for this request, reused when the same request is built again at another
+    budget against the same index (the exact-match search does not depend on the budget)."""
+    import copy
+
+    key = (store.root.as_posix(), id(store.manifest), query)
+    hit = _EVIDENCE_MEMO.get(key)
+    if hit is not None:
+        return copy.deepcopy(hit)
+    evidence = find_literals(index, reader, query, context_fields=_output_fields(query))
+    if len(_EVIDENCE_MEMO) >= _EVIDENCE_MEMO_LIMIT:
+        _EVIDENCE_MEMO.clear()
+    _EVIDENCE_MEMO[key] = copy.deepcopy(evidence)
+    return evidence
 
 
 def _output_fields(query: str) -> set[str]:
@@ -685,7 +812,7 @@ def _output_fields(query: str) -> set[str]:
         field.strip()
         for part in shapes
         for field in part.split("/")
-        if re.fullmatch(r"\s*[A-Za-z_]\w*\s*", field)
+        if re.fullmatch(r"\s*[^\W\d]\w*\s*", field)
     }
     return fields if len(fields) >= 2 else set()
 
@@ -806,6 +933,7 @@ def _support_blocks(
     pack: dict[str, Any],
     budget: int,
     seen: set[tuple[str, int, int]] | None,
+    earlier: set[tuple[str, int, int]] | None = None,
 ) -> list[_Block]:
     ranges: dict[str, list[tuple[int, int]]] = {}
     selected_blocks = pack["blocks"][:2]
@@ -835,8 +963,18 @@ def _support_blocks(
                 )
             )
     # Reuse exactly the same verification, session and budget fitting as code.
-    _fit_blocks(pack, support, reader, budget, seen, False)
-    return support
+    _fit_blocks(pack, support, reader, budget, seen, False, earlier)
+    return [b for b in support if not _bare_import(reader, b)]
+
+
+def _bare_import(reader: SourceReader, block: _Block) -> bool:
+    """A one-line import. Telling the agent to read it as "missing source" only costs a turn."""
+    if block.start != block.end:
+        return False
+    lines = reader.lines(block.file)
+    if not lines or not 0 < block.start <= len(lines):
+        return False
+    return lines[block.start - 1].lstrip().startswith(("import ", "from ", "use ", "#include"))
 
 
 def _coherent_classes(store: IndexStore, blocks: list[_Block], budget: int) -> list[_Block]:
@@ -885,6 +1023,8 @@ def _read_next(
     budget: int,
     seen: set[tuple[str, int, int]] | None,
 ) -> None:
+    if pack.get("patch"):
+        return  # the patch carries the edit; the code beside it is context, not a gap
     delivered = set(seen or ()) | {
         (b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"]
     }
@@ -901,8 +1041,14 @@ def _read_next(
         "Source is partial: read the missing ranges if needed; avoid re-reading the entire file."
     )
     if pack.get("literals") and all(lit["complete"] for lit in pack["literals"]):
+        listed = [lit for lit in pack["literals"] if lit["kind"] != "identifier"]
+        sites = sum(len(lit["occurrences"]) for lit in listed)
+        files = len({o["file"] for lit in listed for o in lit["occurrences"]})
         pack["next"] = (
-            "Partial source: read only missing ranges if needed; complete literal lists need no re-grepping."
+            f"Edit-ready: {sites} listed sites in {files} files are exhaustive; edit them, no "
+            "repo-wide search. Read missing ranges only if needed."
+            if listed
+            else "Partial source: read only missing ranges if needed; complete literal lists need no re-grepping."
         )
     pack["read_next"] = []
     for item in missing[:6]:
@@ -1081,6 +1227,58 @@ def _definitions(
     return blocks
 
 
+def _similar(store: IndexStore, query: str) -> list[tuple[SymbolRow, float]]:
+    """Symbols the local embedding model finds similar to the request (empty when disabled)."""
+    try:
+        from prism.navigator.semantic import ranking
+
+        found = ranking(store, request_focus(query) or query, SEMANTIC_CANDIDATES)
+    except Exception:
+        return []  # an optional channel must never break retrieval
+    out: list[tuple[SymbolRow, float]] = []
+    for sid, cosine in found:
+        sym = store.symbol(sid)
+        if sym is not None and cosine >= SEMANTIC_MIN_COSINE:
+            out.append((sym, cosine))
+    return out
+
+
+def _semantic_blocks(
+    blocks: list[_Block], similar: list[tuple[SymbolRow, float]], anchored: bool
+) -> None:
+    """Blend embedding similarity into lexical blocks. Agreement between the two channels raises
+    a block; a strongly similar symbol no word matched is added only when nothing in the request
+    anchors the answer (no exact name, no complete literal list), at below the best lexical score."""
+    top = similar[0][1]
+    relative = {sym.id: cosine / top for sym, cosine in similar}
+    for block in blocks:
+        if block.symbol is not None and block.symbol.id in relative:
+            block.score *= 1.0 + SEMANTIC_AGREEMENT * relative[block.symbol.id]
+    if anchored:
+        return
+    covered = {b.symbol.id for b in blocks if b.symbol is not None}
+    best = max((b.score for b in blocks), default=0.0) or 1.0
+    # Cosine scales differ between models; a symbol that clearly leads the runner-up is as
+    # telling as a high absolute similarity.
+    runner_up = similar[1][1] if len(similar) > 1 else 0.0
+    leads = top >= SEMANTIC_LEAD_COSINE and top >= SEMANTIC_LEAD * runner_up
+    added = 0
+    for rank, (sym, cosine) in enumerate(similar):
+        if added >= SEMANTIC_ADDED or sym.id in covered or sym.kind not in CODE_KINDS:
+            continue
+        leader = rank == 0 and leads
+        if cosine < SEMANTIC_ADD_COSINE and not leader:
+            break
+        whole = sym.end - sym.start + 1 <= WHOLE_SYMBOL_MAX
+        end = sym.end if whole else min(sym.end, sym.start + 14)
+        score = best * (SEMANTIC_LEADER_SHARE if leader else SEMANTIC_SHARE * relative[sym.id])
+        blocks.append(
+            _Block(sym.file, sym.start, end, sym, score, [sym.start], role="similar", whole=whole)
+        )
+        covered.add(sym.id)
+        added += 1
+
+
 def _reinforce(store: IndexStore, blocks: list[_Block]) -> None:
     """Blocks that call, or are called by, other retrieved blocks are mutually supported: code
     that the request touches tends to form a connected piece of the call graph."""
@@ -1157,12 +1355,13 @@ def _fit_blocks(
     budget: int,
     seen: set[tuple[str, int, int]] | None,
     structural: bool,
+    earlier: set[tuple[str, int, int]] | None = None,
 ) -> None:
     placed = len(pack["blocks"])
     # Read session memory as it was before this response. Parts included earlier
     # in this same packet are tracked separately, so they never become a false
     # "shown earlier" reference while the response is still being assembled.
-    previous = set(seen or ())
+    previous = set(earlier if earlier is not None else (seen or ()))
     included: set[tuple[str, int, int]] = {
         (b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"] if b.get("source")
     }
@@ -1293,21 +1492,58 @@ def _related_tests(store: IndexStore, index: SourceIndex, symbol: SymbolRow) -> 
        framework (a Django test client hitting the URL, a React test rendering the component);
     3. otherwise the tests of the same package that import its module, closest first.
     Listing every test that merely imports the file would be noise the agent has to read past."""
-    direct = store.tests_for_symbol(symbol.id)
-    if direct:
-        return direct[:MAX_TESTS]
+    # Walk callers breadth-first so tests exercising wrappers are ranked after
+    # direct tests but before textual matches. Bound cycles and high fan-out.
     found: list[str] = []
+    pending = deque([(symbol, 0)])
+    seen = {symbol.id}
+    while pending:
+        current, distance = pending.popleft()
+        tests = store.tests_for_symbol(current.id)
+        if store._is_test(current.file):
+            tests = [current.file, *tests]
+        for path in tests:
+            if path not in found:
+                found.append(path)
+        if len(found) >= MAX_TESTS:
+            return found[:MAX_TESTS]
+        if distance < 3:
+            for link in store.callers(current.id):
+                if link.confidence == "low" or link.symbol.id in seen or len(seen) >= 64:
+                    continue
+                seen.add(link.symbol.id)
+                pending.append((link.symbol, distance + 1))
     name_tokens = tokenize(symbol.name)
     if len(symbol.name) >= MIN_TEST_NAME and name_tokens:
         mentions = [f for f in index.files_with_all(name_tokens) if store._is_test(f)]
-        found.extend(sorted(mentions, key=lambda f: (_common_prefix(f, symbol.file) * -1, f)))
+        found.extend(
+            f
+            for f in sorted(mentions, key=lambda f: (_common_prefix(f, symbol.file) * -1, f))
+            if f not in found
+        )
     if len(found) < MAX_TESTS:
         imported = sorted(
             store.tests_for_file(symbol.file),
             key=lambda f: (_common_prefix(f, symbol.file) * -1, f),
         )
         found.extend(f for f in imported[:2] if f not in found)
+    if not found:
+        found = _nearest_tests(store, symbol)
     return found[:MAX_TESTS]
+
+
+def _nearest_tests(store: IndexStore, symbol: SymbolRow) -> list[str]:
+    """Tests that merely sit next to the code (same folder, or named after the file).
+
+    Used only when nothing links to the symbol: a nearby test file beats an empty answer,
+    which would leave the agent to search for tests (or run none)."""
+    stem = symbol.file.rsplit("/", 1)[-1].rsplit(".", 1)[0].lower().removeprefix("_")
+    scored: list[tuple[int, int, str]] = []
+    for path in store.test_files():
+        shared = _common_prefix(path, symbol.file)
+        named = 1 if stem and stem in path.rsplit("/", 1)[-1].lower() else 0
+        scored.append((-named, -shared, path))
+    return [path for _, _, path in sorted(scored)[:2]]
 
 
 def _common_prefix(a: str, b: str) -> int:
@@ -1368,8 +1604,27 @@ def _links(
         if number == 0:
             for link in store.callees(primary.id)[:3]:
                 add({"role": "callee", "symbol": link.symbol.id, "file": link.symbol.file})
-    for path in _related_tests(store, index, first):
-        add({"role": "test", "file": path})
+    test_paths = []
+    selected_tests = list(
+        dict.fromkeys(
+            path for primary in primaries for path in _related_tests(store, index, primary)
+        )
+    )[:MAX_TESTS]
+    for path in selected_tests:
+        if add({"role": "test", "file": path}):
+            test_paths.append(path)
+    if test_paths:
+        from prism.navigator.test_command import run_command
+
+        command = run_command(store.root, test_paths)
+        if command:
+            pack["run"] = command
+            if _size(pack) > budget:
+                del pack["run"]
+    elif not selected_tests:
+        pack["test_warning"] = "No indexed tests found; add or identify a test before finishing."
+        if _size(pack) > budget:
+            del pack["test_warning"]
     if not links:
         del pack["links"]
     if omitted:
@@ -1457,14 +1712,16 @@ def _confidence(
             level = "low"
     if not shown and not literals:
         level = "low"
-    graph_led = bool(shown and shown[0]["role"] == "graphify hint")
+    graph_led = bool(shown and shown[0]["role"] in ("graphify hint", "similar"))
     if graph_led:
+        # Likewise for a block only the embedding model found: a candidate, never a proof.
         # Verified locations are useful candidates even without lexical source
         # hits, but an imported relationship cannot justify high confidence.
         level = "medium"
     pack["confidence"] = level
     stale = bool(pack["stale_sources"])
-    top_cut = bool(shown and shown[0]["truncated"])
+    # With a checked patch the code beside the sites is context, so an excerpt is not a gap.
+    top_cut = bool(shown and shown[0]["truncated"]) and not pack.get("patch")
     pack["sufficient"] = (
         level == "high"
         and not stale
@@ -1493,12 +1750,112 @@ def _confidence(
             "Source is partial: request a larger budget or read the remaining lines before editing."
         )
     elif literals:
-        pack["next"] = (
-            "Literal lists are exhaustive over the indexed source: edit from them without "
-            "re-grepping; run the listed tests."
-        )
+        listed = [lit for lit in literals if lit["complete"] and lit["kind"] != "identifier"]
+        if pack.get("patch"):
+            pack["next"] = (
+                "Mechanical change: apply the patch above, then run the listed tests; "
+                "hand-edit only sites needing different wording."
+            )
+        elif listed:
+            sites = sum(len(lit["occurrences"]) for lit in listed)
+            files = len({o["file"] for lit in listed for o in lit["occurrences"]})
+            pack["next"] = (
+                f"Edit-ready: {sites} listed sites in {files} files are exhaustive; edit them "
+                "now, no repo-wide search. Run the listed tests."
+            )
+        else:
+            pack["next"] = (
+                "Literal lists are exhaustive over the indexed source: edit from them without "
+                "re-grepping; run the listed tests."
+            )
     else:
         pack["next"] = "Edit from these locations; check the callers listed; run the listed tests."
     if evidence.absent and level != "low" and len(pack["next"]) <= NEXT_RESERVE - 38:
         pack["next"] += " Names listed as new do not exist yet."
     assert len(pack["next"]) <= NEXT_RESERVE, pack["next"]
+
+
+def _safely(fn: Any, *args: Any) -> Any:
+    """An enricher is optional: whatever goes wrong inside it, the packet is still built."""
+    try:
+        return fn(*args)
+    except Exception:
+        return None
+
+
+def _drop_graph_lines(pack: dict[str, Any]) -> None:
+    """Keep the tests, drop callers, callees and impact (a patch or a brief packet needs no map)."""
+    links = [link for link in pack.get("links", []) if link["role"] == "test"]
+    if links:
+        pack["links"] = links
+    else:
+        pack.pop("links", None)
+    pack.pop("callers_omitted", None)
+    pack.pop("impact", None)
+
+
+def _offer(
+    pack: dict[str, Any], key: str, value: Any, budget: int, room_from_blocks: bool = False
+) -> None:
+    """Add an optional packet field only if the packet still fits its budget.
+
+    With `room_from_blocks`, the lowest-ranked code blocks (never the first two) may be dropped to
+    make it fit: a line that prevents a wrong or missed edit outweighs a third code excerpt."""
+    pack[key] = value
+    while _size(pack) > budget and room_from_blocks and len(pack["blocks"]) > 2:
+        pack["blocks"].pop()
+    if _size(pack) > budget:
+        del pack[key]
+
+
+def _enrich(
+    store: IndexStore,
+    reader: SourceReader,
+    pack: dict[str, Any],
+    primaries: list[SymbolRow],
+    budget: int,
+) -> None:
+    """Twins, read ranges, batching and the done condition, each only when it fits."""
+    twins = _safely(enrich.find_twins, store, reader, primaries)
+    if twins:
+        _offer(pack, "twins", twins, budget, room_from_blocks=True)
+
+    sites: dict[str, list[int]] = {}
+    for lit in pack.get("literals", []):
+        if lit["kind"] == "identifier" and not lit["complete"]:
+            continue
+        for occ in lit["occurrences"]:
+            sites.setdefault(occ["file"], []).append(occ["line"])
+    for block in pack["blocks"]:
+        if block.get("source"):
+            sites.setdefault(block["file"], []).append(block["lines"][0])
+    for twin in pack.get("twins", []):
+        for copy_ in twin["copies"]:
+            sites.setdefault(copy_["file"], []).append(copy_["lines"][0])
+    if not pack.get("patch"):  # a patch already applies every site in one call
+        ranges = _safely(enrich.read_ranges, reader, sites)
+        if ranges:
+            _offer(pack, "read_ranges", ranges, budget)
+        editable = {f for f in sites if not store._is_test(f)}
+        if len(editable) >= 2:
+            _offer(pack, "batch", len(editable), budget)
+
+    if pack.get("patch"):
+        done = "git apply succeeded, the listed tests pass"
+    elif any(lit["complete"] and lit["kind"] != "identifier" for lit in pack.get("literals", [])):
+        done = "every listed site is changed (`--mode verify` confirms none remain)"
+    elif pack.get("run"):
+        done = "the listed tests pass"
+    else:
+        done = ""
+    if done:
+        _offer(pack, "done", done, budget)
+    if (
+        pack.get("twins")
+        and not pack.get("patch")
+        and pack["confidence"] != "low"
+        and not pack["stale_sources"]
+    ):
+        pack["next"] = (
+            "Change every copy listed under Twins, not only the first; run the listed tests."
+        )

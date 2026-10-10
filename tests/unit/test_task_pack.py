@@ -29,7 +29,9 @@ def test_packet_budget_includes_source_and_serialization(indexed: Path, budget: 
     with_store = IndexStore.open(indexed)
     try:
         pack = op_task(with_store, "apply_discount", budget)
-        assert estimate_tokens(json.dumps(pack, indent=2, ensure_ascii=False)) <= budget
+        assert (
+            estimate_tokens(json.dumps(pack, separators=(",", ":"), ensure_ascii=False)) <= budget
+        )
         assert estimate_tokens(render_task(pack)) <= budget
         assert pack["budget"]["used_est"] <= budget
         for block in pack["blocks"]:
