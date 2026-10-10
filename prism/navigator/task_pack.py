@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import re
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from prism.core.errors import UserError
@@ -26,7 +26,7 @@ from prism.navigator.graphwalk import pick_seeds, walk_graph
 from prism.navigator.impact import dependents
 from prism.navigator.literals import EvidenceResult, find_literals
 from prism.navigator.overview import overview_items, render_overview, wants_overview
-from prism.navigator.request import request_focus, request_operations
+from prism.navigator.request import introduced_identifiers, request_focus, request_operations
 from prism.navigator.resolve import Target
 from prism.navigator.source_index import SourceIndex, SourceReader
 from prism.navigator.store import IndexStore, SymbolRow
@@ -514,6 +514,15 @@ def _fill(
     terms = _query_terms(query, index)
     operations = request_operations(query)
     evidence = _evidence(store, index, reader, query)
+    introduced = introduced_identifiers(query)
+    # Existing occurrences of a newly supported type are not necessarily where its
+    # behaviour belongs. Preserve literal disclosure, but do not let those hits
+    # anchor source selection or suppress semantic/helper expansion.
+    ranking_evidence = replace(
+        evidence,
+        literals=[lit for lit in evidence.literals if lit.text not in introduced],
+        identifiers=[name for name in evidence.identifiers if name not in introduced],
+    )
     if evidence.limited:
         pack["search_limited"] = True
     if evidence.literals:
@@ -551,10 +560,10 @@ def _fill(
     pack["intent"] = _intent(query, evidence.identifiers, exact)
     if evidence.absent:
         pack["absent"] = evidence.absent[:5]
-    for name in evidence.absent:
-        for term in tokenize(name):
-            if term in terms:
-                terms[term] *= NEW_NAME_WEIGHT
+    new_terms = {term for name in [*evidence.absent, *introduced] for term in tokenize(name)}
+    for term in new_terms:
+        if term in terms:
+            terms[term] *= NEW_NAME_WEIGHT
 
     # Candidate files: body BM25, metadata search, literal hits and anything named outright.
     ranked = index.ranked(sorted(terms), MAX_FILE_CANDIDATES)
@@ -578,11 +587,11 @@ def _fill(
     if similar_files:
         channels.append(similar_files)
     prior = dict(fuse_files(channels, MAX_FILE_CANDIDATES))
-    literal_lines = evidence.hit_lines()
+    literal_lines = ranking_evidence.hit_lines()
     for file, _ in literal_lines:
         if store.file_exists(file):  # text/data files hold literals, never code blocks
             prior.setdefault(file, 0.2)
-    definitions = _definitions(store, query, evidence, exact_symbol, named, exact_file)
+    definitions = _definitions(store, query, ranking_evidence, exact_symbol, named, exact_file)
     if requested_range is not None:
         file, start, end = requested_range
         lines = reader.lines(file)
@@ -650,7 +659,9 @@ def _fill(
             )
         )
     if similar:
-        _semantic_blocks(blocks, similar, exact or any(lit.complete for lit in evidence.literals))
+        _semantic_blocks(
+            blocks, similar, exact or any(lit.complete for lit in ranking_evidence.literals)
+        )
     pack["stale_sources"] = len(reader.stale)
     wants_tests = bool(
         re.search(
@@ -685,7 +696,7 @@ def _fill(
         blocks = producers + contracts + [b for b in definitions if b not in producers + contracts]
         blocks.extend(_constructions(store, index, reader, query, blocks))
     _reinforce(store, blocks)
-    tight = any(lit.complete for lit in evidence.literals)
+    tight = any(lit.complete for lit in ranking_evidence.literals)
     blocks = _select(blocks, tight=tight)
     if not wants_tests and blocks and not store._is_test(blocks[0].file):
         # Tests belong to the primary target's verified links, not broad lexical
@@ -755,10 +766,14 @@ def _fill(
     # What earlier responses delivered, fixed before this packet adds to `seen`: a block of this
     # same packet must never turn another block of it into a "shown earlier" reference.
     earlier = set(seen) if seen is not None else None
-    _fit_blocks(pack, blocks, reader, source_budget, seen, structural, earlier)
+    needs_support = pack["intent"] == "edit" and not brief and patch is None
     support: list[_Block] = []
-    if pack["intent"] == "edit" and not brief and patch is None:
+    if needs_support:
+        _fit_blocks(pack, blocks[:1], reader, source_budget, seen, structural, earlier)
+        # A primary implementation's helper is more useful than an unrelated
+        # lower-ranked candidate. Reserve it before optional source consumes space.
         support = _support_blocks(store, reader, pack, source_budget, seen, earlier)
+    _fit_blocks(pack, blocks, reader, source_budget, seen, structural, earlier)
 
     primaries = _primaries(pack, blocks)
     if primaries:
@@ -948,6 +963,8 @@ def _support_blocks(
     for file, selected in ranges.items():
         for item in local_support(reader, file, selected):
             symbol = store.symbol_at(file, item.start)
+            if symbol and not (item.start <= symbol.start <= symbol.end <= item.end):
+                symbol = None  # a class binding/docstring is not an incomplete whole class
             support.append(
                 _Block(
                     file,
@@ -1043,8 +1060,8 @@ def _read_next(
         sites = sum(len(lit["occurrences"]) for lit in listed)
         files = len({o["file"] for lit in listed for o in lit["occurrences"]})
         pack["next"] = (
-            f"Edit-ready: {sites} listed sites in {files} files are exhaustive; edit them, no "
-            "repo-wide search. Read missing ranges only if needed."
+            f"Edit-ready: {sites} listed sites in {files} files are exhaustive for the searched text; "
+            "edit them, no repo-wide search for it. Read missing ranges only if needed."
             if listed
             else "Partial source: read only missing ranges if needed; complete literal lists need no re-grepping."
         )
@@ -1346,6 +1363,11 @@ def _fit_blocks(
         sym_id = block.symbol.id if block.symbol else None
         missing = _unseen_ranges(block.file, start, end, previous)
         if not missing:
+            if any(
+                item["file"] == block.file and item["lines"] == [start, end]
+                for item in pack["blocks"]
+            ):
+                continue
             pack["blocks"].append(
                 {
                     "role": block.role,
@@ -1729,8 +1751,8 @@ def _confidence(
             sites = sum(len(lit["occurrences"]) for lit in listed)
             files = len({o["file"] for lit in listed for o in lit["occurrences"]})
             pack["next"] = (
-                f"Edit-ready: {sites} listed sites in {files} files are exhaustive; edit them "
-                "now, no repo-wide search. Run the listed tests."
+                f"Edit-ready: {sites} listed sites in {files} files are exhaustive for the searched "
+                "text; edit them now, no repo-wide search for it. Run the listed tests."
             )
         else:
             pack["next"] = (

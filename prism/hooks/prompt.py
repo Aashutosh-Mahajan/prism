@@ -35,7 +35,7 @@ _ACKNOWLEDGEMENT = re.compile(
 _CODE_LIKE = re.compile(r"[A-Za-z0-9]+_[A-Za-z0-9_]+|[a-z][A-Z]|\w+\.\w+\(|/\w+\.\w{1,5}\b")
 HEADER = (
     "PRISM looked up this request in the local index (below). Literal lists marked exhaustive "
-    "cover the whole indexed source."
+    "cover the stated indexed scope. Use this context directly; do not fetch the same request again."
 )
 
 

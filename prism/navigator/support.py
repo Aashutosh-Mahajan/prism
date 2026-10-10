@@ -100,6 +100,7 @@ def local_support(
     except (SyntaxError, ValueError, RecursionError):
         return []
     loaded: set[str] = set()
+    attributes: set[str] = set()
     for node in ast.walk(tree):
         if (
             isinstance(node, ast.Name)
@@ -107,7 +108,47 @@ def local_support(
             and any(start <= node.lineno <= end for start, end in ranges)
         ):
             loaded.add(node.id)
+        if (
+            isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id in {"self", "cls"}
+            and isinstance(node.ctx, ast.Load)
+            and any(start <= node.lineno <= end for start, end in ranges)
+        ):
+            attributes.add(node.attr)
     candidates: list[SupportRange] = []
+    # Methods often delegate through a class attribute (e.g. self.default =
+    # staticmethod(_default)). Follow that binding instead of returning only
+    # imports and making the host rediscover the actual implementation.
+    for cls in (node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)):
+        if not any(cls.lineno <= lo <= hi <= (cls.end_lineno or cls.lineno) for lo, hi in ranges):
+            continue
+        for binding in cls.body:
+            if not isinstance(binding, (ast.Assign, ast.AnnAssign)):
+                continue
+            targets = binding.targets if isinstance(binding, ast.Assign) else [binding.target]
+            if not any(
+                isinstance(target, ast.Name) and target.id in attributes for target in targets
+            ):
+                continue
+            start, end = binding.lineno, binding.end_lineno or binding.lineno
+            if end - start >= 60:
+                continue
+            loaded.update(
+                child.id
+                for child in ast.walk(binding)
+                if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Load)
+            )
+            if not any(lo <= start and end <= hi for lo, hi in ranges):
+                candidates.append(SupportRange(file, start, end, "class binding"))
+        if cls.body and isinstance(cls.body[0], ast.Expr):
+            doc = cls.body[0]
+            if isinstance(doc.value, ast.Constant) and isinstance(doc.value.value, str):
+                end = doc.end_lineno or doc.lineno
+                if end - doc.lineno < 20 and not any(
+                    lo <= doc.lineno and end <= hi for lo, hi in ranges
+                ):
+                    candidates.append(SupportRange(file, doc.lineno, end, "class contract"))
     for node in tree.body:
         start, end = node.lineno, node.end_lineno or node.lineno
         if any(lo <= start and end <= hi for lo, hi in ranges):

@@ -174,14 +174,20 @@ ACTIVE_TTL_SECONDS = 30 * 60
 def _active_path(root: Path) -> Path:
     from prism.consent import cache_root
 
-    return cache_root(root) / "sessions" / "active.txt"
+    return cache_root(root) / "sessions" / "active"
 
 
 def note_active_session(root: Path, session: str | None) -> None:
-    """Remember the host session a hook last served, so tool calls in it share its memory."""
+    """Advertise a host session without overwriting another live conversation.
+
+    Separate markers avoid last-writer-wins races between hooks in the same repo.
+    An implicit tool session is safe only when exactly one recent host is known.
+    """
     if not session:
         return
-    path = _active_path(root)
+    directory = _active_path(root)
+    digest = hashlib.sha256(session.encode("utf-8")).hexdigest()[:16]
+    path = directory / f"{digest}.txt"
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(session, encoding="utf-8")
@@ -190,12 +196,20 @@ def note_active_session(root: Path, session: str | None) -> None:
 
 
 def active_session(root: Path) -> str | None:
-    """The session a hook served within the last half hour (a tool call cannot know the host's id)."""
-    path = _active_path(root)
+    """Infer a session only when unambiguous; otherwise resend rather than hide source."""
     try:
-        if time.time() - path.stat().st_mtime > ACTIVE_TTL_SECONDS:
-            return None
-        return path.read_text(encoding="utf-8").strip() or None
+        active: set[str] = set()
+        now = time.time()
+        for path in _active_path(root).glob("*.txt"):
+            if now - path.stat().st_mtime > ACTIVE_TTL_SECONDS:
+                path.unlink(missing_ok=True)
+                continue
+            value = path.read_text(encoding="utf-8").strip()
+            if value:
+                active.add(value)
+            if len(active) > 1:
+                return None
+        return next(iter(active), None)
     except OSError:
         return None
 
@@ -204,7 +218,8 @@ def session_id(explicit: str | None, root: Path | None = None) -> str | None:
     """The session to remember ranges in: an explicit id, `PRISM_SESSION`, else the hook's session.
 
     The CLI and MCP tools cannot see the host agent's session id, but the prompt hook can: it
-    leaves a pointer, so a packet the hook delivered is a reference when the agent asks again.
+    advertises its session. Reuse it only when no other recent host session makes
+    that inference ambiguous. Explicit IDs always take precedence.
     """
     chosen = explicit or os.environ.get("PRISM_SESSION")
     if chosen:

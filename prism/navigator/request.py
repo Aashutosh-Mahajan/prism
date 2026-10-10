@@ -22,6 +22,35 @@ _OPERATION_GROUPS = (
     ("mask", "masking", "sanitize", "redact"),
 )
 
+_ADDITIVE = re.compile(
+    r"\b(?:add|extend|introduce|also|new|additional)\b"
+    r"|\b(?:should|must|needs?\s+to)\s+(?:serialize|serialise|accept|support|handle|allow)\b",
+    re.I,
+)
+_NEW_ARGUMENT = re.compile(
+    r"\b(?:serialize|serialise|accept|support|handle|allow)\s+"
+    r"(?:(?:for|also|the|type|objects?\s+of\s+type)\s+)*[`\"']?"
+    r"(?P<name>[^\W\d]\w*(?:\.[^\W\d]\w*)*)",
+    re.I,
+)
+
+
+def introduced_identifiers(query: str) -> set[str]:
+    """Type arguments introduced by an explicit feature addition, not edit locations.
+
+    Keep this conservative: ordinary lookups and bug fixes retain exact identifier
+    ranking. The caller still reports all literal occurrences; only their ranking
+    role changes. Qualified names and their final component represent one argument.
+    """
+    if not _ADDITIVE.search(query):
+        return set()
+    result: set[str] = set()
+    for match in _NEW_ARGUMENT.finditer(query):
+        name = match["name"]
+        if "." in name or "_" in name or re.search(r"[a-z][A-Z]", name):
+            result.update((name, name.rsplit(".", 1)[-1]))
+    return result
+
 
 def request_operations(query: str) -> set[str]:
     """Name-level operation evidence, independent of later error examples."""

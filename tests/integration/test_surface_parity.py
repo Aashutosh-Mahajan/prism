@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -62,9 +63,8 @@ def test_cli_and_mcp_return_identical_text(enabled: Path, query: str) -> None:
 
 
 def test_hook_body_matches_cli_for_the_same_budget(enabled: Path) -> None:
-    from prism.hooks.prompt import HEADER, INITIAL_PACKET_BUDGET, user_prompt
+    from prism.hooks.prompt import HEADER, user_prompt
 
-    first_budget = INITIAL_PACKET_BUDGET - estimate_tokens(HEADER + "\n")
     payload = json.dumps(
         {
             "cwd": str(enabled),
@@ -72,19 +72,21 @@ def test_hook_body_matches_cli_for_the_same_budget(enabled: Path) -> None:
             "prompt": "where is apply_discount and what calls it",
         }
     )
-    # Before the hook runs: afterwards the CLI would share the hook's session (tested below).
-    expected = cli_text(
-        enabled, "where is apply_discount and what calls it", "--budget", str(first_budget)
-    )
-    out = user_prompt(payload, time_budget=30)
-    if not out:  # a weak or cold answer is silent by design
-        pytest.skip("hook stayed silent for this fixture query")
+    out = user_prompt(payload, time_budget=30, inline_build=True)
     assert out.startswith(HEADER)
     body = out[len(HEADER) :].strip()
-    # The hook may expand the budget when the first packet is insufficient; the first-budget
-    # rendering is then a prefix of neither, so compare only when the sizes agree.
-    if body.splitlines()[0].split("·")[-1].strip().endswith(f"/{first_budget} est. tokens"):
-        assert body == expected
+    match = re.search(r"/(\d+) est\. tokens", body.splitlines()[0])
+    assert match is not None
+    expected = cli_text(
+        enabled,
+        "where is apply_discount and what calls it",
+        "--budget",
+        match[1],
+        "--session",
+        "independent-cli",
+    )
+    assert body == expected
+    assert estimate_tokens(out) <= 2000
 
 
 def test_a_repeated_request_is_a_reference_on_every_surface(enabled: Path) -> None:
@@ -118,9 +120,19 @@ def test_a_tool_call_shares_the_session_of_the_hook_that_just_answered(enabled: 
         }
     )
     delivered = user_prompt(payload, time_budget=30, inline_build=True)
-    if not delivered:
-        pytest.skip("hook stayed silent for this fixture query")
+    assert delivered
     # The agent now asks the tool for the same code: it must be a reference, not a second copy.
     again = mcp_text(enabled, "also show apply_discount")
     assert "[shown earlier in this session]" in again
     assert cli_text(enabled, "also show apply_discount").count("```") <= again.count("```") + 2
+
+
+def test_concurrent_hook_sessions_do_not_hide_another_agents_source(enabled: Path) -> None:
+    from prism.navigator.session import note_active_session, session_id
+
+    cli_text(enabled, "apply_discount", "--session", "agent-one")
+    note_active_session(enabled, "agent-one")
+    note_active_session(enabled, "agent-two")
+    assert session_id(None, enabled) is None
+    assert session_id("agent-one", enabled) == "agent-one"
+    assert "```" in mcp_text(enabled, "apply_discount")
