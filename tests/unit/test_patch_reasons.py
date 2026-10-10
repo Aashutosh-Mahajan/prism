@@ -17,6 +17,7 @@ from prism.navigator.literals import EvidenceResult, Occurrence
         "line_changed",
         "git_rejected",
         "cache_unavailable",
+        "generic_name",
     ],
 )
 def test_patch_refusals_have_specific_reasons(
@@ -40,6 +41,8 @@ def test_patch_refusals_have_specific_reasons(
     replacements = [replacement]
     if reason == "no_replacement":
         replacements = []
+    elif reason == "generic_name":
+        replacements = [enrich.Replacement("id", "object_id", "identifier")]
     elif reason == "conflicting_destinations":
         replacements.append(enrich.Replacement("OLD_LIMIT", "OTHER_LIMIT", "identifier"))
     elif reason == "not_exhaustive":

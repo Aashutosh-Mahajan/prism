@@ -1,0 +1,49 @@
+PRISM task · edit · confidence high · 821/2000 est. tokens
+Scope: searched 23 code + 1 text/data files (JSON, YAML, Markdown, HTML, ...); skipped: binaries, lockfiles, ignored paths. No other line in them matches.
+Literal "apply_discount" (identifier, 6 found, exhaustive):
+  src/shop/pricing/discounts.py
+    8: def apply_discount(amount: Money, rules: list["rules_mod.Rule"], coupon: float | None = None) -> Money:
+  src/shop/checkout/cart.py
+    4: from shop.pricing import apply_discount
+    31: return apply_discount(self.subtotal(), self.rules, coupon)
+  src/shop/pricing/__init__.py
+    3: from .discounts import apply_discount
+  tests/test_discounts.py
+    2: from shop.pricing import apply_discount
+    8: assert apply_discount(Money(2000), rules).cents == 1600
+candidate: src/shop/pricing/discounts.py:8-14 (shop.pricing.discounts.apply_discount)
+```
+8: def apply_discount(amount: Money, rules: list["rules_mod.Rule"], coupon: float | None = None) -> Money:
+9:     """Apply the best eligible discount to an amount."""
+10:     eligible = rules_mod.eligible_rules(amount, rules)
+11:     best = max((r.rate for r in eligible), default=0.0)
+12:     if coupon:
+13:         best = max(best, coupon)
+14:     return amount.scale(1 - best)
+```
+definition: src/shop/pricing/discounts.py:3
+```
+3: from shop.money import Money
+```
+definition: src/shop/pricing/discounts.py:5
+```
+5: from . import rules as rules_mod
+```
+candidate: src/shop/pricing/rules.py:19-21 (shop.pricing.rules.eligible_rules)
+```
+19: def eligible_rules(amount: Money, rules: list[Rule]) -> list[Rule]:
+20:     """Rules whose minimum spend is met."""
+21:     return [r for r in rules if r.applies(amount)]
+```
+Callers of apply_discount:
+  src/shop/checkout/cart.py
+    total :31: return apply_discount(self.subtotal(), self.rules, coupon)
+Callers of eligible_rules:
+  src/shop/pricing/discounts.py
+    apply_discount :10: eligible = rules_mod.eligible_rules(amount, rules)
+Calls: shop.pricing.rules.eligible_rules, shop.money.Money.scale
+Run: python -m pytest -q tests/test_discounts.py tests/test_cart.py
+Impact: 5 dependent symbols in 5 other files (e.g. src/shop/checkout/cart.py, tests/test_discounts.py, src/shop/api/orders.py)
+Batch: the 4 files above are independent; read them together in one turn, then edit them together in one turn.
+Done when: the listed tests pass
+Next: Literal lists are exhaustive over the indexed source: edit from them without re-grepping; run the listed tests.

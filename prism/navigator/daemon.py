@@ -207,7 +207,7 @@ def _handle(holder: _Holder, request: dict[str, Any]) -> dict[str, Any]:
         holder.root,
         store,
         str(request["query"]),
-        int(request.get("budget", 2000)),
+        int(request["budget"]) if request.get("budget") is not None else None,
         mode,
         request.get("session"),
         bool(request.get("json")),

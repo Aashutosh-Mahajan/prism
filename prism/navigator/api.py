@@ -47,7 +47,7 @@ def op_context(
 def op_task(
     store: IndexStore,
     query: str,
-    budget: int = 2000,
+    budget: int | None = None,
     seen: set[tuple[str, int, int]] | None = None,
     mode: str = "auto",
     session: str | None = None,
@@ -57,6 +57,10 @@ def op_task(
     """One-call retrieval for a request. `seen` (a session's already-returned code ranges)
     makes repeats cost a reference line instead of the source again. Earlier sessions (other
     than `session`) that changed the same code are noted when the line fits the budget."""
+    if budget is None:
+        return adaptive_task(
+            store, query, seen=seen, mode=mode, session=session, use_cache=use_cache, detail=detail
+        )
     if mode == "verify":
         return _verify(store, query, budget, session)
     from prism.navigator.semantic import semantic_enabled
@@ -100,6 +104,57 @@ def op_task(
             save_packet(path, pack, store.root, store.manifest)
     record_activity(store.root, "task", [b["symbol"] for b in pack["blocks"] if b["symbol"]])
     return _with_history(store, pack, session)
+
+
+def adaptive_task(
+    store: IndexStore,
+    query: str,
+    *,
+    cap: int = 2000,
+    seen: set[tuple[str, int, int]] | None = None,
+    mode: str = "auto",
+    session: str | None = None,
+    use_cache: bool = True,
+    detail: str = "full",
+) -> dict[str, Any]:
+    """One shared budget ladder; only the delivered attempt updates session memory."""
+    count = store.conn.execute("SELECT COUNT(*) FROM symbols").fetchone()[0]
+    initial = min(cap, 800 if count < 500 else 1200)
+    trial = None if seen is None else set(seen)
+    pack = op_task(
+        store, query, initial, trial, mode=mode, session=session, use_cache=use_cache, detail=detail
+    )
+    if not pack.get("sufficient") and pack["confidence"] != "low" and initial < cap:
+        expanded_seen = None if seen is None else set(seen)
+        expanded = op_task(
+            store,
+            query,
+            cap,
+            expanded_seen,
+            mode=mode,
+            session=session,
+            use_cache=use_cache,
+            detail=detail,
+        )
+        if expanded.get("sufficient"):
+            pack, trial = expanded, expanded_seen
+    if detail == "full" and pack.get("sufficient") and pack.get("patch"):
+        brief_seen = None if seen is None else set(seen)
+        brief = op_task(
+            store,
+            query,
+            min(cap, BRIEF_BUDGET),
+            brief_seen,
+            mode=mode,
+            session=session,
+            use_cache=use_cache,
+            detail="brief",
+        )
+        if brief.get("sufficient"):
+            pack, trial = brief, brief_seen
+    if seen is not None and trial is not None:
+        seen.update(trial)
+    return pack
 
 
 def _verify(store: IndexStore, query: str, budget: int, session: str | None) -> dict[str, Any]:

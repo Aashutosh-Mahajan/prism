@@ -598,7 +598,7 @@ def knowledge(
 def task(
     query: Annotated[str, typer.Argument(help="The request, a symbol name, or a file path.")],
     root: RootOption = None,
-    budget: Annotated[int, typer.Option("--budget", min=128, max=32000)] = 2000,
+    budget: Annotated[int | None, typer.Option("--budget", min=128, max=32000)] = None,
     mode: Annotated[
         str,
         typer.Option(

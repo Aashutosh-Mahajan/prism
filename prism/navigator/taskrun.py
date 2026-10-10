@@ -19,7 +19,7 @@ def run_task(
     root: Path,
     store: IndexStore,
     query: str,
-    budget: int,
+    budget: int | None,
     mode: str,
     session: str | None,
     as_json: bool,

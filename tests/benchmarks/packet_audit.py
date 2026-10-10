@@ -83,9 +83,12 @@ def composition(text: str) -> dict[str, Any]:
     }
 
 
-def audit(repo: Path, requests: Path, ref: str = "HEAD") -> dict[str, Any]:
+def audit(
+    repo: Path, requests: Path, ref: str = "HEAD", budget: int | None = 2000
+) -> dict[str, Any]:
     start = time.perf_counter()
     metadata = provenance(repo, ref)
+    metadata["budget"] = budget if budget is not None else "adaptive, cap 2000"
     spec = json.loads(requests.read_text(encoding="utf-8"))
     rows = []
     with tempfile.TemporaryDirectory(prefix="prism-packet-audit-") as temp:
@@ -95,7 +98,7 @@ def audit(repo: Path, requests: Path, ref: str = "HEAD") -> dict[str, Any]:
             historical_store(repo, base, metadata["source_head"]) as store,
         ):
             for request in spec["requests"]:
-                pack = op_task(store, request["query"], 2000, use_cache=False)
+                pack = op_task(store, request["query"], budget, use_cache=False)
                 text = render_task(pack)
                 rows.append(
                     {
@@ -137,9 +140,12 @@ def main() -> None:
     parser.add_argument("--repo", type=Path, default=ROOT)
     parser.add_argument("--requests", type=Path, default=REQUESTS)
     parser.add_argument("--ref", default="HEAD", help="Pin the audited source revision.")
+    parser.add_argument(
+        "--adaptive", action="store_true", help="Audit the default shared budget ladder."
+    )
     parser.add_argument("--output", type=Path, default=ROOT / "output/benchmarks/packet_audit.json")
     args = parser.parse_args()
-    report = audit(args.repo.resolve(), args.requests, args.ref)
+    report = audit(args.repo.resolve(), args.requests, args.ref, None if args.adaptive else 2000)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report["summary"], indent=2))

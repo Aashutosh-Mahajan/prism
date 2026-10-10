@@ -42,3 +42,14 @@ def test_450_sites_are_refused_explicitly(tmp_path: Path) -> None:
         assert pack["patch_reason"] == "too_many_sites"
     finally:
         store.close()
+
+
+def test_patch_that_cannot_fit_names_the_budget_reason(tmp_path: Path) -> None:
+    store = indexed(tmp_path, 80)
+    try:
+        pack = op_task(store, "rename TARGET_SYMBOL to NEW_SYMBOL everywhere", 128)
+        assert pack["patch_reason"] == "budget_exceeded"
+        assert "Patch: none (budget_exceeded)" in render_task(pack)
+        assert estimate_tokens(render_task(pack)) <= 128
+    finally:
+        store.close()

@@ -37,9 +37,10 @@ def test_packet_budget_includes_source_and_serialization(indexed: Path, budget: 
         for block in pack["blocks"]:
             lines = (indexed / block["file"]).read_text().splitlines()
             start, end = block["lines"]
-            assert block["source"] == "\n".join(
-                f"{i}: {lines[i - 1]}" for i in range(start, end + 1)
-            )
+            from prism.navigator.task_pack import _source_excerpt
+
+            ranges = [tuple(pair) for pair in block.get("source_ranges", [[start, end]])]
+            assert block["source"] == _source_excerpt(lines, ranges, compact=True)
     finally:
         with_store.close()
 
@@ -54,6 +55,38 @@ def test_one_call_contains_code_and_graph(indexed: Path) -> None:
         assert not block["truncated"]
         assert any(link["role"] == "caller" for link in pack["links"])
         assert any(link["role"] == "test" for link in pack["links"])
+    finally:
+        store.close()
+
+
+def test_non_test_callers_match_unique_name_source_oracle(indexed: Path) -> None:
+    import ast
+
+    expected = set()
+    for path in (indexed / "src").rglob("*.py"):
+        source = path.read_text(encoding="utf-8")
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            assert "apply_discount(" not in source  # unrelated intentionally broken fixture
+            continue
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "apply_discount"
+            ):
+                expected.add((path.relative_to(indexed).as_posix(), node.lineno))
+    store = IndexStore.open(indexed)
+    try:
+        pack = op_task(store, "shop.pricing.discounts.apply_discount", 2000)
+        actual = {
+            (link["file"], link["line"])
+            for link in pack["links"]
+            if link["role"] == "caller"
+            and link["target"] == "shop.pricing.discounts.apply_discount"
+        }
+        assert expected and expected <= actual
     finally:
         store.close()
 

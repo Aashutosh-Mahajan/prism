@@ -165,7 +165,7 @@ def test_adaptive_packet_remembers_only_delivered_attempt(
 
     monkeypatch.setattr(api, "op_task", retrieve)
     text = _retrieve(str(repo), T1, "adaptive", 2000)
-    assert text and len(budgets) == 2 and budgets[0] < budgets[1]
+    assert text and len(budgets) >= 2 and budgets[0] < budgets[1]
     assert estimate_tokens(text) <= 2000
     assert discarded not in load_seen(repo, "adaptive", load_manifest(repo))
 

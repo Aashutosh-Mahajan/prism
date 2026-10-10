@@ -12,10 +12,12 @@ and says how far to trust it (`confidence`, `sufficient`, `next`).
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 from collections import deque
 from dataclasses import dataclass, field, replace
+from itertools import combinations
 from typing import Any
 
 from prism.core.errors import UserError
@@ -36,14 +38,15 @@ from prism.navigator.text import FILLER_WORDS, tokenize
 
 MIN_BUDGET, MAX_BUDGET = 128, 32000
 WHOLE_SYMBOL_MAX = 120  # complete local units when affordable; output budget remains the hard cap
-WINDOW_PAD = 2
+WINDOW_PAD = 3
 MERGE_GAP = 5
 MAX_BLOCKS = 6
+MAX_EDIT_CANDIDATES = 2
 MAX_PER_FILE = 2
 MAX_FILE_CANDIDATES = 25
 MAX_CALLERS = 6
 MAX_STRUCTURAL_CALLERS = 12
-MAX_TESTS = 3
+MAX_TESTS = 2
 MIN_TEST_NAME = 5  # shorter names (get, post, run) would match every test
 NEXT_RESERVE = 150  # characters set aside for the closing `next` guidance
 LITERAL_SHARE = 0.50
@@ -132,15 +135,15 @@ def render_task(pack: dict[str, Any]) -> str:
     if pack.get("literals") and pack.get("scope") and not pack.get("search_limited"):
         code, text = pack["scope"]
         parts.append(
-            f"Scope: searched {code} code + {text} text/data files (JSON, YAML, Markdown, HTML, ...); "
-            "skipped: binaries, lockfiles, ignored paths. No other line in them matches."
+            f"Scope: {code} code + {text} text/data files; exhaustive matches. "
+            "Skipped: binaries, lockfiles, ignored paths."
         )
     if pack.get("patch"):
         patch = pack["patch"]
         parts.append(
-            f"Patch: `{enrich.APPLY_COMMAND} {patch['path']}` changes {patch['old']} -> {patch['new']} at all "
-            f"{patch['sites']} listed sites in {patch['files']} files (checked with git apply --check); "
-            "it edits only those lines. Review with git diff."
+            f"Patch: `{enrich.APPLY_COMMAND} {patch['path']}` {patch['old']} -> {patch['new']}; "
+            f"all {patch['sites']} sites in {patch['files']} files; git apply --check passed. "
+            "Review with git diff."
         )
     elif pack.get("patch_reason"):
         parts.append(f"Patch: none ({pack['patch_reason']})")
@@ -175,29 +178,36 @@ def render_task(pack: dict[str, Any]) -> str:
         parts.append("Not in the source (new names): " + ", ".join(pack["absent"]))
     for block in pack["blocks"]:
         start, end = block["lines"]
-        head = f"{block['role']}: {_loc(block['file'], start, end)}"
+        label = {"candidate": "match", "definition": "def", "output definition": "output"}.get(
+            block["role"], block["role"]
+        )
+        head = f"{label}: {_loc(block['file'], start, end)}"
         if block["symbol"]:
-            head += f" ({block['symbol']})"
+            head += f" ({block['symbol'].rsplit('.', 1)[-1]})"
         if block.get("seen"):
             parts.append(head + " [shown earlier in this session]")
             continue
         if block["truncated"]:
-            head += (
-                " [new excerpt; some lines shown earlier]"
-                if block.get("continued")
-                else " [excerpt; inspect remaining code before editing]"
-            )
+            head += " [new excerpt]" if block.get("continued") else " [excerpt]"
         parts.append(head)
         parts.append("```\n" + block["source"] + "\n```")
     links = pack.get("links", [])
     callers = [link for link in links if link["role"] == "caller"]
     last_target = None
+    last_caller_file = None
     for link in callers:
         if link["target"] != last_target:
             last_target = link["target"]
             parts.append(f"Callers of {last_target.rsplit('.', 1)[-1]}:")
-        snippet = f": {link['snippet']}" if link.get("snippet") else ""
-        parts.append(f"  {link['symbol']} {_loc(link['file'], link['line'] or 0)}{snippet}")
+            last_caller_file = None
+        if link["file"] != last_caller_file:
+            parts.append(f"  {link['file']}")
+            last_caller_file = link["file"]
+        name = link["symbol"].rsplit(".", 1)[-1]
+        marker = "~" if link.get("uncertain") else ""
+        parts.append(f"    {marker}{name} :{link['line'] or 0}")
+    if any(link.get("uncertain") for link in callers):
+        parts.append("  ~ inferred caller; verify before changing")
     if callers and pack.get("callers_omitted"):
         parts.append(f"  … {pack['callers_omitted']} more (prism context <symbol>)")
     callees = [link["symbol"] for link in links if link["role"] == "callee"]
@@ -224,7 +234,7 @@ def render_task(pack: dict[str, Any]) -> str:
     for line in pack.get("history", []):
         parts.append(f"Earlier work: {line}")
     if pack.get("read_next"):
-        parts.append("Missing source (read only these ranges if needed):")
+        parts.append("Missing source (read as needed):")
         parts.extend(f"  {_loc(item['file'], *item['lines'])}" for item in pack["read_next"])
     if pack.get("read_ranges"):
         parts.append(
@@ -236,8 +246,7 @@ def render_task(pack: dict[str, Any]) -> str:
         )
     if pack.get("batch"):
         parts.append(
-            f"Batch: the {pack['batch']} files above are independent; read them together in one "
-            "turn, then edit them together in one turn."
+            f"Batch: {pack['batch']} independent files; read together, then edit together."
         )
     if pack.get("done"):
         parts.append(f"Done when: {pack['done']}")
@@ -375,8 +384,82 @@ def _group_blocks(
     return blocks
 
 
-def _render_source(lines: list[str], start: int, end: int) -> str:
-    return "\n".join(f"{i}: {lines[i - 1]}" for i in range(start, end + 1))
+def _render_source(lines: list[str], start: int, end: int, *, compact: bool = False) -> str:
+    return "\n".join(
+        f"{i}: {lines[i - 1]}" if i == start or not compact else lines[i - 1]
+        for i in range(start, end + 1)
+    )
+
+
+def _source_ranges(block: _Block, start: int, end: int, primary: bool) -> list[tuple[int, int]]:
+    """Keep a primary body; secondary bodies expose their signature and matching windows."""
+    if primary or end - start + 1 <= 40 or not block.hits:
+        return [(start, end)]
+    ranges = [(start, start)]
+    for lo, hi in _windows([hit for hit in block.hits if start <= hit <= end], end):
+        lo = max(start, lo)
+        if lo <= ranges[-1][1] + MERGE_GAP:
+            ranges[-1] = (ranges[-1][0], max(ranges[-1][1], hi))
+        else:
+            ranges.append((lo, hi))
+    return ranges
+
+
+def _source_excerpt(
+    lines: list[str], ranges: list[tuple[int, int]], *, compact: bool = False
+) -> str:
+    parts: list[str] = []
+    previous: int | None = None
+    for start, end in ranges:
+        if previous is not None and start > previous + 1:
+            parts.append(f"\u22ee {start - previous - 1} lines omitted")
+        parts.append(_render_source(lines, start, end, compact=compact))
+        previous = end
+    return "\n".join(parts)
+
+
+def _without_docstrings(
+    file: str, lines: list[str], ranges: list[tuple[int, int]], primary: bool
+) -> list[tuple[int, int]]:
+    if primary or not file.endswith(".py"):
+        return ranges
+    try:
+        tree = ast.parse("\n".join(lines))
+    except (SyntaxError, ValueError, RecursionError):
+        return ranges
+    omitted: set[int] = set()
+    for node in ast.walk(tree):
+        if (
+            not isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+            or not node.body
+        ):
+            continue
+        first = node.body[0]
+        if (
+            isinstance(first, ast.Expr)
+            and isinstance(first.value, ast.Constant)
+            and isinstance(first.value.value, str)
+        ):
+            omitted.update(range(first.lineno, (first.end_lineno or first.lineno) + 1))
+    visible: list[tuple[int, int]] = []
+    for lo, hi in ranges:
+        for number in range(lo, hi + 1):
+            if number in omitted:
+                continue
+            if visible and number == visible[-1][1] + 1:
+                visible[-1] = (visible[-1][0], number)
+            else:
+                visible.append((number, number))
+    return visible or ranges  # a doc-only match must not disappear entirely
+
+
+def _delivered(pack: dict[str, Any], *, source_only: bool = False) -> set[tuple[str, int, int]]:
+    return {
+        (block["file"], lo, hi)
+        for block in pack["blocks"]
+        if not source_only or block.get("source")
+        for lo, hi in block.get("source_ranges", [block["lines"]])
+    }
 
 
 def _snippet(line: str | None) -> str:
@@ -433,9 +516,7 @@ def build_task(
     if seen is not None:
         # Only the final delivered source counts. Recovery metadata may displace
         # a peripheral block that was staged while fitting the answer.
-        seen.update(
-            (b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"] if b.get("source")
-        )
+        seen.update(_delivered(pack, source_only=True))
     return pack
 
 
@@ -680,11 +761,12 @@ def _fill(
         )
     pack["stale_sources"] = len(reader.stale)
     wants_tests = bool(
-        re.search(
-            r"\b(?:fix|change|update|add|write|repair)\b.{0,20}\btests?\b",
-            request_focus(query),
-            re.I,
-        )
+        re.search(r"\b(?:test|tests|pytest|spec|coverage)\b|\btest_\w+", query, re.I)
+    )
+    wants_tests = wants_tests or bool(
+        (exact_file and store._is_test(exact_file))
+        or (exact_symbol and store._is_test(exact_symbol.file))
+        or any(store._is_test(symbol.file) for symbol in named)
     )
     wants_migrations = any(t.startswith("migrat") for t in terms)
     wants_docs = any(t in ("doc", "docs", "document", "documentation", "readme") for t in terms)
@@ -698,12 +780,14 @@ def _fill(
         # Application code is what gets changed; tests and generated migrations rank below it
         # unless the request is about them (the same rule `prism search` applies).
         if not wants_tests and store._is_test(block.file):
-            block.score *= TEST_DEMOTION
+            block.score = 0.0
         elif not wants_migrations and "/migrations/" in f"/{block.file}":
             block.score *= MIGRATION_DEMOTION
         elif not wants_docs and block.file.split("/", 1)[0] in DOC_DIRS:
             block.score *= DOC_DEMOTION
     _edit_evidence(blocks, reader, query, terms)
+    if not wants_tests:
+        blocks = [block for block in blocks if not store._is_test(block.file)]
     producers = [b for b in blocks if b.role == "output definition"]
     if producers and not wants_tests:
         # A verified builder and its small declared contract replace broad UI
@@ -712,7 +796,22 @@ def _fill(
         blocks = producers + contracts + [b for b in definitions if b not in producers + contracts]
         blocks.extend(_constructions(store, index, reader, query, blocks))
     _reinforce(store, blocks)
-    tight = any(lit.complete for lit in ranking_evidence.literals)
+    tight = bool(exact) or any(lit.complete for lit in ranking_evidence.literals)
+    if not tight and pack["intent"] == "edit" and blocks:
+        leading = sorted(blocks, key=lambda block: (-block.score, block.file, block.start))[:2]
+        preview = dict(pack)
+        preview["blocks"] = [
+            {
+                "symbol": block.symbol.id if block.symbol else None,
+                "role": block.role,
+                "truncated": not block.whole,
+                "source": "\n".join((reader.lines(block.file) or [])[block.start - 1 : block.end]),
+            }
+            for block in leading
+        ]
+        preview["literals"] = [literal.to_dict(LITERAL_WIDTHS[0]) for literal in evidence.literals]
+        _confidence(preview, evidence, leading, terms, exact, query)
+        tight = preview["confidence"] == "high"
     blocks = _select(blocks, tight=tight)
     if not wants_tests and blocks and not store._is_test(blocks[0].file):
         # Tests belong to the primary target's verified links, not broad lexical
@@ -820,10 +919,7 @@ def _fill(
         pack,
         blocks[:1] + support,
         budget,
-        None
-        if seen is None
-        else set(seen)
-        - {(b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"] if b.get("source")},
+        None if seen is None else set(seen) - _delivered(pack, source_only=True),
     )
     if pack["intent"] == "edit":
         _enrich(store, reader, pack, primaries, budget)
@@ -1007,7 +1103,9 @@ def _support_blocks(
         selected_blocks = selected_blocks[:1]  # a scalar edit needs no helper-body expansion
     for block in selected_blocks:
         if block.get("source"):
-            ranges.setdefault(block["file"], []).append(tuple(block["lines"]))
+            ranges.setdefault(block["file"], []).extend(
+                tuple(pair) for pair in block.get("source_ranges", [block["lines"]])
+            )
     support: list[_Block] = []
     for file, selected in ranges.items():
         for item in local_support(reader, file, selected):
@@ -1089,9 +1187,7 @@ def _read_next(
 ) -> None:
     if pack.get("patch"):
         return  # the patch carries the edit; the code beside it is context, not a gap
-    delivered = set(seen or ()) | {
-        (b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"]
-    }
+    delivered = set(seen or ()) | _delivered(pack)
     missing: list[dict[str, Any]] = []
     for block in blocks:
         start = block.symbol.start if block.symbol else block.start
@@ -1392,15 +1488,25 @@ def _fit_blocks(
     structural: bool,
     earlier: set[tuple[str, int, int]] | None = None,
 ) -> None:
+    selected = _knapsack_blocks(pack, blocks, reader, budget)
+    if selected:
+        blocks = selected
     placed = len(pack["blocks"])
     # Read session memory as it was before this response. Parts included earlier
     # in this same packet are tracked separately, so they never become a false
     # "shown earlier" reference while the response is still being assembled.
     previous = set(earlier if earlier is not None else (seen or ()))
-    included: set[tuple[str, int, int]] = {
-        (b["file"], b["lines"][0], b["lines"][1]) for b in pack["blocks"] if b.get("source")
-    }
+    included = _delivered(pack, source_only=True)
     for rank, block in enumerate(blocks):
+        candidate_count = sum(
+            item["role"] not in {"definition", "dependency"} for item in pack["blocks"]
+        )
+        if (
+            pack["intent"] in {"edit", "locate"}
+            and block.role not in {"definition", "dependency"}
+            and candidate_count >= MAX_EDIT_CANDIDATES
+        ):
+            continue
         if placed >= MAX_BLOCKS:
             break
         lines = reader.lines(block.file)
@@ -1434,7 +1540,7 @@ def _fit_blocks(
             continue
         # Spend on a complete primary body before smaller peripheral snippets.
         # A 45% slice used to truncate affordable functions and force a read.
-        share = int(budget * (0.82 if rank == 0 else 0.35))
+        share = budget if selected else int(budget * (0.82 if rank == 0 else 0.35))
         original_start, original_end = start, end
         for lo, hi in missing:
             for full_start, full_end in _unseen_ranges(block.file, lo, hi, included):
@@ -1443,14 +1549,23 @@ def _fit_blocks(
                 start, end = full_start, full_end
                 focus = next((hit for hit in block.hits if start <= hit <= end), start)
                 while start <= end:
+                    ranges = _without_docstrings(
+                        block.file,
+                        lines,
+                        _source_ranges(block, start, end, placed == 0),
+                        placed == 0,
+                    )
                     item: dict[str, Any] = {
                         "role": block.role,
                         "file": block.file,
                         "symbol": sym_id,
                         "lines": [start, end],
                         "truncated": _partial_block(block, start, end, previous | included),
-                        "source": _render_source(lines, start, end),
+                        "source": _source_excerpt(lines, ranges, compact=True),
                     }
+                    if ranges != [(start, end)]:
+                        item["source_ranges"] = [list(pair) for pair in ranges]
+                        item["truncated"] = True
                     if missing != [(original_start, original_end)]:
                         item["continued"] = True
                     before = _size(pack)
@@ -1458,17 +1573,92 @@ def _fit_blocks(
                     size = _size(pack)
                     if size <= budget and size - before <= share:
                         placed += 1
-                        included.add((block.file, start, end))
+                        included.update((block.file, lo, hi) for lo, hi in ranges)
                         # Remember the actual delivered excerpt, never the full
                         # function that a small budget forced us to truncate.
                         if seen is not None:
-                            seen.add((block.file, start, end))
+                            seen.update((block.file, lo, hi) for lo, hi in ranges)
                         break
                     pack["blocks"].pop()
                     if end - focus >= focus - start:
                         end -= 1
                     else:
                         start += 1
+
+
+def _knapsack_blocks(
+    pack: dict[str, Any], blocks: list[_Block], reader: SourceReader, budget: int
+) -> list[_Block]:
+    """Bounded deterministic 0/1 selection; fitting performs the final budget check."""
+    room = budget - _size(pack)
+    available = MAX_BLOCKS - len(pack["blocks"])
+    candidates: list[tuple[_Block, int]] = []
+    delivered = _delivered(pack)
+    for rank, block in enumerate(blocks[:12]):
+        lines = reader.lines(block.file)
+        if not lines:
+            continue
+        end = min(block.end, len(lines))
+        if end < block.start or not _unseen_ranges(block.file, block.start, end, delivered):
+            continue
+        primary = not pack["blocks"] and rank == 0
+        ranges = _without_docstrings(
+            block.file, lines, _source_ranges(block, block.start, end, primary), primary
+        )
+        item: dict[str, Any] = {
+            "role": block.role,
+            "file": block.file,
+            "symbol": block.symbol.id if block.symbol else None,
+            "lines": [block.start, end],
+            "truncated": not block.whole,
+            "source": _source_excerpt(lines, ranges, compact=True),
+        }
+        cost = (
+            max(
+                estimate_tokens(
+                    json.dumps(item, ensure_ascii=False), pack["budget"].get("token_scale", 1.0)
+                ),
+                estimate_tokens(
+                    f"{block.role}: {block.file}:{block.start}-{end}\n```\n{item['source']}\n```"
+                ),
+            )
+            + 2
+        )
+        if cost <= room:
+            candidates.append((block, cost))
+    existing: dict[str, int] = {}
+    for item in pack["blocks"]:
+        if item["role"] not in {"definition", "dependency"}:
+            existing[item["file"]] = existing.get(item["file"], 0) + 1
+    best: tuple[float, tuple[tuple[float, str, int], ...]] | None = None
+    result: list[_Block] = []
+    for size in range(1, min(available, len(candidates)) + 1):
+        for subset in combinations(candidates, size):
+            if sum(cost for _, cost in subset) > room:
+                continue
+            if (
+                pack["intent"] in {"edit", "locate"}
+                and sum(existing.values())
+                + sum(block.role not in {"definition", "dependency"} for block, _ in subset)
+                > MAX_EDIT_CANDIDATES
+            ):
+                continue
+            counts = dict(existing)
+            for block, _ in subset:
+                if block.role not in {"definition", "dependency"}:
+                    counts[block.file] = counts.get(block.file, 0) + 1
+            if any(count > MAX_PER_FILE for count in counts.values()):
+                continue
+            ordered = sorted(
+                (block for block, _ in subset), key=lambda b: (-b.score, b.file, b.start)
+            )
+            key = (
+                -sum(block.score for block in ordered),
+                tuple((-b.score, b.file, b.start) for b in ordered),
+            )
+            if best is None or key < best:
+                best, result = key, ordered
+    return result
 
 
 def _unseen_ranges(
@@ -1619,13 +1809,30 @@ def _links(
     omitted = 0
     caller_sets = {primary.id: store.callers(primary.id) for primary in primaries}
     active_primaries = sum(bool(callers) for callers in caller_sets.values())
+    uncertain = 0
     for number, primary in enumerate(primaries):
         limit = MAX_STRUCTURAL_CALLERS if structural else MAX_CALLERS
         if active_primaries > 1:
             limit = max(3, limit // 2)
         callers = caller_sets[primary.id]
+        if _related_tests(store, index, primary):
+            callers = [link for link in callers if not store._is_test(link.symbol.file)]
+        callers = sorted(
+            callers,
+            key=lambda link: (
+                link.confidence != "high",
+                link.symbol.file,
+                link.line or 0,
+                link.symbol.id,
+            ),
+        )
         shown = 0
-        for link in callers[:limit]:
+        for link in callers:
+            if shown >= limit:
+                break
+            guessed = link.confidence != "high"
+            if guessed and uncertain >= 3:
+                continue
             src = reader.lines(link.symbol.file)
             text = src[link.line - 1] if src and link.line and 0 < link.line <= len(src) else None
             item = {
@@ -1636,10 +1843,12 @@ def _links(
                 "line": link.line,
                 "confidence": link.confidence,
                 "snippet": _snippet(text),
+                "uncertain": guessed,
             }
             if not add(item):
                 break
             shown += 1
+            uncertain += guessed
         omitted += len(callers) - shown
         if number == 0:
             for link in store.callees(primary.id)[:3]:

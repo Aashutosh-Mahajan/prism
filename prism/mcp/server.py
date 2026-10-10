@@ -128,7 +128,7 @@ class PrismTools:
     def prism_task(
         self,
         query: str,
-        budget: int = 2000,
+        budget: int | None = None,
         repeat: bool = False,
         mode: str = "auto",
         session: str | None = None,
@@ -385,7 +385,7 @@ def build_server(root: Path, profile: str | None = None) -> Any:
 
     def task(
         query: str,
-        budget: int = 2000,
+        budget: int | None = None,
         repeat: bool = False,
         mode: str = "auto",
         session: str | None = None,

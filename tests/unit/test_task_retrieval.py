@@ -165,13 +165,18 @@ def test_blocks_are_verbatim_numbered_source(store: IndexStore) -> None:
     for block in pack["blocks"]:
         lines = (store.root / block["file"]).read_text(encoding="utf-8").splitlines()
         start, end = block["lines"]
-        assert block["source"] == "\n".join(f"{i}: {lines[i - 1]}" for i in range(start, end + 1))
+        from prism.navigator.task_pack import _source_excerpt
+
+        ranges = [tuple(pair) for pair in block.get("source_ranges", [[start, end]])]
+        assert block["source"] == _source_excerpt(lines, ranges, compact=True)
 
 
 def test_blocks_already_shown_are_not_repeated(store: IndexStore) -> None:
     seen: set[tuple[str, int, int]] = set()
-    first = op_task(store, T3, seen=seen)
-    again = op_task(store, T3, seen=seen)
+    # An explicit budget delivers both bodies completely; an adaptive small
+    # packet may legitimately deliver its missing lines on the next request.
+    first = op_task(store, T3, 2000, seen=seen)
+    again = op_task(store, T3, 2000, seen=seen)
     assert seen
     assert any("source" in b for b in first["blocks"])
     assert all("source" not in b and b["seen"] for b in again["blocks"])

@@ -122,7 +122,6 @@ def _retrieve(
     from pathlib import Path
 
     from prism.core.tokens import estimate_tokens
-    from prism.navigator.api import op_task
     from prism.navigator.freshness import caches_ready, refresh_if_stale
     from prism.navigator.session import load_seen, save_seen
     from prism.navigator.store import IndexStore
@@ -148,18 +147,9 @@ def _retrieve(
         # working set first, expanding only when the hard cap permits it. Do not remember
         # ranges from an attempt that was never delivered to the host.
         trial_seen = set(seen) if seen is not None else None
-        first_budget = min(packet_budget, INITIAL_PACKET_BUDGET - estimate_tokens(HEADER + "\n"))
-        pack = op_task(store, prompt, first_budget, trial_seen, session=session)
-        if (
-            not pack.get("sufficient")
-            and pack["confidence"] != "low"
-            and packet_budget > first_budget
-            and not (abandoned and abandoned.is_set())
-        ):
-            expanded_seen = set(seen) if seen is not None else None
-            expanded = op_task(store, prompt, packet_budget, expanded_seen, session=session)
-            if expanded.get("sufficient"):
-                pack, trial_seen = expanded, expanded_seen
+        from prism.navigator.api import adaptive_task
+
+        pack = adaptive_task(store, prompt, cap=packet_budget, seen=trial_seen, session=session)
         speaks_for_overview = bool(pack.get("overview")) and _overview_allowed(root)
         if pack["confidence"] == "low" or not (
             pack["blocks"] or pack.get("literals") or speaks_for_overview

@@ -15,7 +15,7 @@ from typing import Any
 def _parse(argv: list[str]) -> tuple[Path | None, dict[str, Any]] | None:
     query: str | None = None
     options: dict[str, Any] = {
-        "budget": 2000,
+        "budget": None,
         "mode": "auto",
         "session": None,
         "json": False,
