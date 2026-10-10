@@ -246,8 +246,11 @@ def _size(pack: dict[str, Any]) -> int:
     # The JSON form is measured compact: it is only produced on request (`--json`, format=json),
     # and its indentation must not shrink what the default text form can carry.
     return max(
-        estimate_tokens(json.dumps(pack, separators=(",", ":"), ensure_ascii=False)),
-        estimate_tokens(render_task(pack)),
+        estimate_tokens(
+            json.dumps(pack, separators=(",", ":"), ensure_ascii=False),
+            pack["budget"].get("token_scale", 1.0),
+        ),
+        estimate_tokens(render_task(pack), pack["budget"].get("token_scale", 1.0)),
     )
 
 
@@ -403,6 +406,11 @@ def build_task(
         "stale_sources": 0,
         "budget": {"requested": budget, "used_est": 0, "estimator": "ceil(chars/4)"},
     }
+    from prism.config import load_config
+
+    scale = load_config(store.root).token_scale
+    if scale != 1.0:
+        pack["budget"]["token_scale"] = scale
     if not query:
         pack["confidence"] = "low"
         pack["next"] = "Give a request, a symbol name, or a file path."
