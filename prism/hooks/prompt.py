@@ -10,6 +10,7 @@ small budget; for greetings, confirmations, slash commands and unrelated request
 from __future__ import annotations
 
 import re
+import sqlite3
 import threading
 import traceback
 from typing import Any
@@ -21,7 +22,9 @@ PROMPT_BUDGET = 2000  # hard cap; ordinary complete requests still start at 1,20
 INITIAL_PACKET_BUDGET = 1200
 MAX_PROMPT_CHARS = 2000
 MIN_WORDS = 4
-TIME_BUDGET_SECONDS = 4.0
+# Installed hooks allow 20 s; a cold process under load (several agents on one machine) can need
+# more than 8 s for a broad request.
+TIME_BUDGET_SECONDS = 16.0
 WARMUP_SECONDS = 120.0
 
 _ACKNOWLEDGEMENT = re.compile(
@@ -34,6 +37,25 @@ HEADER = (
     "PRISM looked up this request in the local index (below). Literal lists marked exhaustive "
     "cover the whole indexed source."
 )
+
+
+_LABEL = re.compile(
+    r"(?im)^[ 	]*(?:user request|request|task|ticket|issue|goal)[ 	]*:[ 	]*"
+)
+
+
+def request_text(prompt: str) -> str:
+    """The request itself when a templated prompt wraps it in boilerplate.
+
+    Prompts built by scripts and trackers often open with generic instructions ("You are working
+    in the repository ... follow conventions ...") and put the request after a `Task:` style
+    label. Searching for the boilerplate dilutes the match, so retrieval uses what follows the
+    last such label; a prompt without one is used as it is."""
+    labels = list(_LABEL.finditer(prompt))
+    if not labels:
+        return prompt
+    rest = prompt[labels[-1].end() :].strip()
+    return rest if len(rest.split()) >= MIN_WORDS else prompt
 
 
 def should_retrieve(prompt: str) -> bool:
@@ -53,6 +75,18 @@ def _enabled(root_config_extra: dict[str, Any]) -> bool:
     if os.environ.get("PRISM_PROMPT_CONTEXT") == "0":
         return False
     return root_config_extra.get("prompt_context", True) is not False
+
+
+def _overview_allowed(root: Any) -> bool:
+    """May the hook add the architecture map for an "explain the project" request?
+
+    On by default: that request is answered by the map. Off with `prompt_overview = false`."""
+    try:
+        from prism.config import load_config
+
+        return load_config(root).extra.get("prompt_overview", True) is not False
+    except Exception:
+        return True
 
 
 def _claim_warmup(root: Any) -> bool:
@@ -80,6 +114,7 @@ def _retrieve(
     session: str | None,
     budget: int,
     abandoned: threading.Event | None = None,
+    inline_build: bool = False,
 ) -> str:
     from pathlib import Path
 
@@ -96,9 +131,10 @@ def _retrieve(
 
     root = Path(root_text)
     refresh_if_stale(root, wait=1.5)
-    if not caches_ready(root):
+    if not inline_build and not caches_ready(root):
         # Building the caches takes longer than a hook may. Start that in the background and say
-        # nothing this time; the next request finds them ready.
+        # nothing this time; the next request finds them ready. (A host that allows a long hook
+        # asks for `inline_build`: the first answer is then worth waiting for.)
         if _claim_warmup(root):
             _spawn_update(root, None, warm_only=True)
         return ""
@@ -110,7 +146,7 @@ def _retrieve(
         # ranges from an attempt that was never delivered to the host.
         trial_seen = set(seen) if seen is not None else None
         first_budget = min(packet_budget, INITIAL_PACKET_BUDGET - estimate_tokens(HEADER + "\n"))
-        pack = op_task(store, prompt, first_budget, trial_seen)
+        pack = op_task(store, prompt, first_budget, trial_seen, session=session)
         if (
             not pack.get("sufficient")
             and pack["confidence"] != "low"
@@ -118,10 +154,13 @@ def _retrieve(
             and not (abandoned and abandoned.is_set())
         ):
             expanded_seen = set(seen) if seen is not None else None
-            expanded = op_task(store, prompt, packet_budget, expanded_seen)
+            expanded = op_task(store, prompt, packet_budget, expanded_seen, session=session)
             if expanded.get("sufficient"):
                 pack, trial_seen = expanded, expanded_seen
-        if pack["confidence"] == "low" or not (pack["blocks"] or pack.get("literals")):
+        speaks_for_overview = bool(pack.get("overview")) and _overview_allowed(root)
+        if pack["confidence"] == "low" or not (
+            pack["blocks"] or pack.get("literals") or speaks_for_overview
+        ):
             return ""
         result = f"{HEADER}\n{render_task(pack)}"
         if estimate_tokens(result) > budget or (abandoned and abandoned.is_set()):
@@ -130,12 +169,18 @@ def _retrieve(
         # received must not make a later answer skip code the agent has never seen.
         if trial_seen is not None and session and not (abandoned and abandoned.is_set()):
             save_seen(root, session, trial_seen, store.manifest)
+        if not (abandoned and abandoned.is_set()):
+            from prism.writers.worklog import record_focus
+
+            record_focus(root, session, [b["symbol"] for b in pack["blocks"][:2] if b["symbol"]])
         return result
     finally:
         store.close()
 
 
-def user_prompt(raw_stdin: str) -> str:
+def user_prompt(
+    raw_stdin: str, time_budget: float | None = None, inline_build: bool = False
+) -> str:
     """Context to add for the submitted prompt (empty when there is nothing worth adding)."""
     payload = parse_payload(raw_stdin)
     root = _root_from(payload)
@@ -147,16 +192,26 @@ def user_prompt(raw_stdin: str) -> str:
         config = load_config(root)
         if not _enabled(config.extra):
             return ""
-        prompt = str(payload.get("prompt") or payload.get("user_prompt") or "")[:MAX_PROMPT_CHARS]
+        prompt = request_text(str(payload.get("prompt") or payload.get("user_prompt") or ""))[
+            :MAX_PROMPT_CHARS
+        ]
+        from prism.hooks.runner import session_of
+        from prism.writers.worklog import record_delivery, record_request
+
+        session = session_of(payload)
         if not should_retrieve(prompt):
+            record_delivery(root, session, "hook", False, "not a request about the code")
             return ""
+        record_request(root, session, prompt)
+        from prism.navigator.session import note_active_session
+
+        note_active_session(root, session)
         raw_budget = config.extra.get("prompt_budget", PROMPT_BUDGET)
         budget = (
             raw_budget
             if isinstance(raw_budget, int) and 128 <= raw_budget <= 8000
             else PROMPT_BUDGET
         )
-        session = payload.get("session_id")
         result: list[str] = []
         abandoned = threading.Event()
 
@@ -166,20 +221,38 @@ def user_prompt(raw_stdin: str) -> str:
                     _retrieve(
                         str(root),
                         prompt,
-                        session if isinstance(session, str) else None,
+                        session,
                         budget,
                         abandoned,
+                        inline_build,
                     )
                 )
+            except sqlite3.DatabaseError:
+                # A damaged disposable cache: drop it now so the next prompt is answered.
+                from prism.navigator.cache_db import purge_disposable_caches
+
+                purge_disposable_caches(root)
             except BaseException:
                 _log(root, "user-prompt failed:\n" + traceback.format_exc())
 
         thread = threading.Thread(target=work, daemon=True)
         thread.start()
-        thread.join(TIME_BUDGET_SECONDS)
+        thread.join(TIME_BUDGET_SECONDS if time_budget is None else time_budget)
         if not result:
             abandoned.set()
+            record_delivery(root, session, "hook", False, "timed out or still warming the caches")
             return ""
+        record_delivery(
+            root,
+            session,
+            "hook",
+            bool(result[0]),
+            "" if result[0] else "no confident match, so nothing was added",
+        )
+        if result[0]:
+            from prism.hooks.gate import arm
+
+            arm(root, session, prompt, result[0])  # a finish-time check, for a value change
         return result[0]
     except BaseException:
         _log(root, "user-prompt failed:\n" + traceback.format_exc())

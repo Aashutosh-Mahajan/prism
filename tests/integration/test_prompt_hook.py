@@ -80,7 +80,9 @@ def test_requests_about_the_code_retrieve(prompt: str) -> None:
 def test_a_request_gets_the_code_it_needs(repo: Path) -> None:
     text = user_prompt(payload(repo, T1))
     assert 'Literal "10 minutes"' in text and "LIFETIME_MINUTES = 10" in text
-    assert "VerifyEmailPage.tsx:11" in text and "ForgotPasswordPage.tsx:12" in text
+    # Literal lines are grouped under their file: the path once, then `line: text`.
+    assert "VerifyEmailPage.tsx" in text and "    11: " in text
+    assert "ForgotPasswordPage.tsx" in text and "    12: " in text
     assert text.startswith("PRISM looked up this request")
     assert estimate_tokens(text) <= 1300
 
@@ -137,10 +139,10 @@ def test_adaptive_packet_remembers_only_delivered_attempt(
     budgets: list[int] = []
     discarded = ("not-delivered.py", 1, 2)
 
-    def retrieve(store, query, budget, seen=None):
+    def retrieve(store, query, budget, seen=None, **kwargs):
         assert discarded not in (seen or set())
         budgets.append(budget)
-        pack = original(store, query, budget, seen)
+        pack = original(store, query, budget, seen, **kwargs)
         if len(budgets) == 1:
             pack["sufficient"] = False
             if seen is not None:
@@ -274,3 +276,28 @@ def test_a_result_the_agent_never_received_is_not_remembered(
     assert load_seen(repo, "late") == set()
     monkeypatch.undo()
     assert "shown earlier" not in user_prompt(payload(repo, T1, "late"))
+
+
+def test_the_injected_header_is_byte_stable_for_provider_caching() -> None:
+    """The fixed text in front of a packet must not change between requests (no time, ids, paths)."""
+    import re
+
+    from prism.hooks.prompt import HEADER
+
+    assert not re.search(r"\d|[/\]|[A-Z]:", HEADER.replace("PRISM", ""))
+    assert HEADER.strip() == HEADER and "\n" not in HEADER
+
+
+def test_a_templated_prompt_is_searched_by_its_request_not_its_boilerplate() -> None:
+    from prism.hooks.prompt import request_text
+
+    wrapped = (
+        "You are working in the assigned isolated repository. Complete the following task.\n"
+        "Follow applicable project conventions.\n\nTask: Rename the verifyEmail helper to confirmEmail\n\n"
+    )
+    assert request_text(wrapped) == "Rename the verifyEmail helper to confirmEmail"
+    assert request_text("Rename verifyEmail to confirmEmail everywhere") == (
+        "Rename verifyEmail to confirmEmail everywhere"
+    )
+    # a label with almost nothing after it is not a request
+    assert request_text("Please help.\nTask: ok") == "Please help.\nTask: ok"

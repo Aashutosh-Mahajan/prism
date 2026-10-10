@@ -114,7 +114,13 @@ def session_start(raw_stdin: str) -> str:
         )
         if not report.indexed:
             return "PRISM is enabled here but the index has not been built. Ask the user before running `prism scan`."
-        return f"{brief}\n\n{freshness_line(root)}{note}\n"
+        text = f"{brief}\n\n{freshness_line(root)}{note}\n"
+        from prism.navigator.recall import last_session_brief
+        from prism.writers.worklog import prune
+
+        prune(root)
+        previous = last_session_brief(root, current=session_of(payload))
+        return f"{text}\n{previous}\n" if previous else text
     except BaseException:
         _log(root, "session-start failed:\n" + traceback.format_exc())
         return ""
@@ -147,6 +153,74 @@ def edited_paths(payload: dict[str, Any]) -> list[str]:
             for match in _PATCH_FILE.finditer(patch):
                 found.append(match.group(1) or match.group(2))
     return list(dict.fromkeys(found))
+
+
+def session_of(payload: dict[str, Any]) -> str | None:
+    """The agent's id for this conversation (Cursor calls it `conversation_id`)."""
+    for key in ("session_id", "conversation_id", "sessionId"):
+        value = payload.get(key)
+        if isinstance(value, str) and value:
+            return value
+    return None
+
+
+def _first_line(text: Any) -> str:
+    """The first meaningful line of new text: enough to find where an edit landed."""
+    if not isinstance(text, str):
+        return ""
+    for line in text.splitlines():
+        stripped = line.strip()
+        if len(re.findall(r"\w", stripped)) >= 3:
+            return stripped
+    return ""
+
+
+def edit_anchors(payload: dict[str, Any]) -> dict[str, str]:
+    """{edited path: first line of the new text, or ""} for the work log."""
+    anchors: dict[str, str] = {}
+    raw_input = payload.get("tool_input")
+    tool_input: dict[str, Any] = raw_input if isinstance(raw_input, dict) else {}
+    edits = tool_input.get("edits") or payload.get("edits")
+    first = ""
+    if isinstance(edits, list):
+        for edit in edits:
+            if isinstance(edit, dict) and (first := _first_line(edit.get("new_string"))):
+                break
+    else:
+        first = _first_line(tool_input.get("new_string"))
+    command = tool_input.get("command")
+    patch = "\n".join(command) if isinstance(command, list) else command
+    if isinstance(patch, str) and "*** " in patch:
+        current: str | None = None
+        for line in patch.splitlines():
+            match = _PATCH_FILE.match(line)
+            if match:
+                current = match.group(1) or match.group(2)
+                anchors.setdefault(current, "")
+            elif current and line.startswith("+") and not anchors[current]:
+                anchors[current] = _first_line(line[1:])
+    for path in edited_paths(payload):
+        anchors.setdefault(path, first)
+    return anchors
+
+
+def _log_edits(root: Path, payload: dict[str, Any]) -> None:
+    session = session_of(payload)
+    if not session:
+        return
+    from prism.writers.worklog import record_edits
+
+    entries: list[tuple[str, str]] = []
+    for name, anchor in edit_anchors(payload).items():
+        path = Path(name)
+        path = path if path.is_absolute() else root / path
+        try:
+            rel = path.resolve().relative_to(root.resolve()).as_posix()
+        except ValueError:
+            continue
+        if not rel.startswith(AICONTEXT + "/"):
+            entries.append((rel, anchor))
+    record_edits(root, session, entries)
 
 
 def _spawn_update(root: Path, files: list[str] | None, warm_only: bool = False) -> bool:
@@ -211,12 +285,17 @@ def post_edit(raw_stdin: str, background: bool = False) -> None:
     try:
         if _state(root) is not RepoState.ENABLED:
             return
+        _log_edits(root, payload)
         edited = edited_paths(payload)
         files: list[str] | None = None
         if edited:
             files = _relative_source_paths(root, edited)
             if files is None:
                 return
+        if files:
+            from prism.navigator.feedback import record_edits
+
+            record_edits(root, files)
         if background and _spawn_update(root, files):
             return
         _run_bounded(root, lambda: _update_quietly(root, files), POST_EDIT_BUDGET)

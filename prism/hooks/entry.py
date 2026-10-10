@@ -10,7 +10,7 @@ import contextlib
 import os
 import sys
 
-HOOKS = ("session-start", "user-prompt", "post-edit")
+HOOKS = ("session-start", "user-prompt", "post-edit", "pre-invocation", "stop", "dedupe-read")
 
 
 def use_utf8() -> None:
@@ -93,6 +93,32 @@ def run_hook(name: str, args: list[str] | None = None) -> None:
             from prism.hooks import post_edit
 
             post_edit(read_stdin(), background=background_enabled())
+        elif name == "pre-invocation":
+            # Antigravity: always one JSON object on stdout, `{}` when there is nothing to add.
+            from prism.hooks.antigravity import pre_invocation
+
+            sys.stdout.write(pre_invocation(read_stdin()) + chr(10))
+            return
+        elif name == "stop":
+            raw = read_stdin()
+            if '"workspacePaths"' in raw:  # Antigravity: always one JSON object
+                from prism.hooks.antigravity import stop_gate
+
+                sys.stdout.write(stop_gate(raw) + chr(10))
+            else:  # Claude Code, Codex: a block decision, or nothing
+                from prism.hooks.gate import stop
+
+                text = stop(raw)
+                if text:
+                    sys.stdout.write(text + chr(10))
+            return
+        elif name == "dedupe-read":
+            from prism.hooks.dedupe import decide
+
+            text = decide(read_stdin())
+            if text:
+                sys.stdout.write(text + chr(10))
+            return
         out = render_context(text, fmt, event)
         if out:
             sys.stdout.write(out if out.endswith("\n") else out + "\n")
