@@ -4,7 +4,22 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-SOURCE_EXTENSIONS = (".pyi", ".py", ".tsx", ".ts", ".jsx", ".mjs", ".cjs", ".js", ".go", ".java")
+SOURCE_EXTENSIONS = (
+    ".pyi",
+    ".py",
+    ".tsx",
+    ".ts",
+    ".jsx",
+    ".mjs",
+    ".cjs",
+    ".js",
+    ".go",
+    ".java",
+    ".kts",
+    ".kt",
+    ".swift",
+    ".dart",
+)
 # Files that stand for their directory, like Python's __init__.py.
 PACKAGE_FILES = {"python": "__init__", "javascript": "index", "typescript": "index"}
 

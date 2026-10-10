@@ -26,6 +26,7 @@ from prism.core.models import (
     Smell,
     SymbolKind,
 )
+from prism.core.textio import decode_source
 from prism.core.tokens import estimate_tokens
 from prism.parsing.base_parser import BaseParser
 
@@ -46,7 +47,7 @@ def _text(node: Node | None) -> str:
     if node is None:
         return ""
     raw: bytes = node.text
-    return raw.decode("utf-8", errors="replace")
+    return decode_source(raw)
 
 
 def _lines(node: Node) -> tuple[int, int]:
@@ -164,15 +165,20 @@ class TreeSitterParser(BaseParser):
         return sorted(reads, key=lambda r: (r.line, r.key))
 
     def parse(self, path: str, source: bytes, module: str, is_package: bool) -> ParsedFile:
-        text = source.decode("utf-8", errors="replace")
+        text = decode_source(source)
         line_count = text.count("\n") + (0 if text.endswith("\n") or not text else 1)
         tree = self._parser.parse(source)
         root = tree.root_node
         module = self.module_override(path, root, module)
         result = ParsedFile(path, self.language, module, is_package, line_count, "")
-        if root.has_error and not root.children:
-            result.parse_error = "SyntaxError: could not parse"
-            return result
+        if root.has_error:
+            # Tree-sitter recovers from errors, so valid parts of a broken file are still indexed,
+            # but the file is reported as having a syntax error like any other parser.
+            bad = next((n for n in _walk(root) if n.is_error or n.is_missing), None)
+            line = bad.start_point[0] + 1 if bad is not None else 1
+            result.parse_error = f"SyntaxError: syntax error near line {line}"
+            if not root.children:
+                return result
         ctx = _Ctx(source, text.splitlines(), module, is_package)
         self.collect_imports(root, ctx)
         for node, outer in self.symbol_nodes(root):

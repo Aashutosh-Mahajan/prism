@@ -33,4 +33,9 @@ def get_parser(language: str) -> BaseParser | None:
         if treesitter.available():
             for parser in treesitter.parsers():
                 register_parser(parser)
+        # Dart, Kotlin and Swift need no grammar package.
+        from prism.parsing import braces
+
+        for parser in braces.parsers():
+            register_parser(parser)
     return _REGISTRY.get(language)

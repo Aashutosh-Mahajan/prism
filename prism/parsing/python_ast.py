@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import ast
+import re
 
 from prism.core.models import CallRef, ImportRef, ParsedFile, ParsedSymbol, SymbolKind
+from prism.core.textio import decode_source
 from prism.core.tokens import estimate_tokens
 from prism.parsing.base_parser import BaseParser
 from prism.parsing.python_facts import (
@@ -211,12 +213,16 @@ def _is_main_guard(stmt: ast.stmt) -> bool:
     return has_name and has_main and len(test.ops) == 1 and isinstance(test.ops[0], ast.Eq)
 
 
+_PY_LINES = re.compile(r"\r\n|\r|\n")  # how Python ends a line (not str.splitlines)
+
+
 class PythonAstParser(BaseParser):
     language = "python"
 
     def parse(self, path: str, source: bytes, module: str, is_package: bool) -> ParsedFile:
-        text = source.decode("utf-8", errors="replace")
-        line_count = text.count("\n") + (0 if text.endswith("\n") or not text else 1)
+        text = decode_source(source)
+        parts = _PY_LINES.split(text)
+        line_count = len(parts) - (1 if parts[-1] == "" else 0)
         result = ParsedFile(
             path=path,
             language=self.language,
@@ -228,12 +234,17 @@ class PythonAstParser(BaseParser):
         try:
             tree = ast.parse(source, filename=path)
         except (SyntaxError, ValueError) as exc:
-            result.parse_error = f"{type(exc).__name__}: {exc}"
-            return result
+            # Undecodable bytes (a stray 0xFF in a comment) must not hide a file's symbols:
+            # retry on the lossy-decoded text before reporting a parse error.
+            try:
+                tree = ast.parse(text, filename=path)
+            except (SyntaxError, ValueError):
+                result.parse_error = f"{type(exc).__name__}: {exc}"
+                return result
 
         result.doc = _first_doc_line(tree)
         result.imports = self._imports(tree)
-        lines = text.splitlines()
+        lines = _PY_LINES.split(text)
         module_level: list[ast.stmt] = []
         seen: dict[str, int] = {}
         for stmt in _module_statements(tree.body):

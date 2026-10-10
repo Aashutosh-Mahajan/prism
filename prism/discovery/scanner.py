@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import os
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -26,6 +26,10 @@ BUILTIN_IGNORED_DIRS = frozenset(
         ".hg",
         ".svn",
         ".aicontext",
+        ".dart_tool",
+        ".gradle",
+        "Pods",
+        "DerivedData",
         ".venv",
         "venv",
         "env",
@@ -48,7 +52,6 @@ BUILTIN_IGNORED_DIRS = frozenset(
         ".nuxt",
         "coverage",
         "htmlcov",
-        ".gradle",
         "vendor",
     }
 )
@@ -117,11 +120,81 @@ def _first_line(head: bytes) -> str:
     return head.split(b"\n", 1)[0].decode("utf-8", errors="replace")
 
 
+def _walk(root: Path) -> Iterator[tuple[Path, list[str], dict[str, os.DirEntry[str]]]]:
+    """Like `os.walk(root)` (top-down, prunable `dirnames`, symlinked directories listed but
+    not entered), but files come with their `DirEntry`: on Windows its stat needs no extra
+    system call, which on a large tree is most of the cost of noticing nothing changed."""
+    stack = [root]
+    while stack:
+        directory = stack.pop()
+        dirnames: list[str] = []
+        files: dict[str, os.DirEntry[str]] = {}
+        links: set[str] = set()
+        try:
+            with os.scandir(directory) as entries:
+                for entry in entries:
+                    try:
+                        is_dir = entry.is_dir()
+                    except OSError:
+                        is_dir = False
+                    if is_dir:
+                        dirnames.append(entry.name)
+                        if entry.is_symlink():
+                            links.add(entry.name)
+                    else:
+                        files[entry.name] = entry
+        except OSError:
+            continue
+        yield directory, dirnames, files
+        stack.extend(directory / d for d in reversed(dirnames) if d not in links)
+
+
+def _is_link(path: Path) -> bool:
+    """A symlink, or on Windows a junction or other reparse point."""
+    try:
+        if path.is_symlink():
+            return True
+        attrs = getattr(os.lstat(path), "st_file_attributes", 0)
+        return bool(attrs & 0x400)  # FILE_ATTRIBUTE_REPARSE_POINT
+    except OSError:
+        return True
+
+
+def _leaves_repo(path: Path, root: Path) -> bool:
+    """A link whose target is outside the repository must never be indexed or followed."""
+    try:
+        return not path.resolve().is_relative_to(root)
+    except (OSError, RuntimeError):
+        return True
+
+
+_TEXT_LISTING: dict[str, tuple[float, list[tuple[str, int, int]]]] = {}
+TEXT_LISTING_TTL_SECONDS = 5.0
+
+
+def remember_text_listing(root: Path, listing: list[tuple[str, int, int]]) -> None:
+    """Keep the text/data files a walk just found, so the same query does not walk twice."""
+    import time
+
+    _TEXT_LISTING[root.resolve().as_posix()] = (time.monotonic(), list(listing))
+
+
+def recent_text_listing(root: Path) -> list[tuple[str, int, int]] | None:
+    import time
+
+    entry = _TEXT_LISTING.get(root.resolve().as_posix())
+    if entry is None or time.monotonic() - entry[0] > TEXT_LISTING_TTL_SECONDS:
+        return None
+    return list(entry[1])
+
+
 def discover(
     root: Path,
     config: PrismConfig,
     known: Mapping[str, Mapping[str, Any]] | None = None,
     resniff: bool = True,
+    oversize: list[str] | None = None,
+    text_files: list[tuple[str, int, int]] | None = None,
 ) -> list[SourceFile]:
     """Select source files. `known` (manifest `files`) lets unchanged files skip hashing.
 
@@ -140,14 +213,12 @@ def discover(
     prism_spec = _ScopedSpec("", pathspec.GitIgnoreSpec.from_lines(prism_lines))
 
     found: list[SourceFile] = []
-    for dirpath_str, dirnames, filenames in os.walk(root):
-        dirpath = Path(dirpath_str)
+    for dirpath, dirnames, files in _walk(root):
         rel_dir = dirpath.relative_to(root).as_posix()
         rel_dir = "" if rel_dir == "." else rel_dir
 
-        gitignore = dirpath / ".gitignore"
-        if gitignore.is_file():
-            spec = _load_spec(gitignore)
+        if ".gitignore" in files:
+            spec = _load_spec(dirpath / ".gitignore")
             if spec is not None:
                 specs.append(_ScopedSpec(rel_dir, spec))
 
@@ -168,19 +239,25 @@ def discover(
                 continue
             if _is_venv(dirpath / d) or ignored(rel, True):
                 continue
+            if _is_link(dirpath / d):
+                continue  # links are not followed: a junction can lead out of the repository
             kept_dirs.append(d)
         dirnames[:] = kept_dirs  # prune the walk in place
 
-        for name in sorted(filenames):
+        for name in sorted(files):
             rel = f"{rel_dir}/{name}" if rel_dir else name
             full = dirpath / name
             if ignored(rel, False):
                 continue
+            if _is_link(full) and _leaves_repo(full, root):
+                continue
             try:
-                stat = full.stat()
+                stat = files[name].stat()
             except OSError:
                 continue
             if stat.st_size > config.max_file_size:
+                if oversize is not None:
+                    oversize.append(rel)  # not indexed, but it exists: callers may need to say so
                 continue
             if rel.lower().endswith(GENERATED_SUFFIXES):
                 continue
@@ -208,6 +285,15 @@ def discover(
                 )
                 continue
             language = detect_language(rel)
+            if text_files is not None and language is None:
+                from prism.navigator.textcorpus import is_text_candidate
+
+                if is_text_candidate(rel, stat.st_size):
+                    text_files.append((rel, stat.st_size, stat.st_mtime_ns))
+            if language is None and name.rfind(".") > 0:
+                # A file extension PRISM does not index decides on its own; only extensionless
+                # files can be claimed by a shebang. Skip reading every doc and asset each run.
+                continue
             head = b""
             if language is None or stat.st_size:
                 try:

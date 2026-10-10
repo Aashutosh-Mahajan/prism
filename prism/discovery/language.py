@@ -14,6 +14,8 @@ EXTENSIONS: dict[str, str] = {
     ".go": "go",
     ".java": "java",
     ".kt": "kotlin",
+    ".kts": "kotlin",
+    ".dart": "dart",
     ".rs": "rust",
     ".rb": "ruby",
     ".php": "php",
