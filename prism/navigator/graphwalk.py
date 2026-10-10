@@ -26,19 +26,21 @@ def pick_seeds(
         return []
     allowed = {node for _, node in positive}
     floor = positive[0][0] * gap_ratio
-    leaders = [node for score, node in positive if score >= floor]
-    candidates = leaders[: min(max_k, max_total)]
-    candidates += [best_by_term[term] for term in sorted(best_by_term)]
-
     chosen: list[str] = []
     labels_taken: set[str] = set()
-    for node in candidates:
+
+    def take(node: str) -> None:
         label = labels.get(node, node).casefold() or node
-        if node in allowed and label not in labels_taken:
+        if node in allowed and label not in labels_taken and len(chosen) < max_total:
             labels_taken.add(label)
             chosen.append(node)
-            if len(chosen) == max_total:
-                break
+
+    for score, node in positive:
+        if len(chosen) >= min(max_k, max_total) or score < floor:
+            break
+        take(node)
+    for term in sorted(best_by_term):
+        take(best_by_term[term])
     return chosen
 
 
