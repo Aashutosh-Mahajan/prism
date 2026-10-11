@@ -88,7 +88,9 @@ def _read_info(root: Path) -> dict[str, Any] | None:
 # --- client ---------------------------------------------------------------------------
 
 
-def _call(info: dict[str, Any], request: dict[str, Any]) -> dict[str, Any] | None:
+def _call(
+    info: dict[str, Any], request: dict[str, Any], timeout: float = 30.0
+) -> dict[str, Any] | None:
     result: list[dict[str, Any]] = []
 
     def go() -> None:
@@ -105,18 +107,18 @@ def _call(info: dict[str, Any], request: dict[str, Any]) -> dict[str, Any] | Non
 
     thread = threading.Thread(target=go, daemon=True)
     thread.start()
-    thread.join(30.0)
+    thread.join(max(0.0, min(timeout, 30.0)))
     return result[0] if result else None
 
 
-def ask(root: Path, request: dict[str, Any]) -> str | None:
+def ask(root: Path, request: dict[str, Any], *, timeout: float = 30.0) -> str | None:
     """The answer from a running warm process, or None (then the caller answers itself)."""
     if not enabled(root):
         return None
     info = _read_info(root)
     if info is None:
         return None
-    reply = _call(info, request)
+    reply = _call(info, request, timeout)
     if reply is None or not reply.get("ok") or not isinstance(reply.get("text"), str):
         return None
     return str(reply["text"])
@@ -197,6 +199,65 @@ class _Holder:
 
 
 def _handle(holder: _Holder, request: dict[str, Any]) -> dict[str, Any]:
+    if request.get("op") == "hook":
+        import io
+
+        from prism.hooks.entry import HOOKS, run_hook
+        from prism.hooks.runner import _root_from
+
+        if request.get("name") not in HOOKS or request.get("name") == "user-prompt":
+            return {"ok": False}
+        payload = json.loads(str(request.get("raw", "{}")))
+        if not isinstance(payload, dict) or _root_from(payload).resolve() != holder.root.resolve():
+            return {"ok": False}
+        output = io.StringIO()
+        original_stdin = sys.stdin
+        try:
+            sys.stdin = io.StringIO(str(request.get("raw", "")))
+            with contextlib.redirect_stdout(output):
+                run_hook(request["name"], request.get("args", []), embedded=True)
+        finally:
+            sys.stdin = original_stdin
+        return {"ok": True, "text": output.getvalue()}
+    if request.get("op") == "find":
+        from prism.navigator.find import render_find, run_find
+
+        result = run_find(
+            holder.fresh(False),
+            request["patterns"],
+            bool(request.get("regex")),
+            bool(request.get("ignore_case")),
+            request.get("globs"),
+            int(request.get("budget", 1500)),
+        )
+        text = (
+            json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True)
+            if request.get("json")
+            else render_find(result)
+        )
+        return {"ok": True, "text": text}
+    if request.get("op") == "hook-prompt":
+        from prism.hooks.prompt import _retrieve
+
+        remaining = float(request["deadline"]) - time.time()
+        if remaining <= 0:
+            return {"ok": True, "text": ""}
+        abandoned = threading.Event()
+        timer = threading.Timer(min(remaining, 30.0), abandoned.set)
+        timer.daemon = True
+        timer.start()
+        try:
+            text = _retrieve(
+                str(holder.root),
+                str(request["query"]),
+                request.get("session"),
+                int(request["budget"]),
+                abandoned,
+                False,
+            )
+            return {"ok": True, "text": "" if abandoned.is_set() else text}
+        finally:
+            timer.cancel()
     from prism.navigator.taskrun import run_task
 
     if request.get("op") != "task":

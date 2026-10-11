@@ -13,6 +13,7 @@ from prism.core.errors import NotFoundError, UserError
 from prism.core.paths import AICONTEXT
 from prism.navigator.context_pack import DEFAULT_BUDGET, build_context
 from prism.navigator.impact import DEFAULT_DEPTH, impact
+from prism.navigator.metrics import count, profile_task, stage
 from prism.navigator.resolve import locate, resolve_target
 from prism.navigator.store import IndexStore
 from prism.status import compute_status
@@ -44,6 +45,7 @@ def op_context(
     return pack
 
 
+@profile_task
 def op_task(
     store: IndexStore,
     query: str,
@@ -77,7 +79,8 @@ def op_task(
         raise UserError("task detail must be full or brief")
     if detail == "brief":
         budget = min(budget, BRIEF_BUDGET)
-    stamp = source_stamp(store.root, store.manifest) if seen is None and use_cache else None
+    with stage("cache_scope"):
+        stamp = source_stamp(store.root, store.manifest) if seen is None and use_cache else None
     # Answers with and without the embedding channel differ, so they are cached apart.
     cache_mode = f"{mode}+semantic" if semantic_enabled(store.root) else mode
     cache_mode = f"{cache_mode}+{detail}"
@@ -91,11 +94,14 @@ def op_task(
     pack = None
     if cached is not None and packet_current(store.root, store.manifest, cached[0], cached[1]):
         pack = cached[0]
+        count("packet_cache_hits")
         offered = (pack.get("patch") or {}).get("path")
         if offered and not (store.root / offered).is_file():
             pack = None  # the patch file was pruned: build the packet (and the patch) again
     if pack is None:
-        pack = build_task(store, query, budget, seen, mode, detail)
+        count("packet_builds")
+        with stage("retrieval_and_fit"):
+            pack = build_task(store, query, budget, seen, mode, detail)
         if (
             path
             and not pack.get("stale_sources")
@@ -103,7 +109,52 @@ def op_task(
         ):
             save_packet(path, pack, store.root, store.manifest)
     record_activity(store.root, "task", [b["symbol"] for b in pack["blocks"] if b["symbol"]])
-    return _with_history(store, pack, session)
+    return _with_freshness(store, _with_history(store, pack, session))
+
+
+def _with_freshness(store: IndexStore, pack: dict[str, Any]) -> dict[str, Any]:
+    from prism.navigator.freshness import last_refresh
+    from prism.navigator.task_pack import _size
+
+    state = last_refresh(store.root)
+    if state is None or state.complete:
+        return pack
+    pack = dict(pack, budget=dict(pack["budget"]))
+    pack["index_state"] = state.to_dict()
+    pack["sufficient"] = False
+    pack["search_limited"] = True
+    pack["confidence"] = "low"
+    pack["next"] = "Index refresh is incomplete; run prism update and retry before editing."
+    for key in ("patch", "patch_sites", "scope", "done"):
+        pack.pop(key, None)
+    pack["literals"] = [
+        dict(lit, complete=False, scan_limited=True) for lit in pack.get("literals", [])
+    ]
+    if "assessment" in pack:
+        from prism.navigator.readiness import assess
+
+        pack["assessment"] = assess(pack)
+    while _size(pack) > pack["budget"]["requested"] and pack["blocks"]:
+        pack["blocks"].pop()
+    while _size(pack) > pack["budget"]["requested"] and pack.get("literals"):
+        pack["literals"].pop()
+    if _size(pack) > pack["budget"]["requested"]:
+        # The warning is mandatory; optional peripheral context must yield to it.
+        pack = {
+            k: pack[k]
+            for k in (
+                "intent",
+                "confidence",
+                "sufficient",
+                "next",
+                "blocks",
+                "stale_sources",
+                "budget",
+            )
+        }
+        pack["next"] = "Refresh incomplete; prism update, then retry."
+    pack["budget"]["used_est"] = _size(pack)
+    return pack
 
 
 def adaptive_task(
@@ -124,7 +175,12 @@ def adaptive_task(
     pack = op_task(
         store, query, initial, trial, mode=mode, session=session, use_cache=use_cache, detail=detail
     )
-    if not pack.get("sufficient") and pack["confidence"] != "low" and initial < cap:
+    if (
+        pack.get("intent") != "overview"
+        and not pack.get("sufficient")
+        and pack["confidence"] != "low"
+        and initial < cap
+    ):
         expanded_seen = None if seen is None else set(seen)
         expanded = op_task(
             store,
@@ -174,7 +230,9 @@ def _verify(store: IndexStore, query: str, budget: int, session: str | None) -> 
         "blocks": [],
         "stale_sources": pack.get("stale_sources", 0),
         "confidence": pack.get("confidence", "low"),
-        "sufficient": bool(literals) is False,
+        "sufficient": not literals
+        and not pack.get("search_limited")
+        and not pack.get("stale_sources"),
         "budget": pack["budget"],
     }
     if literals:
@@ -183,8 +241,13 @@ def _verify(store: IndexStore, query: str, budget: int, session: str | None) -> 
             f"{remaining} site(s) still match the old value: change the ones that belong to "
             "this request, then verify again."
         )
-    else:
+    elif verify["sufficient"]:
         verify["next"] = "No remaining matches of the old value(s) in the indexed source."
+    else:
+        verify["next"] = "Verification search is incomplete; refresh and retry before accepting it."
+    for key in ("index_state", "search_limited"):
+        if key in pack:
+            verify[key] = pack[key]
     from prism.navigator.task_pack import _size
 
     verify["budget"] = dict(pack["budget"], used_est=_size(verify))

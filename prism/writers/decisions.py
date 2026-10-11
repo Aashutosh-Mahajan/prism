@@ -7,6 +7,7 @@ re-explaining it.
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import date
 from pathlib import Path
@@ -36,6 +37,14 @@ def parse_decision(path: Path) -> dict[str, Any]:
     first = text.splitlines()[0] if text else ""
     title = first.split(":", 1)[1].strip() if ":" in first else first.lstrip("# ").strip()
     meta = dict(_HEADER.findall(text.split("\n## ", 1)[0]))
+    try:
+        evidence = json.loads(meta.get("evidence", "{}"))
+    except ValueError:
+        evidence = {}
+    if not isinstance(evidence, dict) or not all(
+        isinstance(k, str) and isinstance(v, str) for k, v in evidence.items()
+    ):
+        evidence = {}
     return {
         "id": path.stem.split("-", 1)[0],
         "title": title,
@@ -46,6 +55,8 @@ def parse_decision(path: Path) -> dict[str, Any]:
         if len(path.parents) > 2
         else path.name,
         "text": text,
+        "supersedes": meta.get("supersedes"),
+        "evidence": evidence,
     }
 
 
@@ -75,6 +86,24 @@ def add_decision(
     symbols: list[str] | None = None,
     supersedes: str | None = None,
 ) -> dict[str, Any]:
+    from prism.incremental.lock import UpdateLock
+
+    with UpdateLock(root):
+        return _add_decision(
+            root, title, context, decision, consequences, status, symbols, supersedes
+        )
+
+
+def _add_decision(
+    root: Path,
+    title: str,
+    context: str,
+    decision: str,
+    consequences: str = "",
+    status: str = "accepted",
+    symbols: list[str] | None = None,
+    supersedes: str | None = None,
+) -> dict[str, Any]:
     manifest = load_manifest(root)
     if manifest is None:
         raise UserError("PRISM is not initialized in this repo.")
@@ -86,6 +115,7 @@ def add_decision(
     if not context.strip() or not decision.strip():
         raise UserError("a decision needs both context and the decision itself")
     existing = list_decisions(root)
+    old = get_decision(root, supersedes) if supersedes else None
     number = max((int(d["id"]) for d in existing), default=0) + 1
     ident = f"{number:04d}"
     header = [
@@ -96,6 +126,19 @@ def add_decision(
     ]
     if symbols:
         header.append(f"- symbols: {', '.join(f'`{s}`' for s in symbols)}")
+        from prism.navigator.store import IndexStore
+
+        store = IndexStore.open(root)
+        try:
+            evidence = {
+                symbol.file: manifest["files"][symbol.file]["sha256"]
+                for name in symbols
+                if (symbol := store.symbol(name)) is not None
+            }
+        finally:
+            store.close()
+        if evidence:
+            header.append("- evidence: " + json.dumps(evidence, sort_keys=True))
     if supersedes:
         header.append(f"- supersedes: {supersedes.zfill(4)}")
     body = [*header, "", "## Context", "", context.strip(), "", "## Decision", "", decision.strip()]
@@ -109,7 +152,7 @@ def add_decision(
     artifacts = dict(manifest.get("artifacts", {}))
     artifacts[f"decisions/{path.name}"] = text_hash(text)
     if supersedes:
-        old = get_decision(root, supersedes)
+        assert old is not None
         old_path = root / AICONTEXT / old["file"].split(f"{AICONTEXT}/", 1)[-1]
         if old_path.is_file():
             updated = re.sub(

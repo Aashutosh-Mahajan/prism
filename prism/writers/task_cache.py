@@ -11,7 +11,7 @@ from typing import Any
 
 from prism.writers.json_writer import write_json
 
-FORMAT = 7
+FORMAT = 8  # validate whole searched corpus, not just files quoted in the old answer
 MAX_PACKETS = 32
 
 
@@ -61,8 +61,17 @@ def _compute_stamp(root: Path, manifest: dict[str, Any]) -> str | None:
                 rows.append((name, None, stat.st_size, stat.st_mtime_ns))
     except OSError:
         return None
+    from prism.navigator.textcorpus import TextCorpus
+
+    corpus = TextCorpus(root, manifest, fresh=True)
+    try:
+        revision = corpus.revision
+    finally:
+        corpus.close()
+    if revision is None:
+        return None
     return hashlib.sha256(
-        json.dumps((manifest.get("artifacts", {}), rows), sort_keys=True).encode()
+        json.dumps((manifest.get("artifacts", {}), rows, revision), sort_keys=True).encode()
     ).hexdigest()
 
 

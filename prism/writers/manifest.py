@@ -10,12 +10,14 @@ import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from prism import SCHEMA_VERSION, __version__
-from prism.core.models import SourceFile
 from prism.core.paths import manifest_path
 from prism.writers.json_writer import read_json, write_json
+
+if TYPE_CHECKING:
+    from prism.core.models import SourceFile
 
 READ_ATTEMPTS = 20
 READ_PAUSE = 0.025
