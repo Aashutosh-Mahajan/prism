@@ -1,6 +1,6 @@
 """Persistent body search. Synchronize changed manifest hashes, never rescan on a query.
 
-`SourceIndex` is a synchronized view of the BM25 postings in `source-v2.sqlite`; the postings
+`SourceIndex` is a synchronized view of the persistent BM25 postings; the postings
 are what let a query find every file containing some words without opening any file.
 `SourceReader` returns verified source lines: text is only exposed when it still matches the
 hash recorded in the manifest, so a stale edit can never leak into an answer.
@@ -9,6 +9,7 @@ hash recorded in the manifest, so a stale edit can never leak into an answer.
 from __future__ import annotations
 
 import hashlib
+import heapq
 import math
 import re
 import sqlite3
@@ -21,7 +22,7 @@ from prism.navigator.cache_db import cache_dir
 from prism.navigator.store import IndexStore
 from prism.navigator.text import bm25, term_counts, tokenize
 
-SOURCE_DB = "source-v3.sqlite"  # v3: Unicode-aware postings (v2 dropped non-ASCII words)
+SOURCE_DB = "source-v4.sqlite"  # v4: failed verification stays pending, never cached as indexed
 MAX_LINE_CHARS = 400
 
 
@@ -32,7 +33,11 @@ def read_indexed_source(store: IndexStore, file: str) -> str | None:
     if not expected or not path.is_relative_to(store.root):
         return None
     try:
+        from prism.navigator.metrics import count
+
+        count("source_body_reads")
         raw = path.read_bytes()
+        count("source_bytes_read", len(raw))
     except OSError:
         return None
     if hashlib.sha256(raw).hexdigest() != expected:
@@ -95,7 +100,24 @@ class SourceIndex:
         self._df: dict[str, int] = {}
         self._text: Any = None
         try:
-            self._sync()
+            if self._conn.execute("PRAGMA journal_mode").fetchone()[0] != "wal":
+                self._conn.execute("PRAGMA journal_mode=WAL")
+            for _attempt in range(3):
+                self._sync()
+                self._conn.execute("BEGIN")
+                snapshot = dict(self._conn.execute("SELECT path,sha FROM files"))
+                expected = store.manifest.get("files", {})
+                if set(snapshot) == set(expected) and all(
+                    snapshot[p] is None or snapshot[p] == facts.get("sha256")
+                    for p, facts in expected.items()
+                ):
+                    break
+                self._conn.rollback()
+            else:
+                from prism.core.errors import UserError
+
+                raise UserError("Source index changed concurrently; retry the request.")
+            self.pending_sources = {p for p, sha in snapshot.items() if sha is None}
             n_docs, avg_len = self._conn.execute(
                 "SELECT COUNT(*), COALESCE(AVG(length),0) FROM files WHERE length > 0"
             ).fetchone()
@@ -145,10 +167,18 @@ class SourceIndex:
             "CREATE INDEX IF NOT EXISTS source_term ON postings(term);"
             "CREATE INDEX IF NOT EXISTS source_path ON postings(path);"
         )
-        # Serialize synchronization across MCP/CLI processes; readers see complete revisions.
-        conn.execute("BEGIN IMMEDIATE")
         cached = dict(conn.execute("SELECT path, sha FROM files"))
         files = self.store.manifest.get("files", {})
+        # A synchronized query is a reader. Do not queue it behind another process's
+        # reserved writer lock when there is no maintenance to perform.
+        if set(cached) == set(files) and all(
+            facts.get("sha256") and cached[file] == facts["sha256"] for file, facts in files.items()
+        ):
+            return
+        # Serialize actual synchronization across MCP/CLI processes. Re-read after
+        # acquiring the lock: another synchronizer may have committed since preflight.
+        conn.execute("BEGIN IMMEDIATE")
+        cached = dict(conn.execute("SELECT path, sha FROM files"))
         for file in sorted(set(cached) - set(files)):
             conn.execute("DELETE FROM postings WHERE path = ?", (file,))
             conn.execute("DELETE FROM files WHERE path = ?", (file,))
@@ -161,8 +191,12 @@ class SourceIndex:
             counts: dict[str, int] = {}
             if text is not None:
                 counts = dict(term_counts([(file, 3), (text, 1)]))
+            # A temporary read failure or hash mismatch is not an indexed revision.
+            # Clear old postings, but retain a pending marker so the next query retries.
+            indexed_sha = sha if text is not None else None
             conn.execute(
-                "INSERT OR REPLACE INTO files VALUES (?,?,?)", (file, sha, sum(counts.values()))
+                "INSERT OR REPLACE INTO files VALUES (?,?,?)",
+                (file, indexed_sha, sum(counts.values())),
             )
             conn.executemany(
                 "INSERT INTO postings VALUES (?,?,?)",
@@ -242,7 +276,7 @@ class SourceIndex:
                 scores[file] *= 0.5
             elif not wants_migrations and "/migrations/" in f"/{file}":
                 scores[file] *= 0.35
-        return sorted(scores.items(), key=lambda item: (-item[1], item[0]))[:limit]
+        return heapq.nsmallest(limit, scores.items(), key=lambda item: (-item[1], item[0]))
 
 
 def pending_files(root: Path, manifest: dict[str, Any]) -> int:
@@ -267,7 +301,7 @@ def pending_files(root: Path, manifest: dict[str, Any]) -> int:
 def search_sources(store: IndexStore, query: str, limit: int = 10) -> list[tuple[str, float]]:
     """BM25 over source bodies and paths, with changed-file-only cache maintenance.
 
-    Each new session reuses source-v2.sqlite. The manifest is the synchronization
+    Each new session reuses the persistent source database. The manifest is the synchronization
     boundary: external edits must go through update (or a hook) before indexing.
     """
     with SourceIndex(store) as index:

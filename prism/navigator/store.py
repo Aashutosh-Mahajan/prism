@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import heapq
 import json
 import sqlite3
 from dataclasses import dataclass
@@ -115,6 +116,17 @@ class IndexStore:
 
     def symbols_named(self, name: str) -> list[SymbolRow]:
         return self._syms("SELECT * FROM symbols WHERE name = ? ORDER BY rank DESC, id", (name,))
+
+    def symbols_by_ids(self, identities: list[str]) -> dict[str, SymbolRow]:
+        """Bounded batch reads for candidate reranking, rather than one query per symbol."""
+        found = {}
+        for offset in range(0, len(identities), 500):
+            batch = identities[offset : offset + 500]
+            for row in self._syms(
+                f"SELECT * FROM symbols WHERE id IN ({','.join('?' for _ in batch)})", tuple(batch)
+            ):
+                found[row.id] = row
+        return found
 
     def symbols_with_suffix(self, suffix: str) -> list[SymbolRow]:
         return self._syms(
@@ -368,14 +380,15 @@ class IndexStore:
                 scores[doc_id] = scores.get(doc_id, 0.0) + bm25(tf, df, n_docs, length, avg_len)
         if not scores:
             return []
-        ids = sorted(scores, key=lambda d: (-scores[d], d))[: max(limit * 5, 50)]
-        placeholders = ",".join("?" * len(ids))
-        docs = {
-            r[0]: (r[1], r[2])
-            for r in self.conn.execute(
-                f"SELECT doc_id, kind, ref FROM docs WHERE doc_id IN ({placeholders})", ids
-            )
-        }
+        # Stable ties depend on identity, not insertion order across delta generations.
+        docs = {r[0]: (r[1], r[2]) for r in self.conn.execute("SELECT doc_id, kind, ref FROM docs")}
+        ids = heapq.nsmallest(max(limit * 5, 50), scores, key=lambda d: (-scores[d], docs[d]))
+        symbols = self.symbols_by_ids(
+            [docs[ident][1] for ident in ids if docs[ident][0] == "symbol"]
+        )
+        modules = (
+            {m.id: m for m in self.modules()} if any(docs[i][0] == "module" for i in ids) else {}
+        )
         hits: list[SearchHit] = []
         max_rank = self.conn.execute("SELECT MAX(rank) FROM symbols").fetchone()[0] or 1.0
         # Most searches look for code to read or change: tests and generated migrations rank
@@ -387,14 +400,14 @@ class IndexStore:
             score = scores[doc_id]
             file: str | None = ref if kind == "file" else None
             if kind == "symbol":
-                sym = self.symbol(ref)
+                sym = symbols.get(ref)
                 if sym is not None:
                     file = sym.file
                     score *= 1.0 + 0.5 * (sym.rank / max_rank)
                     if sym.name.lower() in terms or sym.name.lower() == query.strip().lower():
                         score *= 1.5
             elif kind == "module":
-                mod = self.module(ref)
+                mod = modules.get(ref)
                 file = mod.file if mod else None
             if file:
                 if not wants_tests and self._is_test(file):

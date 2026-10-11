@@ -10,6 +10,7 @@ old-value lookups. It adds no symbols and never takes part in ranking code block
 from __future__ import annotations
 
 import hashlib
+import json
 import sqlite3
 from pathlib import Path
 from typing import Any
@@ -43,17 +44,27 @@ def is_text_candidate(path: str, size: int) -> bool:
 class TextCorpus:
     """A synchronized postings table of text files, keyed by (size, mtime) with a content hash."""
 
-    def __init__(self, root: Path, manifest: dict[str, Any]) -> None:
+    def __init__(self, root: Path, manifest: dict[str, Any], *, fresh: bool = False) -> None:
         self.root = root
-        self._manifest_files = set(manifest.get("files", {}))
+        self._known_files = manifest.get("files", {})
+        self._manifest_files = set(self._known_files)
         directory = cache_dir(root)
         directory.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(directory / TEXT_DB, timeout=30)
         self._paths: dict[str, set[str]] = {}
         self._sha: dict[str, str] = {}
         self.truncated = False
+        self.unavailable: set[str] = set()
+        self.sources_current = True
+        self._fresh = fresh
         try:
+            if self._conn.execute("PRAGMA journal_mode").fetchone()[0] != "wal":
+                self._conn.execute("PRAGMA journal_mode=WAL")
             self._sync()
+            self._conn.execute("BEGIN")
+            snapshot = dict(self._conn.execute("SELECT path,sha FROM tfiles"))
+            if any(snapshot.get(p) != sha for p, sha in self._sha.items()):
+                self.unavailable.update(self._sha)
         except BaseException:
             self._conn.close()
             raise
@@ -62,12 +73,36 @@ class TextCorpus:
         self._conn.close()
 
     def _listing(self) -> dict[str, tuple[int, int]]:
-        from prism.discovery.scanner import discover, recent_text_listing
+        from prism.discovery.scanner import (
+            discover,
+            recent_source_listing,
+            recent_text_listing,
+            remember_text_listing,
+        )
 
-        found = recent_text_listing(self.root)
+        found = None if self._fresh else recent_text_listing(self.root)
+        expected_sources = {p: facts.get("sha256") for p, facts in self._known_files.items()}
+        source_listing = recent_source_listing(self.root)
+        if source_listing is not None and source_listing != expected_sources:
+            # The manifest may have advanced since this cached discovery. A
+            # fresh walk distinguishes a successfully updated index from a
+            # genuinely incomplete source scope (including newly added files).
+            found = None
         if found is None:
             found = []
-            discover(self.root, load_config(self.root), None, resniff=False, text_files=found)
+            sources = discover(
+                self.root,
+                load_config(self.root),
+                self._known_files,
+                resniff=False,
+                text_files=found,
+            )
+            self.sources_current = {f.path: f.sha256 for f in sources} == expected_sources
+            remember_text_listing(self.root, found, {f.path: f.sha256 for f in sources})
+        else:
+            source_listing = recent_source_listing(self.root)
+            if source_listing is not None:
+                self.sources_current = source_listing == expected_sources
         listing = {p: (size, mtime) for p, size, mtime in found if p not in self._manifest_files}
         if len(listing) > MAX_TEXT_FILES:
             self.truncated = True
@@ -82,11 +117,19 @@ class TextCorpus:
             "CREATE INDEX IF NOT EXISTS t_term ON tpostings(term);"
             "CREATE INDEX IF NOT EXISTS t_path ON tpostings(path);"
         )
+        listing = self._listing()
+        cached = {
+            p: (s, m, h) for p, s, m, h in conn.execute("SELECT path,size,mtime,sha FROM tfiles")
+        }
+        if set(cached) == set(listing) and all(
+            cached[p][:2] == facts and cached[p][2] for p, facts in listing.items()
+        ):
+            self._sha = {p: facts[2] for p, facts in cached.items()}
+            return
         conn.execute("BEGIN IMMEDIATE")
         cached = {
             p: (s, m, h) for p, s, m, h in conn.execute("SELECT path,size,mtime,sha FROM tfiles")
         }
-        listing = self._listing()
         for path in sorted(set(cached) - set(listing)):
             conn.execute("DELETE FROM tpostings WHERE path=?", (path,))
             conn.execute("DELETE FROM tfiles WHERE path=?", (path,))
@@ -98,6 +141,7 @@ class TextCorpus:
             try:
                 raw = (self.root / path).read_bytes()
             except OSError:
+                self.unavailable.add(path)
                 continue
             if b"\x00" in raw[:8192]:
                 continue
@@ -108,6 +152,13 @@ class TextCorpus:
             conn.execute("INSERT OR REPLACE INTO tfiles VALUES (?,?,?,?)", (path, size, mtime, sha))
             conn.executemany("INSERT INTO tpostings VALUES (?,?)", [(t, path) for t in terms])
         conn.commit()
+
+    @property
+    def revision(self) -> str | None:
+        """Identity of the whole searchable corpus, including unquoted/new files."""
+        if self.truncated or self.unavailable or not self.sources_current:
+            return None
+        return hashlib.sha256(json.dumps(sorted(self._sha.items())).encode()).hexdigest()
 
     @property
     def paths(self) -> list[str]:
@@ -122,7 +173,7 @@ class TextCorpus:
         if found is None:
             found = {
                 r[0] for r in self._conn.execute("SELECT path FROM tpostings WHERE term=?", (term,))
-            }
+            } & self.paths_set
             self._paths[term] = found
         return found
 
