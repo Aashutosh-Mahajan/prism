@@ -1,0 +1,6 @@
+# Historical prose and immutable raw experiment data remain in Git, not retrieval.
+/docs/archive/
+/docs/benchmarks/**/*.json
+/docs/benchmarks/**/*.jsonl
+/docs/benchmarks/*.json
+/docs/benchmarks/*.jsonl

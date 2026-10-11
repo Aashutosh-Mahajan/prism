@@ -99,4 +99,4 @@ including full builds and schema overhead. Preserve correctness and count unsucc
 Raw preregistration, source copies, packets, wire traces and all six transcripts:
 `D:/Projects/prism/.benchmark-runs/preflight-2026-10-08/`.
 Machine-readable counters: [JSON](token-saving-delivery-2026-10-08.json).
-Architecture and usage: [context engine](context-engine.md).
+Architecture and usage: [context engine](../context-engine.md).

@@ -8,7 +8,7 @@ Optimise total work per verified solution. The immediate priorities are delivery
 
 PRISM's existing context-engine documentation already describes AST/source retrieval, graph expansion, source-hash checks, session-aware delivery, lean MCP tools and adaptive preflight budgets. ADR 0004 documents an explicit output-filter wrapper. Extend and evaluate these mechanisms instead of treating them as missing. These are documented capabilities; this research is not a fresh implementation audit.
 
-Local references: [context engine](context-engine.md), [output filtering](adr/0004-output-filtering.md), [benchmark protocol](benchmarks/protocol.md).
+Local references: [context engine](../context-engine.md), [output filtering](../adr/0004-output-filtering.md), [benchmark protocol](../benchmarks/protocol.md).
 
 ## 1. Define the objective before optimising
 

@@ -1,7 +1,7 @@
 # Phase 7 implementation and validation — 10 October 2026
 
 Scope: the actions in [the research deep dive](research-deep-dive-2026-10-10.md)
-and Phase 7 in [the update plan](../update.md). Existing uncommitted implementation
+and Phase 7 in [the update plan](../../update.md). Existing uncommitted implementation
 was preserved. This follow-up closes test weighting and semantic evaluation and
 hardens the implemented packet, patch, hooks and benchmark diagnostics.
 
@@ -72,7 +72,7 @@ uses normal local process access with test-network blocking retained.
 
 | Item | Status and prerequisite |
 |---|---|
-| Live multi-host, multi-repository campaign (7.9/7.17) | The owner-authorized [ArogyaTrack Codex Luna campaign](benchmarks/phase7/codex-luna-arogya-2026-10-10.md) completed 60 sessions under Claude's existing three-repetition design. The broader campaign still needs Java/Go and TypeScript repositories, reviewed tasks/oracles, frozen host/model configurations and a budget. Research asks for at least five repetitions; these three repetitions do not satisfy that broader gate. |
+| Live multi-host, multi-repository campaign (7.9/7.17) | The owner-authorized [ArogyaTrack Codex Luna campaign](../benchmarks/phase7/codex-luna-arogya-2026-10-10.md) completed 60 sessions under Claude's existing three-repetition design. The broader campaign still needs Java/Go and TypeScript repositories, reviewed tasks/oracles, frozen host/model configurations and a budget. Research asks for at least five repetitions; these three repetitions do not satisfy that broader gate. |
 | Clearable results (7.7) | Native MCP returns tool results. Clearing history is controlled by the host; no supported PRISM hook API was identified for it. Prompt injection cannot promise clearability. |
 | Claude partial-read-before-edit behavior (7.6) | Read ranges are built/tested, but actual host acceptance needs a native-host trial. |
 | Test selection effectiveness (7.12) | Direct, indirect and unmapped fallback regressions pass. The >=90% external seeded-bug criterion needs a frozen independent dataset. |

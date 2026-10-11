@@ -1,8 +1,8 @@
 # PRISM master improvement plan — token efficiency (11 October 2026)
 
 **Audience:** Claude Code, working in this repository. Written to be executed task by task.
-**Supersedes:** [`token-efficiency-plan-2026-10-11.md`](token-efficiency-plan-2026-10-11.md) (same day, audit-only). That file stays as the audit record; this one adds a survey of real-world tools, a comparison with PRISM, and every earlier recommendation reconciled with the current code.
-**Builds on:** [`research-token-efficiency-2026-10-10.md`](research-token-efficiency-2026-10-10.md), [`research-deep-dive-2026-10-10.md`](research-deep-dive-2026-10-10.md), [`improvement-plan-2026-10-10.md`](improvement-plan-2026-10-10.md), [`trust-and-token-fixes-2026-10-10.md`](trust-and-token-fixes-2026-10-10.md), [`final-report-2026-10-10-v2.md`](final-report-2026-10-10-v2.md), [`phase-status.md`](phase-status.md), [`../update.md`](../update.md).
+**Supersedes:** [`token-efficiency-plan-2026-10-11.md`](archive/token-efficiency-plan-2026-10-11.md) (same day, audit-only). That file stays as the audit record; this one adds a survey of real-world tools, a comparison with PRISM, and every earlier recommendation reconciled with the current code.
+**Builds on:** [`research-token-efficiency-2026-10-10.md`](archive/research-token-efficiency-2026-10-10.md), [`research-deep-dive-2026-10-10.md`](archive/research-deep-dive-2026-10-10.md), [`improvement-plan-2026-10-10.md`](archive/improvement-plan-2026-10-10.md), [`trust-and-token-fixes-2026-10-10.md`](archive/trust-and-token-fixes-2026-10-10.md), [`final-report-2026-10-10-v2.md`](archive/final-report-2026-10-10-v2.md), [`phase-status.md`](phase-status.md), [`../update.md`](../update.md).
 **Status:** proposal. Nothing here is implemented. Measurements are from a scratch copy of the source on 10 October 2026, not from live agent runs.
 
 ---

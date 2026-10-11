@@ -93,7 +93,7 @@ prompt hook delivers the answer with the request.
   behaviors this does not exercise are each agent's own hook plumbing.
 - The tasks have exact, checkable outcomes. They are small and specific, which is where an
   index helps the least; larger repositories and vaguer requests are expected to favor PRISM
-  more (see [benchmarks](benchmarks.md) for the scaling argument), but are not measured here.
+  more (see [benchmarks](../benchmarks.md) for the scaling argument), but are not measured here.
 - Every agent shares a large fixed system prompt, so savings in *billable* input are bounded
   well below savings in the tokens the agent actually reads.
 

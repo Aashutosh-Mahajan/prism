@@ -166,7 +166,7 @@ Full reference: [CLI](docs/cli.md).
 | [Getting started](docs/getting-started.md) | Install, enable a repo, the daily workflow |
 | [Architecture](docs/architecture.md) | Pipeline, incremental updates, package layout, design principles |
 | [Local context engine](docs/context-engine.md) | Task compilation, CLI/MCP parity, persistent knowledge and session reuse |
-| [Measured token savings](docs/token-saving-delivery-2026-10-08.md) | CLI/MCP preflight edit trials, provider counters, correctness and limits |
+| [Measured token savings](docs/archive/token-saving-delivery-2026-10-08.md) | CLI/MCP preflight edit trials, provider counters, correctness and limits |
 | [CLI reference](docs/cli.md) | Every command and option, exit codes |
 | [The `.aicontext/` directory](docs/aicontext.md) | Artifacts, schemas, the `AGENTS.md` format |
 | [Agent integrations](docs/agents.md) | Claude Code, Cursor, Codex, Gemini CLI, Antigravity, MCP tools, hooks, the consent model |
@@ -175,7 +175,7 @@ Full reference: [CLI](docs/cli.md).
 | [Configuration](docs/configuration.md) | `[tool.prism]` settings and environment variables |
 | [Benchmarks](docs/benchmarks.md) | How token savings and latency are measured, and results |
 | [Troubleshooting](docs/troubleshooting.md) | Common problems and `prism doctor` |
-| [Decision records](docs/adr/) | Why things are built the way they are |
+| [Decision records](docs/adr) | Why things are built the way they are |
 | [Specification](CLAUDE.md) | The product specification all work is checked against |
 | [Phase status](docs/phase-status.md) | Verified coverage and remaining work |
 

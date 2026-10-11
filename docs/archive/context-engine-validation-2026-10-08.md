@@ -95,8 +95,8 @@ are excluded from agent totals. Output is separate.
 
 ## Artifacts and product usage
 
-- [Usage and architecture](context-engine.md)
-- [CLI reference](cli.md)
+- [Usage and architecture](../context-engine.md)
+- [CLI reference](../cli.md)
 - [Measured agent results](context-engine-validation-2026-10-08.json)
 - Raw transcripts, protocol traffic and frozen-source before/after packets:
   `D:/Projects/prism/.benchmark-runs/context-engine-2026-10-07/`.

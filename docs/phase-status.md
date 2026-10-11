@@ -2,7 +2,7 @@
 
 ## P0 delivery reliability — 2026-10-10
 
-Follows [the token-efficiency research](prism-token-research-2026-10-10.md).
+Follows [the token-efficiency research](archive/prism-token-research-2026-10-10.md).
 
 - Installed guidance names only the selected transport: MCP installs no longer mention a CLI
   fallback that may not exist; non-MCP installs no longer mention MCP tools.
@@ -30,7 +30,7 @@ development statistics diagnostic now actually resamples tasks and rejects missi
 
 Installed MiniLM evaluation on eight paraphrases: top-three source recall **62.5% -> 75%**;
 complete packet coverage **62.5% -> 87.5%**. These are offline retrieval measurements.
-See [the Phase 7 validation report](phase7-validation-2026-10-10.md) for exact tests and the
+See [the Phase 7 validation report](archive/phase7-validation-2026-10-10.md) for exact tests and the
 remaining live-host, external-repository and clearable-result acceptance work. The owner-authorized
 [ArogyaTrack Codex Luna benchmark](benchmarks/phase7/codex-luna-arogya-2026-10-10.md) is complete:
 60 sandboxed sessions using Claude's existing tasks and scoring. CLI+hook and MCP passed 12/12;
@@ -67,7 +67,7 @@ handling were added. Full offline suite: **361 passed** before the final caller-
 its **64-test** focused regression suite passed. Actual preflight edit-agent processed input:
 **CLI -18.4%, MCP -20.5%**, all **18/18** matched checks per arm. This uses host-supplied
 preflight evidence, not a native-host hook activation test. See the
-[delivery report](token-saving-delivery-2026-10-08.md) for counters and limitations.
+[delivery report](archive/token-saving-delivery-2026-10-08.md) for counters and limitations.
 
 Shared task compilation now identifies scalar edit units, AST-verified output builders, small
 declared contracts and bounded literal frontend constructions. CLI and native MCP share the
@@ -76,7 +76,7 @@ between CLI/hooks/MCP, and full packets have bounded local caches with revision 
 checks. `prism knowledge` inspects the existing persistent repository inventory on demand.
 
 Validation: full offline suite **357 passed**, Ruff and strict mypy passed; final cache-hardening
-checks are recorded in [context engine validation](context-engine-validation-2026-10-08.md).
+checks are recorded in [context engine validation](archive/context-engine-validation-2026-10-08.md).
 Fresh six-agent pilot: all frozen checks passed; processed input **CLI +13.8%, MCP -11.3%** against
 the matched baseline. Cache-weighted input proxy: **CLI -6.2%, MCP -27.7%**. No large universal
 token saving or completion of every roadmap acceptance target is claimed.
@@ -109,7 +109,7 @@ of normal exploration. Delivered, with tests:
   post-edit update; cold caches warmed by `scan` and in the background by the prompt hook.
 - **Agents:** Claude Code, Codex, Gemini CLI, Cursor (hooks), Antigravity (experimental), generic;
   idempotent and reversible for each; `doctor` checks them.
-- **Measured** ([results](agent-benchmark-results-2026-10-07.md)): 15 live agents, 5 edit tasks,
+- **Measured** ([results](archive/agent-benchmark-results-2026-10-07.md)): 15 live agents, 5 edit tasks,
   all 45 edits correct. Against agents with their normal tools: hook setup -34% total input,
   -15% billable-equivalent, -30% turns, -89% tool output, -26% time; tool setup -22% / -11% /
   -17% / -67% / -2%. One task (a single greppable method) saw no benefit.
@@ -168,4 +168,4 @@ Later on 2026-09-27 (see [CHANGELOG](../CHANGELOG.md) for the full list):
 7. Smoke-test built wheels, optional parsers, and an already-installed local embedding model; verify hosted CI across supported platforms.
 8. Only then implement the remaining optional Phase 5 3D and editor-webview features. They must retain offline operation and optional installation.
 
-The detailed initial task rationale is in [the project audit](project-audit-2026-09-27.md). Its original findings are preserved as a baseline; this file records subsequent progress.
+The detailed initial task rationale is in [the project audit](archive/project-audit-2026-09-27.md). Its original findings are preserved as a baseline; this file records subsequent progress.

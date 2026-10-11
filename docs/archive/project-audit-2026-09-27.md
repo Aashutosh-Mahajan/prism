@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Scope: current repository, Python checks, frontend build, viewer source, live fixture viewer, and a small synthetic index benchmark. This is an audit and task plan; application code has not been changed.
 
-**Follow-up:** the paragraph above describes the original audit baseline. Implementation has since begun; see [phase status](phase-status.md) for current changes, verification, and remaining work. The findings below are retained as the original backlog rather than presented as all still unfixed.
+**Follow-up:** the paragraph above describes the original audit baseline. Implementation has since begun; see [phase status](../phase-status.md) for current changes, verification, and remaining work. The findings below are retained as the original backlog rather than presented as all still unfixed.
 
 ## Findings at a glance
 

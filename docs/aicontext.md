@@ -192,7 +192,7 @@ _Not written yet. Run the prism-refresh skill to fill this section._
 ## Schemas and versions
 
 Every JSON artifact carries `schema_version`. JSON Schemas for all of them live in
-[`prism/schemas/`](../prism/schemas/) and are validated in the test suite, together with the
+[`prism/schemas/`](../prism/schemas) and are validated in the test suite, together with the
 schema for finding input (`finding_input.schema.json`) and the audit plan.
 
 A breaking schema change bumps the major version and ships a migration; run `prism migrate` after

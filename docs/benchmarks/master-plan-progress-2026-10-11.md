@@ -16,7 +16,7 @@ deferred Anthropic token-count measurement; token_scale remains 1.0 by default.
 | T05 | committed | 22c18c2 + 5755671; specific patch refusal codes; six safety branches tested plus cache failure |
 | T10 | committed | da42c72; 80-site checked compact patch; 450-site refusal; replay recall and precision unchanged |
 | T11–T15, T16a | accepted; 4b006fe | final replay precision 20.0339%, file recall 14.7541% (within 2 points), mean 624.725; format saving 13.3349%; adaptive audit 681.9; parity and offline suite pass |
-| T16b | pending, later persisted form | schema version, migration and scan/update equivalence still required |
+| T16b | committed; b855cfc | schema 1.1 resolution provenance and ambiguity; migration preservation; full offline suite, Ruff and mypy pass |
 | T20 | implemented; Branch B | native permission experiment and ADR 0007; explicit filtering only |
 | T21 | implemented | saved-output round trip, CRLF, query and fallback checks |
 | T22 | pending paired data | transport defaults unchanged |
@@ -28,7 +28,15 @@ deferred Anthropic token-count measurement; token_scale remains 1.0 by default.
 | T28 | implemented | staged/unstaged symbols, callers/tests, budgeted JSON, warm fixture <0.5 s |
 | T29 | implemented | deterministic linked index/cluster notes and common frontmatter |
 | T30 | implemented | placeholders hidden; ranked --top preparation; validator commits; doctor fill ratio |
-| T40–T48 | pending | subscription campaign and optional experiments still required |
+| T40 | committed; ef964a4 | offline file/block/line scorer and owner-approved regression gate |
+| T41 | pilot running | native hooks verified; frozen ten-task paired/interleaved pilot; full campaign still required |
+| T42 | committed; bbc1f5f | sequential pinned local comparison; retain optional MiniLM; raw scores and checker audit |
+| T43 | pending | post-edit dependent hint experiment must satisfy paired edit/cost acceptance |
+| T44 | committed; ae49472 | conservative language-server doctor guidance |
+| T45 | language commits complete | optional AST grammars and incremental equivalence; separate PR publication pending |
+| T46 | in progress | current launcher and daemon measurements; 200 ms p95 not yet met |
+| T47 | committed; ae49472 | 500-log cleanup verification; bounded count/size/age |
+| T48 | implemented; exclusion verified | 22 historical documents archived; supplied audit bytes preserved; no broken live links |
 
 Validation environment: sandboxed Windows asyncio stalled creating its loopback
 socket pair. Tests run with local loopback access but retain the external-network
@@ -101,3 +109,16 @@ hook-arm improvement is claimed. T42 has pinned local weights and a fixed
 1,922-document historical corpus, 40 replay requests and nine real code-twin
 queries. Initial retrieval scores are recorded; final timing verification and
 recommendation remain.
+
+T42 controlled sequential evidence is committed. MiniLM versus CodeRank file
+recall@5: 14/61 versus 18/61; recall@10: both 19/61. Code-twin recall@5:
+12/16 versus 11/16; @10: both 16/16. CPU and GPU timing configurations differ.
+Native Transformers loads CodeRank with remote-code trust disabled. Retain the
+current default; Jina was excluded before weight download for its license.
+
+T48 moves 22 dated historical records under docs/archive, excludes that tree
+and immutable benchmark JSON/JSONL via .prismignore, and repairs live Markdown
+links. The supplied superseded audit's SHA256 is unchanged:
+d7fe7d0370910bceaeba76cba55bff4ae39a09960c42be408281ee9912ecc172.
+Source and text retrieval exclusion integration checks pass; live link audit
+finds zero broken links. The active master plan remains at its original path.

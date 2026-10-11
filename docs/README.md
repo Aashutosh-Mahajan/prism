@@ -21,9 +21,9 @@ New to PRISM? Start with [Getting started](getting-started.md).
 | [Architecture](architecture.md) | The pipeline, incremental updates, the query path, surfaces, determinism |
 | [The `.aicontext/` directory](aicontext.md) | Every artifact, the `AGENTS.md` format, schemas |
 | [Benchmarks](benchmarks.md) | How token savings and latency are measured, and the results |
-| [Retrieval research and revision](retrieval-research-2026-10-07.md) | Changes prompted by the Plexus pilot, upstream ideas, limits and validation |
-| [Retrieval reliability](retrieval-reliability-2026-10-07.md) | Fixes after the fresh campaign, frozen before/after target checks and remaining limits |
-| [Decision records](adr/) | Why things are built the way they are |
+| [Retrieval research and revision](archive/retrieval-research-2026-10-07.md) | Changes prompted by the Plexus pilot, upstream ideas, limits and validation |
+| [Retrieval reliability](archive/retrieval-reliability-2026-10-07.md) | Fixes after the fresh campaign, frozen before/after target checks and remaining limits |
+| [Decision records](adr) | Why things are built the way they are |
 | [Specification](../CLAUDE.md) | The product specification all work is checked against |
 | [Phase status](phase-status.md) | Verified coverage against the roadmap and remaining work |
 
