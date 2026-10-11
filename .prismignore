@@ -4,3 +4,4 @@
 /docs/benchmarks/**/*.jsonl
 /docs/benchmarks/*.json
 /docs/benchmarks/*.jsonl
+/docs/benchmarks/**/*.py
