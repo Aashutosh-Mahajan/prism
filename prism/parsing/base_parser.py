@@ -48,4 +48,8 @@ def get_parser(language: str) -> BaseParser | None:
 
             with suppress(ImportError):
                 register_parser(KotlinTreeSitterParser())
+            from prism.parsing.swift_treesitter import SwiftTreeSitterParser
+
+            with suppress(ImportError):
+                register_parser(SwiftTreeSitterParser())
     return _REGISTRY.get(language)
