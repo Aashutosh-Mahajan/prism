@@ -24,3 +24,21 @@ viewer/.test-build/
 tmp/
 output/
 node_modules/
+
+# Internal planning, specs and benchmark evidence (kept locally, not published)
+/CLAUDE.md
+/GEMINI.md
+/update.md
+/prism/*/CLAUDE.md
+/viewer/CLAUDE.md
+/docs/archive/
+/docs/spec/
+/docs/*plan*.md
+/docs/*audit*-20*.md
+/docs/*build*-20*.md
+/docs/phase-status.md
+/docs/token-saving-fix-*.md
+/docs/benchmarks/*
+!/docs/benchmarks/embedding-2026-10-11/
+!/docs/benchmarks/token-calibration.json
+.benchmark-runs/
