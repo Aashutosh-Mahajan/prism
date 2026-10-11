@@ -1,0 +1,1066 @@
+{
+  "run_started_unix": 1791694397.1053686,
+  "run_finished_unix": 1791694493.5662584,
+  "model": "coderank",
+  "device": "cuda",
+  "dataset_sha256": "afa8d9b9bce135e54d5001014258d424ba4c776137762e3d3d5a94a0da750f57",
+  "cold_seconds": 64.56063960003667,
+  "index_seconds": 28.82987120002508,
+  "vector_bytes": 5904384,
+  "unique_symbol_texts": 1922,
+  "peak_working_set_bytes": 1493172224,
+  "warm_query_median_ms": 13.902249978855252,
+  "warm_query_p95_ms": 24.86595000955275,
+  "file_gold_total": 61,
+  "file_recall5": 0.29508196721311475,
+  "file_recall10": 0.3114754098360656,
+  "code_cases": 9,
+  "code_recall5": 0.6875,
+  "code_recall10": 1.0,
+  "rows": [
+    {
+      "query": "do not read API names like min(3) as units of time in quantity literals",
+      "gold": [
+        "prism/navigator/literals.py"
+      ],
+      "top10": [
+        "prism/navigator/literals.py",
+        "tests/unit/test_task_retrieval.py",
+        "tests/unit/test_context_engine.py",
+        "prism/writers/modules_md.py",
+        "prism/discovery/scanner.py",
+        "tests/integration/test_trust_fixes.py",
+        "tests/unit/test_treesitter.py",
+        "tests/unit/test_test_command.py",
+        "prism/parsing/braces.py",
+        "prism/parsing/treesitter.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "skip the numpy import when the semantic channel is off; close SQLite handles when cache setup fails",
+      "gold": [
+        "prism/incremental/hash_cache.py",
+        "prism/navigator/semantic.py",
+        "prism/navigator/source_index.py"
+      ],
+      "top10": [
+        "tests/integration/test_semantic_task.py",
+        "prism/mcp/server.py",
+        "prism/cli.py",
+        "prism/navigator/freshness.py",
+        "prism/navigator/semantic.py",
+        "prism/incremental/hash_cache.py",
+        "tests/integration/test_trust_fixes.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/parsing/smells.py",
+        "prism/navigator/bert_numpy.py"
+      ],
+      "hits5": 1,
+      "hits10": 2
+    },
+    {
+      "query": "make seed selection match the previous behaviour when labels repeat",
+      "gold": [
+        "prism/navigator/graphwalk.py"
+      ],
+      "top10": [
+        "prism/navigator/graphwalk.py",
+        "tests/integration/test_prompt_hook.py",
+        "tests/integration/test_audit.py",
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_incremental.py",
+        "tests/unit/test_context_engine.py",
+        "tests/integration/test_worklog.py",
+        "tests/integration/test_surface_parity.py",
+        "tests/unit/test_task_retrieval.py",
+        "prism/hooks/dedupe.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "register prism_task without a derived output schema so Python 3.10 SDKs accept its result",
+      "gold": [
+        "prism/mcp/server.py"
+      ],
+      "top10": [
+        "prism/integrations/antigravity.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py",
+        "prism/config.py",
+        "tests/unit/test_config.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/unit/test_discovery.py",
+        "prism/navigator/daemon.py",
+        "prism/navigator/taskrun.py",
+        "tests/integration/test_trust_fixes.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "skip optional-dependency tests without the extras, short socket paths on macOS, LF viewer bundle",
+      "gold": [
+        "prism/navigator/daemon.py"
+      ],
+      "top10": [
+        "tests/integration/test_viewer.py",
+        "tests/unit/test_writers.py",
+        "tests/unit/test_discovery.py",
+        "tests/unit/test_enrich.py",
+        "tests/integration/test_integrations.py",
+        "tests/unit/test_treesitter.py",
+        "tests/conftest.py",
+        "prism/discovery/scanner.py",
+        "tests/integration/test_gate_dedupe.py",
+        "tests/integration/test_hooks_mcp.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "satisfy strict typing in the read dedupe and keep the viewer bundle LF",
+      "gold": [
+        "prism/hooks/dedupe.py"
+      ],
+      "top10": [
+        "tests/integration/test_viewer.py",
+        "tests/integration/test_gate_dedupe.py",
+        "prism/hooks/dedupe.py",
+        "tests/integration/test_integrations.py",
+        "prism/navigator/task_pack.py",
+        "prism/viewer/api.py",
+        "prism/viewer/server.py",
+        "prism/discovery/scanner.py",
+        "tests/unit/test_discovery.py",
+        "tests/integration/test_audit.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "rebuild the shipped bundle and viewer API",
+      "gold": [
+        "prism/viewer/api.py",
+        "prism/viewer/model.py"
+      ],
+      "top10": [
+        "tests/integration/test_viewer.py",
+        "prism/viewer/server.py",
+        "prism/viewer/api.py",
+        "prism/narrator/refresh.py",
+        "prism/maintenance.py",
+        "prism/cli.py",
+        "prism/audit/report.py",
+        "prism/writers/graph_export.py",
+        "prism/pipeline.py",
+        "tests/benchmarks/edit_bench.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "find, diff, task --detail, init --all-skills and doctor --session",
+      "gold": [
+        "prism/cli.py",
+        "prism/maintenance.py"
+      ],
+      "top10": [
+        "tests/integration/test_cli.py",
+        "tests/benchmarks/tokens.py",
+        "tests/integration/test_audit.py",
+        "tests/unit/test_enrich.py",
+        "prism/writers/worklog.py",
+        "tests/unit/test_context_engine.py",
+        "tests/integration/test_integrations.py",
+        "prism/integrations/claude_code.py",
+        "tests/benchmarks/agent_collect.py",
+        "prism/navigator/api.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "prism_find, detail levels and leaner tool profiles",
+      "gold": [
+        "prism/mcp/server.py"
+      ],
+      "top10": [
+        "prism/mcp/server.py",
+        "tests/unit/test_config.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/navigator/find.py",
+        "prism/core/errors.py",
+        "prism/config.py",
+        "tests/unit/test_discovery.py",
+        "prism/integrations/hooks_json.py",
+        "tests/test_agent_measure.py",
+        "tests/skills/test_skill_templates.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "Antigravity hook and a 16 s prompt-hook budget",
+      "gold": [
+        "prism/hooks/antigravity.py",
+        "prism/hooks/entry.py",
+        "prism/hooks/prompt.py",
+        "prism/hooks/runner.py"
+      ],
+      "top10": [
+        "tests/integration/test_prompt_hook.py",
+        "tests/integration/test_refresh.py",
+        "tests/benchmarks/edit_bench.py",
+        "prism/integrations/antigravity.py",
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_task_retrieval.py",
+        "tests/unit/test_task_pack.py",
+        "tests/unit/test_find.py",
+        "tests/unit/test_navigator.py",
+        "tests/integration/test_integrations.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "opt-in deny-only Read dedupe",
+      "gold": [
+        "prism/hooks/dedupe.py"
+      ],
+      "top10": [
+        "tests/integration/test_gate_dedupe.py",
+        "prism/navigator/literals.py",
+        "prism/navigator/task_pack.py",
+        "tests/integration/test_freshness.py",
+        "prism/extractors/dead_code.py",
+        "prism/navigator/store.py",
+        "tests/integration/test_audit.py",
+        "prism/hooks/update_job.py",
+        "prism/navigator/session.py",
+        "tests/integration/test_hooks_mcp.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "finish-time check that sends the agent back once when an old value remains",
+      "gold": [
+        "prism/hooks/gate.py"
+      ],
+      "top10": [
+        "tests/integration/test_prompt_hook.py",
+        "tests/unit/test_edit_bench.py",
+        "tests/integration/test_scan.py",
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_refresh.py",
+        "tests/integration/test_integrations.py",
+        "prism/navigator/daemon.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/test_agent_measure.py",
+        "prism/writers/activity.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "filter noisy command output before it reaches the agent",
+      "gold": [
+        "prism/outputfilter.py"
+      ],
+      "top10": [
+        "prism/writers/activity.py",
+        "tests/benchmarks/agent_collect.py",
+        "tests/benchmarks/agent_prepare.py",
+        "tests/integration/test_prompt_hook.py",
+        "prism/parsing/smells.py",
+        "prism/integrations/other_agents.py",
+        "prism/navigator/api.py",
+        "tests/integration/test_integrations.py",
+        "prism/writers/index_writer.py",
+        "prism/integrations/__init__.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "local ranking feedback from edited files",
+      "gold": [
+        "prism/navigator/feedback.py"
+      ],
+      "top10": [
+        "prism/navigator/fusion.py",
+        "prism/hooks/runner.py",
+        "tests/unit/test_enrich.py",
+        "tests/integration/test_incremental.py",
+        "prism/navigator/support.py",
+        "prism/graph/ranking.py",
+        "tests/integration/test_update_paths.py",
+        "tests/integration/test_freshness.py",
+        "prism/navigator/recall.py",
+        "prism/integrations/base.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "warm query process and fast task path",
+      "gold": [
+        "prism/navigator/daemon.py",
+        "prism/navigator/taskrun.py",
+        "prism/taskfast.py"
+      ],
+      "top10": [
+        "prism/navigator/freshness.py",
+        "prism/writers/task_cache.py",
+        "tests/unit/test_enrich.py",
+        "prism/hooks/update_job.py",
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "tests/integration/test_prompt_hook.py",
+        "tests/unit/test_edit_bench.py",
+        "tests/benchmarks/tokens.py",
+        "prism/mcp/server.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "checked unified-diff patches and twin detection in task packets",
+      "gold": [
+        "prism/navigator/enrich.py",
+        "prism/navigator/patchcmd.py",
+        "prism/navigator/task_pack.py"
+      ],
+      "top10": [
+        "tests/unit/test_context_engine.py",
+        "tests/benchmarks/edit_bench.py",
+        "tests/integration/test_cli.py",
+        "tests/integration/test_audit.py",
+        "prism/writers/task_cache.py",
+        "tests/unit/test_task_disclosure.py",
+        "tests/integration/test_prompt_hook.py",
+        "tests/unit/test_edit_bench.py",
+        "tests/unit/test_task_pack.py",
+        "tests/integration/test_worklog.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "record per-session requests, edits and notes locally",
+      "gold": [
+        "prism/writers/activity.py",
+        "prism/writers/worklog.py"
+      ],
+      "top10": [
+        "prism/writers/activity.py",
+        "tests/benchmarks/tokens.py",
+        "tests/benchmarks/agent_collect.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_freshness.py",
+        "prism/cli.py",
+        "tests/integration/test_prompt_hook.py",
+        "tests/integration/test_integrations.py",
+        "tests/integration/test_update_paths.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "UTF-8 text helpers and repository boundary handling",
+      "gold": [
+        "prism/core/paths.py",
+        "prism/core/textio.py",
+        "prism/graph/call_graph.py",
+        "prism/health/git_intel.py"
+      ],
+      "top10": [
+        "prism/hooks/entry.py",
+        "prism/parsing/treesitter.py",
+        "prism/writers/manifest.py",
+        "tests/benchmarks/tokens.py",
+        "prism/integrations/base.py",
+        "tests/integration/test_prompt_hook.py",
+        "tests/unit/test_request_ranking.py",
+        "prism/hooks/prompt.py",
+        "prism/parsing/braces.py",
+        "tests/integration/test_phase5.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "retry artifact reads that race an atomic replace on Windows",
+      "gold": [
+        "prism/writers/json_writer.py",
+        "prism/writers/manifest.py"
+      ],
+      "top10": [
+        "prism/writers/json_writer.py",
+        "tests/integration/test_freshness.py",
+        "tests/benchmarks/tokens.py",
+        "tests/integration/test_scan.py",
+        "prism/hooks/entry.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/lifecycle.py",
+        "prism/writers/narrative.py",
+        "tests/unit/test_edit_bench.py",
+        "prism/navigator/freshness.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "align CLI and MCP delivery with adaptive prompt context",
+      "gold": [
+        "prism/cli.py",
+        "prism/hooks/prompt.py",
+        "prism/mcp/server.py"
+      ],
+      "top10": [
+        "tests/unit/test_task_pack.py",
+        "prism/cli.py",
+        "prism/integrations/base.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/edit_bench.py",
+        "prism/integrations/other_agents.py",
+        "prism/integrations/antigravity.py",
+        "tests/unit/test_edit_bench.py",
+        "tests/integration/test_freshness.py",
+        "tests/integration/test_integrations.py"
+      ],
+      "hits5": 2,
+      "hits10": 2
+    },
+    {
+      "query": "check every installed agent integration",
+      "gold": [
+        "prism/maintenance.py"
+      ],
+      "top10": [
+        "prism/integrations/__init__.py",
+        "prism/integrations/other_agents.py",
+        "tests/integration/test_integrations.py",
+        "prism/integrations/base.py",
+        "prism/integrations/claude_code.py",
+        "prism/integrations/antigravity.py",
+        "prism/integrations/codex.py",
+        "prism/integrations/gemini.py",
+        "prism/cli.py",
+        "prism/lifecycle.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "register all six agents with hook and MCP capabilities",
+      "gold": [
+        "prism/integrations/__init__.py"
+      ],
+      "top10": [
+        "prism/cli.py",
+        "prism/integrations/base.py",
+        "prism/integrations/__init__.py",
+        "tests/integration/test_integrations.py",
+        "tests/unit/test_writers.py",
+        "tests/test_agent_measure.py",
+        "prism/lifecycle.py",
+        "prism/integrations/other_agents.py",
+        "tests/skills/test_skill_templates.py",
+        "prism/integrations/codex.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "split Cursor rules and add Cursor hooks",
+      "gold": [
+        "prism/integrations/other_agents.py"
+      ],
+      "top10": [
+        "prism/integrations/other_agents.py",
+        "tests/integration/test_integrations.py",
+        "prism/parsing/python_facts.py",
+        "prism/integrations/hooks_json.py",
+        "prism/extractors/config_keys.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py",
+        "prism/parsing/treesitter.py",
+        "prism/hooks/entry.py",
+        "prism/integrations/claude_code.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "add experimental Antigravity support",
+      "gold": [
+        "prism/integrations/antigravity.py"
+      ],
+      "top10": [
+        "prism/cli.py",
+        "prism/navigator/literals.py",
+        "prism/integrations/gemini.py",
+        "prism/integrations/base.py",
+        "prism/parsing/smells.py",
+        "prism/maintenance.py",
+        "prism/integrations/global_note.py",
+        "tests/integration/test_viewer.py",
+        "prism/discovery/scanner.py",
+        "prism/viewer/model.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "add Gemini CLI support",
+      "gold": [
+        "prism/integrations/gemini.py"
+      ],
+      "top10": [
+        "prism/entry.py",
+        "tests/benchmarks/tokens.py",
+        "prism/cli.py",
+        "tests/unit/test_config.py",
+        "prism/maintenance.py",
+        "prism/mcp/server.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/parsing/treesitter.py",
+        "tests/unit/test_treesitter.py",
+        "prism/writers/modules_md.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "install the prompt hook for Claude Code",
+      "gold": [
+        "prism/integrations/claude_code.py"
+      ],
+      "top10": [
+        "prism/cli.py",
+        "tests/integration/test_integrations.py",
+        "prism/integrations/claude_code.py",
+        "prism/integrations/global_note.py",
+        "prism/hooks/prompt.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/integrations/base.py",
+        "prism/hooks/entry.py",
+        "prism/navigator/task_pack.py",
+        "tests/integration/test_incremental.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "add managed TOML blocks and per-agent status checks",
+      "gold": [
+        "prism/integrations/base.py"
+      ],
+      "top10": [
+        "prism/integrations/other_agents.py",
+        "prism/integrations/base.py",
+        "prism/cli.py",
+        "prism/lifecycle.py",
+        "prism/writers/agents_md.py",
+        "prism/navigator/task_pack.py",
+        "prism/parsing/python_ast.py",
+        "tests/integration/test_integrations.py",
+        "prism/maintenance.py",
+        "tests/benchmarks/agent_collect.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "add helpers for managed hooks.json files",
+      "gold": [
+        "prism/integrations/hooks_json.py"
+      ],
+      "top10": [
+        "prism/integrations/claude_code.py",
+        "prism/integrations/git_hooks.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/cli.py",
+        "tests/integration/test_integrations.py",
+        "prism/integrations/base.py",
+        "prism/hooks/runner.py",
+        "prism/hooks/formats.py",
+        "tests/integration/test_incremental.py",
+        "prism/viewer/server.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "add prism_task and a lean tool profile by default",
+      "gold": [
+        "prism/mcp/server.py"
+      ],
+      "top10": [
+        "tests/unit/test_config.py",
+        "prism/config.py",
+        "prism/mcp/server.py",
+        "prism/navigator/task_pack.py",
+        "prism/core/errors.py",
+        "tests/unit/test_discovery.py",
+        "prism/cli.py",
+        "prism/entry.py",
+        "tests/benchmarks/tokens.py",
+        "prism/extractors/base.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "add task, brief --full, user-prompt hook, mcp profiles and multi-file update",
+      "gold": [
+        "prism/cli.py"
+      ],
+      "top10": [
+        "prism/cli.py",
+        "tests/integration/test_integrations.py",
+        "prism/integrations/claude_code.py",
+        "prism/hooks/update_job.py",
+        "prism/navigator/api.py",
+        "prism/integrations/other_agents.py",
+        "prism/hooks/prompt.py",
+        "tests/benchmarks/tokens.py",
+        "tests/unit/test_writers.py",
+        "prism/hooks/runner.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "add a light console entry point",
+      "gold": [
+        "prism/__main__.py",
+        "prism/entry.py"
+      ],
+      "top10": [
+        "prism/core/models.py",
+        "tests/unit/test_extractors.py",
+        "prism/cli.py",
+        "prism/extractors/entry_points.py",
+        "prism/hooks/update_job.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/integration/test_incremental.py",
+        "prism/consent/registry.py",
+        "tests/benchmarks/tokens.py",
+        "tests/integration/test_integrations.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "add the user-prompt hook that adds retrieval to the request",
+      "gold": [
+        "prism/hooks/__init__.py",
+        "prism/hooks/prompt.py"
+      ],
+      "top10": [
+        "prism/navigator/api.py",
+        "prism/navigator/task_pack.py",
+        "prism/cli.py",
+        "prism/navigator/literals.py",
+        "tests/integration/test_audit.py",
+        "tests/integration/test_viewer.py",
+        "prism/navigator/resolve.py",
+        "tests/conftest.py",
+        "prism/hooks/formats.py",
+        "prism/hooks/entry.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "parse edited paths from every agent's hook payload",
+      "gold": [
+        "prism/hooks/runner.py"
+      ],
+      "top10": [
+        "prism/hooks/runner.py",
+        "prism/cli.py",
+        "prism/integrations/git_hooks.py",
+        "tests/benchmarks/tokens.py",
+        "prism/incremental/hash_cache.py",
+        "tests/benchmarks/agent_collect.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/integrations/other_agents.py",
+        "prism/integrations/claude_code.py",
+        "tests/integration/test_incremental.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "query": "run index updates in a detached background job",
+      "gold": [
+        "prism/hooks/update_job.py"
+      ],
+      "top10": [
+        "prism/lifecycle.py",
+        "tests/integration/test_viewer.py",
+        "prism/cli.py",
+        "prism/hooks/runner.py",
+        "prism/navigator/freshness.py",
+        "prism/navigator/source_index.py",
+        "tests/benchmarks/tokens.py",
+        "prism/hooks/entry.py",
+        "prism/viewer/server.py",
+        "prism/mcp/server.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "render hook context as text, json or cursor output",
+      "gold": [
+        "prism/hooks/formats.py"
+      ],
+      "top10": [
+        "prism/navigator/render.py",
+        "prism/hooks/entry.py",
+        "prism/cli.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/navigator/api.py",
+        "prism/core/markers.py",
+        "prism/audit/plan.py",
+        "prism/navigator/task_pack.py",
+        "tests/unit/test_navigator.py",
+        "prism/mcp/server.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "add a hook entry point that avoids importing typer and rich",
+      "gold": [
+        "prism/hooks/entry.py"
+      ],
+      "top10": [
+        "prism/core/models.py",
+        "prism/extractors/entry_points.py",
+        "prism/integrations/claude_code.py",
+        "prism/cli.py",
+        "prism/parsing/smells.py",
+        "prism/integrations/git_hooks.py",
+        "tests/unit/test_writers.py",
+        "prism/parsing/treesitter.py",
+        "tests/integration/test_hooks_mcp.py",
+        "tests/integration/test_incremental.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "shorten the shared instruction block",
+      "gold": [
+        "prism/integrations/common.py"
+      ],
+      "top10": [
+        "prism/navigator/task_pack.py",
+        "prism/integrations/base.py",
+        "prism/writers/agents_md.py",
+        "prism/navigator/literals.py",
+        "prism/integrations/other_agents.py",
+        "prism/navigator/api.py",
+        "prism/parsing/treesitter.py",
+        "tests/integration/test_incremental.py",
+        "prism/writers/modules_md.py",
+        "tests/conftest.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "inject a compact session brief and make narrative sections optional",
+      "gold": [
+        "prism/writers/agents_md.py"
+      ],
+      "top10": [
+        "prism/navigator/api.py",
+        "prism/cli.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/navigator/render.py",
+        "prism/mcp/server.py",
+        "tests/benchmarks/agent_collect.py",
+        "tests/unit/test_navigator.py",
+        "prism/hooks/runner.py",
+        "tests/integration/test_scan.py",
+        "tests/benchmarks/tokens.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "retry artifact replacement after a Windows sharing violation",
+      "gold": [
+        "prism/writers/json_writer.py"
+      ],
+      "top10": [
+        "prism/navigator/freshness.py",
+        "tests/integration/test_hooks_mcp.py",
+        "prism/incremental/lock.py",
+        "prism/lifecycle.py",
+        "prism/writers/narrative.py",
+        "tests/integration/test_incremental.py",
+        "tests/integration/test_viewer.py",
+        "prism/navigator/resolve.py",
+        "prism/discovery/scanner.py",
+        "prism/cli.py"
+      ],
+      "hits5": 0,
+      "hits10": 0
+    },
+    {
+      "query": "move index writing into its own module",
+      "gold": [
+        "prism/writers/__init__.py",
+        "prism/writers/index_writer.py"
+      ],
+      "top10": [
+        "prism/writers/__init__.py",
+        "prism/core/models.py",
+        "prism/graph/symbol_table.py",
+        "prism/navigator/store.py",
+        "prism/lifecycle.py",
+        "tests/unit/test_treesitter.py",
+        "prism/navigator/source_index.py",
+        "prism/writers/modules_md.py",
+        "prism/core/errors.py",
+        "tests/unit/test_navigator.py"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    }
+  ],
+  "code_rows": [
+    {
+      "exclude": "tests.integration.test_incremental.content",
+      "gold": [
+        "tests.integration.test_scan.content_files"
+      ],
+      "top10": [
+        "tests.integration.test_scan.content_files",
+        "tests.integration.test_freshness.snapshot",
+        "tests.integration.test_prompt_hook.snapshot",
+        "tests.integration.test_cli.snapshot",
+        "tests.integration.test_hooks_mcp.snapshot",
+        "tests.integration.test_integrations.snapshot",
+        "prism.viewer.model._read",
+        "tests.benchmarks.agent_prepare.hashes",
+        "tests.integration.test_incremental._drift",
+        "tests.benchmarks.agent_score.score"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "exclude": "tests.integration.test_freshness.snapshot",
+      "gold": [
+        "tests.integration.test_prompt_hook.snapshot"
+      ],
+      "top10": [
+        "tests.integration.test_prompt_hook.snapshot",
+        "tests.integration.test_cli.snapshot",
+        "tests.integration.test_hooks_mcp.snapshot",
+        "tests.integration.test_integrations.snapshot",
+        "tests.integration.test_incremental.content",
+        "tests.benchmarks.agent_prepare.hashes",
+        "prism.lifecycle._snapshot_from_disk",
+        "tests.integration.test_scan.content_files",
+        "prism.consent.registry.cache_root",
+        "prism.navigator.feedback._path"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "exclude": "prism.drift.structural_diff._group_of",
+      "gold": [
+        "prism.writers.modules_md.group_of"
+      ],
+      "top10": [
+        "prism.writers.modules_md.group_of",
+        "prism.viewer.model._group_of",
+        "prism.graph.symbol_table.ModuleIndex.package_of",
+        "prism.parsing.braces._relative",
+        "prism.drift.structural_diff._module_section",
+        "prism.graph.symbol_table.resolve_relative",
+        "prism.writers.modules_md.module_groups",
+        "prism.graph.symbol_table.ModuleIndex.find_package",
+        "prism.navigator.api.op_module",
+        "prism.viewer.api.ViewerBackend.node"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "exclude": "tests.integration.test_cli.snapshot",
+      "gold": [
+        "tests.integration.test_hooks_mcp.snapshot"
+      ],
+      "top10": [
+        "tests.integration.test_hooks_mcp.snapshot",
+        "tests.integration.test_freshness.snapshot",
+        "tests.integration.test_prompt_hook.snapshot",
+        "tests.integration.test_integrations.snapshot",
+        "tests.benchmarks.agent_prepare.hashes",
+        "tests.integration.test_incremental.content",
+        "prism.lifecycle._snapshot_from_disk",
+        "tests.integration.test_scan.content_files",
+        "prism.consent.registry.repo_key",
+        "prism.writers.task_cache._compute_stamp"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "exclude": "tests.integration.test_phase5.repo",
+      "gold": [
+        "tests.integration.test_viewer.repo"
+      ],
+      "top10": [
+        "tests.integration.test_viewer.repo",
+        "tests.integration.test_antigravity_hook.repo",
+        "tests.integration.test_prompt_hook.repo",
+        "tests.integration.test_freshness.repo",
+        "tests.integration.test_refresh.repo",
+        "tests.integration.test_update_paths.repo",
+        "tests.integration.test_audit.seeded",
+        "tests.integration.test_incremental.drift_repo",
+        "tests.integration.test_viewer_structure._indexed",
+        "tests.conftest.small_repo"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "exclude": "tests.integration.test_doctor_session.enabled",
+      "gold": [
+        "tests.integration.test_freshness.repo",
+        "tests.integration.test_hooks_mcp.enabled",
+        "tests.integration.test_refresh.repo",
+        "tests.integration.test_semantic_task.indexed",
+        "tests.integration.test_surface_parity.enabled",
+        "tests.integration.test_update_paths.repo",
+        "tests.integration.test_worklog.enabled",
+        "tests.unit.test_task_pack.indexed"
+      ],
+      "top10": [
+        "tests.integration.test_hooks_mcp.enabled",
+        "tests.integration.test_surface_parity.enabled",
+        "tests.integration.test_worklog.enabled",
+        "tests.unit.test_feedback.enabled",
+        "tests.integration.test_daemon.enabled",
+        "tests.integration.test_freshness.repo",
+        "tests.integration.test_refresh.repo",
+        "tests.integration.test_update_paths.repo",
+        "tests.integration.test_semantic_task.indexed",
+        "tests.unit.test_task_pack.indexed"
+      ],
+      "hits5": 3,
+      "hits10": 8
+    },
+    {
+      "exclude": "tests.integration.test_hooks_mcp.payload",
+      "gold": [
+        "tests.integration.test_worklog.payload"
+      ],
+      "top10": [
+        "tests.integration.test_worklog.payload",
+        "tests.integration.test_prompt_hook.payload",
+        "tests.integration.test_antigravity_hook.payload",
+        "tests.integration.test_gate_dedupe.stop_payload",
+        "tests.integration.test_gate_dedupe.read_payload",
+        "tests.integration.test_doctor_session.hook",
+        "tests.integration.test_gate_dedupe.remember",
+        "tests.integration.test_integrations.snapshot",
+        "tests.integration.test_cli.snapshot",
+        "tests.integration.test_hooks_mcp.snapshot"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "exclude": "prism.parsing.python_facts._dotted",
+      "gold": [
+        "prism.parsing.smells._dotted"
+      ],
+      "top10": [
+        "prism.parsing.smells._dotted",
+        "prism.parsing.python_ast.dotted_name",
+        "prism.parsing.treesitter.GoParser._dotted",
+        "prism.parsing.treesitter.JavaScriptParser._dotted",
+        "prism.parsing.treesitter.JavaParser._dotted",
+        "prism.graph.call_graph.Resolver.resolve_name",
+        "prism.parsing.treesitter.JavaParser.call_target",
+        "prism.parsing.python_ast._annotation_type",
+        "prism.parsing.base_parser.get_parser",
+        "prism.writers.graph_export.to_dot"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    },
+    {
+      "exclude": "prism.integrations.base._sha",
+      "gold": [
+        "prism.writers.manifest.text_hash"
+      ],
+      "top10": [
+        "prism.writers.manifest.text_hash",
+        "prism.navigator.semantic._digest",
+        "prism.health.git_intel._is_sha",
+        "prism.writers.worklog._digest",
+        "prism.navigator.store._escape_like",
+        "prism.writers.graph_export._dot_quote",
+        "prism.writers.worklog._clip",
+        "prism.parsing.treesitter._text",
+        "prism.audit.report._safe_stamp",
+        "prism.integrations.base.read_text"
+      ],
+      "hits5": 1,
+      "hits10": 1
+    }
+  ],
+  "warm_query_seconds": [
+    0.012120399973355234,
+    0.011173399980179965,
+    0.011047999956645072,
+    0.01456559996586293,
+    0.009614499984309077,
+    0.011123800068162382,
+    0.010181099991314113,
+    0.011175599996931851,
+    0.012956299935467541,
+    0.01038760005030781,
+    0.014680799911729991,
+    0.014158500009216368,
+    0.013166000018827617,
+    0.012151499977335334,
+    0.01608299999497831,
+    0.013489600038155913,
+    0.019778399961069226,
+    0.013513299985788763,
+    0.01184089994058013,
+    0.01639880007132888,
+    0.013645999948494136,
+    0.020862000063061714,
+    0.023212100029923022,
+    0.014829199993982911,
+    0.021799499983899295,
+    0.01764430000912398,
+    0.020920999930240214,
+    0.028267099987715483,
+    0.026219099992886186,
+    0.014330700039863586
+  ],
+  "remote_code_trust": false,
+  "api_spend": 0
+}
