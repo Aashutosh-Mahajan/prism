@@ -148,6 +148,20 @@ def doctor(root: Path) -> list[Check]:
 
     state = repo_state(root, manifest.get("repo_id"))
     add("consent", state is RepoState.ENABLED, state.value, warn_only=True)
+    if state is RepoState.ENABLED and manifest.get("last_scan"):
+        # Artifact/schema validity alone did not catch a real-repository cache
+        # build regression. Exercise the same query store that CLI/MCP require.
+        from prism.navigator.store import IndexStore
+
+        try:
+            store = IndexStore.open(root)
+            try:
+                store.search("prism", limit=1)
+            finally:
+                store.close()
+            add("query cache", True, "query store opens and search executes")
+        except Exception as exc:
+            add("query cache", False, f"query store failed: {type(exc).__name__}")
     if manifest.get("last_scan"):
         from prism.status import compute_status
 
@@ -199,6 +213,10 @@ def doctor(root: Path) -> list[Check]:
     for integration in all_integrations():
         for name, ok, detail in integration.status(root):
             add(name, ok, detail, warn_only=True)
+    from prism.launcher_status import launcher_status
+
+    launcher_ok, launcher_detail = launcher_status()
+    add("launcher", launcher_ok, launcher_detail, warn_only=True)
     try:
         import mcp  # noqa: F401
 

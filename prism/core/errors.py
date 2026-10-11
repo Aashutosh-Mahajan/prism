@@ -33,6 +33,10 @@ class IndexMissingError(PrismError):
     code = "index_missing"
 
 
+class IndexStaleError(UserError):
+    code = "index_stale"
+
+
 class NotEnabledError(PrismError):
     exit_code = EXIT_USER_ERROR
     code = "not_enabled"

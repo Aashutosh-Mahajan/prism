@@ -23,6 +23,11 @@ def main() -> None:
 
         if try_fast(argv[1:]):
             return
+    if argv[:1] == ["find"]:
+        from prism.taskfast import try_find
+
+        if try_find(argv[1:]):
+            return
     from prism.cli import main as cli_main
 
     cli_main()

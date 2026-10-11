@@ -98,7 +98,12 @@ def handle_errors(fn: F) -> F:
         try:
             try:
                 return fn(*args, **kwargs)
-            except sqlite3.DatabaseError:
+            except sqlite3.DatabaseError as exc:
+                from prism.navigator.database_errors import database_problem
+
+                problem = database_problem(exc)
+                if problem is not None:
+                    raise problem from exc
                 # A damaged disposable cache: drop every cache and answer from the artifacts.
                 from prism.navigator.cache_db import purge_disposable_caches
 
@@ -189,9 +194,15 @@ def init(
             help="claude-code | cursor | codex | gemini | antigravity | generic | auto | none",
         ),
     ] = "auto",
-    hooks: Annotated[bool | None, typer.Option("--hooks/--no-hooks", help="Agent hooks.")] = None,
+    hooks: Annotated[
+        bool | None, typer.Option("--hooks/--no-hooks", help="Agent hooks (default: on).")
+    ] = None,
     mcp: Annotated[
-        bool | None, typer.Option("--mcp/--no-mcp", help="Register the MCP server.")
+        bool | None,
+        typer.Option(
+            "--mcp/--no-mcp",
+            help="Register the MCP server (default: off where hooks exist; hooks work better).",
+        ),
     ] = None,
     git_hooks: Annotated[
         bool | None,
@@ -247,9 +258,11 @@ def init(
             hooks,
             bool(HAS_HOOKS & set(agents)),
         ),
+        # Hooks deliver the packet with no standing cost; MCP adds tool descriptions to every turn
+        # and measured no better. It is opt-in (`--mcp`) except for a host that has no hooks.
         mcp=ask(
             "Register the PRISM MCP server for your agent?",
-            mcp,
+            mcp if mcp is not None else (False if set(agents) <= HAS_HOOKS else None),
             bool(HAS_MCP & set(agents)),
         ),
         all_skills=all_skills,
@@ -821,6 +834,26 @@ def search(
     )
 
 
+@app.command("trace")
+@handle_errors
+def trace_command(
+    source: Annotated[str, typer.Argument(help="Source symbol or module.")],
+    target: Annotated[str, typer.Argument(help="Destination symbol or module.")],
+    root: RootOption = None,
+    depth: Annotated[int, typer.Option("--depth", min=1, max=8)] = 4,
+    max_nodes: Annotated[int, typer.Option("--max-nodes", min=2, max=1024)] = 128,
+    as_json: JsonOption = False,
+) -> None:
+    """Explain a bounded directed static call/import path."""
+    from prism.navigator.trace import render_trace, trace_path
+
+    store = _store(root)
+    try:
+        _output(trace_path(store, source, target, depth, max_nodes), as_json, render_trace)
+    finally:
+        store.close()
+
+
 @app.command()
 @handle_errors
 def module(
@@ -1153,6 +1186,26 @@ def decision_show(
     from prism.writers.decisions import get_decision
 
     emit(get_decision(_root(root), ident)["text"].rstrip())
+
+
+@decision_app.command("search")
+@handle_errors
+def decision_search(
+    query: Annotated[str, typer.Argument(help="Decision topic or rationale.")],
+    root: RootOption = None,
+    limit: Annotated[int, typer.Option("--limit", min=1, max=50)] = 10,
+    as_json: JsonOption = False,
+) -> None:
+    """Search compact decision records; expand selected ids with decision show."""
+    from prism.navigator.decision_memory import search_decisions
+
+    result = search_decisions(_root(root), query, limit)
+    if as_json:
+        emit_json(result)
+    else:
+        for item in result["decisions"]:
+            emit(f"{item['id']} [{item['validity']}] {item['title']}")
+        emit(result["next"])
 
 
 @app.command()

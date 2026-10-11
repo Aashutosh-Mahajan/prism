@@ -93,7 +93,7 @@ def working_tree_changes(
     }
     from prism.discovery.scanner import remember_text_listing
 
-    remember_text_listing(root, text_files)
+    remember_text_listing(root, text_files, current)
     added = sorted(set(current) - set(known))
     deleted = sorted(set(known) - set(current))
     modified = sorted(p for p in set(current) & set(known) if current[p] != known[p].get("sha256"))

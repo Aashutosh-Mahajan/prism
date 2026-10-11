@@ -168,15 +168,26 @@ def _leaves_repo(path: Path, root: Path) -> bool:
         return True
 
 
-_TEXT_LISTING: dict[str, tuple[float, list[tuple[str, int, int]]]] = {}
+_TEXT_LISTING: dict[str, tuple[float, list[tuple[str, int, int]], dict[str, str] | None]] = {}
 TEXT_LISTING_TTL_SECONDS = 5.0
 
 
-def remember_text_listing(root: Path, listing: list[tuple[str, int, int]]) -> None:
+def remember_text_listing(
+    root: Path, listing: list[tuple[str, int, int]], sources: dict[str, str] | None = None
+) -> None:
     """Keep the text/data files a walk just found, so the same query does not walk twice."""
     import time
 
-    _TEXT_LISTING[root.resolve().as_posix()] = (time.monotonic(), list(listing))
+    key = root.resolve().as_posix()
+    if len(_TEXT_LISTING) >= 128 and key not in _TEXT_LISTING:
+        _TEXT_LISTING.pop(next(iter(_TEXT_LISTING)))
+    _TEXT_LISTING[key] = (time.monotonic(), list(listing), sources)
+
+
+def recent_source_listing(root: Path) -> dict[str, str] | None:
+    if recent_text_listing(root) is None:
+        return None
+    return _TEXT_LISTING[root.resolve().as_posix()][2]
 
 
 def recent_text_listing(root: Path) -> list[tuple[str, int, int]] | None:

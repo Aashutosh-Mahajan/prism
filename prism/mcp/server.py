@@ -85,7 +85,15 @@ class PrismTools:
         try:
             try:
                 return fn()
-            except sqlite3.DatabaseError:
+            except sqlite3.DatabaseError as exc:
+                # Contention is normal when a hook updates while MCP reads. It is
+                # not corruption, and deleting live databases can split readers
+                # and writers onto different files (or fail on Windows).
+                from prism.navigator.database_errors import database_problem
+
+                problem = database_problem(exc)
+                if problem is not None:
+                    return problem.to_dict()
                 # A damaged disposable cache: drop every cache, reopen and answer once more.
                 from prism.navigator.cache_db import purge_disposable_caches
 
@@ -96,6 +104,13 @@ class PrismTools:
                 return fn()
         except PrismError as exc:
             return exc.to_dict()
+        except sqlite3.DatabaseError as exc:
+            from prism.navigator.database_errors import IndexQueryError, database_problem
+
+            problem = database_problem(exc) or IndexQueryError(
+                "Index recovery failed; use bounded local search.", retryable=False
+            )
+            return problem.to_dict()
 
     # Each method below is exposed as an MCP tool of the same name.
 
@@ -263,9 +278,17 @@ class PrismTools:
 
         return self.call(lambda: build_report(self.root))
 
-    def prism_decisions(self) -> dict[str, Any]:
+    def prism_decisions(
+        self, query: str | None = None, expand_id: str | None = None, limit: int = 10
+    ) -> dict[str, Any]:
         """Recorded architecture decisions (id, title, status, date, related symbols)."""
         from prism.writers.decisions import list_decisions
+
+        self._require_consent()
+        if query is not None or expand_id is not None:
+            from prism.navigator.decision_memory import search_decisions
+
+            return self.call(lambda: search_decisions(self.root, query or "", limit, expand_id))
 
         return self.call(
             lambda: {
@@ -274,6 +297,14 @@ class PrismTools:
                 ]
             }
         )
+
+    def prism_trace(
+        self, source: str, target: str, depth: int = 4, max_nodes: int = 128
+    ) -> dict[str, Any]:
+        """Directed static path between symbols/modules, with provenance and explicit limits."""
+        from prism.navigator.trace import trace_path
+
+        return self.call(lambda: trace_path(self.store(), source, target, depth, max_nodes))
 
     def prism_decision_record(
         self,
@@ -337,6 +368,7 @@ EXTRA_TOOLS: list[str] = [
     "prism_audit_update",
     "prism_audit_report",
     "prism_graph_view_url",
+    "prism_trace",
     "prism_decisions",
     "prism_decision_record",
     "prism_recall",
