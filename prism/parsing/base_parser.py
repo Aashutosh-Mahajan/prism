@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from contextlib import suppress
 
 from prism.core.models import ParsedFile
 
@@ -38,4 +39,9 @@ def get_parser(language: str) -> BaseParser | None:
 
         for parser in braces.parsers():
             register_parser(parser)
+        if treesitter.available():
+            from prism.parsing.dart_treesitter import DartTreeSitterParser
+
+            with suppress(ImportError):
+                register_parser(DartTreeSitterParser())
     return _REGISTRY.get(language)
