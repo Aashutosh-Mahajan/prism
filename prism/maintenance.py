@@ -68,6 +68,14 @@ def doctor(root: Path) -> list[Check]:
         else "no saved-output measurements yet; "
     )
     add("shell output", True, detail + "run long test/build/log commands as prism filter -- <cmd>")
+    from prism.cache_cleanup import cache_size
+
+    cache_files, cache_bytes = cache_size(root)
+    add(
+        "cache size",
+        True,
+        f"{cache_bytes} bytes in {cache_files} files; prune saved logs with prism cache gc",
+    )
     from prism.narrator.refresh import _current, all_sections
     from prism.navigator.sanitize import strip_hidden
 
@@ -225,6 +233,10 @@ def doctor(root: Path) -> list[Check]:
     )
 
     languages = manifest.get("stats", {}).get("languages", {})
+    from prism.lsp_status import language_server_status
+
+    lsp_ok, lsp_detail = language_server_status(root, languages)
+    add("language server", lsp_ok, lsp_detail, warn_only=True)
     from prism.parsing.base_parser import get_parser
 
     unparsed = sorted(lang for lang in languages if get_parser(lang) is None)

@@ -23,13 +23,13 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+from prism.cache_cleanup import TEE_KEEP
 from prism.core.errors import UserError
 
 MIN_LINES = 60  # shorter output is already cheap and is printed unchanged
 CONTEXT = 3  # lines kept before and after every failure line
 HEAD, TAIL = 25, 40  # kept from an unrecognised, very long output
 MAX_UNRECOGNISED = 200
-TEE_KEEP = 40  # tee files older than this many newest are removed
 
 FAILURE = re.compile(
     r"(?i)\b(fail(?:ed|s|ure|ures)?|error(?:s)?|exception|traceback|assert(?:ion)?(?:error)?|"
@@ -144,21 +144,28 @@ def tee_dir(root: Path) -> Path:
 
 
 def save_tee(root: Path, command: str, text: str, *, raw: bytes | None = None) -> Path | None:
+    from prism.cache_cleanup import TEE_BYTES, _safe_directory
+
     directory = tee_dir(root)
+    if not _safe_directory(directory):
+        return None
     try:
         directory.mkdir(parents=True, exist_ok=True)
         stamp = time.strftime("%H%M%S")
         payload = raw if raw is not None else text.encode("utf-8", "replace")
+        if len(payload) > TEE_BYTES - 16384:
+            return None  # preserve raw stdout rather than offer an unrecoverable log
         digest = hashlib.sha256(command.encode("utf-8", "replace") + b"\0" + payload).hexdigest()[
             :8
         ]
         path = directory / f"{stamp}-{digest}.txt"
+        if path.is_symlink():
+            return None
         path.write_bytes(raw if raw is not None else text.encode("utf-8", "replace"))
-        files = sorted(directory.glob("*.txt"), key=lambda p: p.stat().st_mtime, reverse=True)
-        for old in files[TEE_KEEP:]:
-            old.unlink(missing_ok=True)
-            old.with_suffix(".meta.json").unlink(missing_ok=True)
-        return path
+        from prism.cache_cleanup import collect_tee
+
+        collect_tee(root)
+        return path if path.is_file() else None
     except OSError:
         return None
 
@@ -287,6 +294,9 @@ def run_filtered(root: Path, command: list[str]) -> int:
                 "exit_code": proc.returncode,
             },
         )
+        from prism.cache_cleanup import collect_tee
+
+        collect_tee(root)
     except OSError:
         pass  # measurement failure does not discard the recoverable output
     return proc.returncode

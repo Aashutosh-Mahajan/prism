@@ -38,6 +38,8 @@ app.add_typer(hook_app, name="hook")
 audit_app = typer.Typer(help="Agent-driven codebase audit (prism-audit skill).")
 app.add_typer(refresh_app, name="refresh")
 app.add_typer(audit_app, name="audit")
+cache_app = typer.Typer(help="Inspect and prune disposable caches.")
+app.add_typer(cache_app, name="cache")
 
 out = Console(highlight=False)
 err = Console(stderr=True, highlight=False)
@@ -121,6 +123,33 @@ def handle_errors(fn: F) -> F:
             raise typer.Exit(EXIT_INTERNAL) from exc
 
     return wrapper  # type: ignore[return-value]
+
+
+@cache_app.command("gc")
+@handle_errors
+def cache_gc(
+    root: RootOption = None,
+    as_json: JsonOption = False,
+    keep: Annotated[int, typer.Option(min=0, help="Maximum saved logs.")] = 40,
+    max_bytes: Annotated[
+        int, typer.Option(min=0, help="Maximum saved-log bytes including metadata.")
+    ] = 32 * 1024 * 1024,
+    age_days: Annotated[float, typer.Option(min=0, help="Maximum saved-log age in days.")] = 30,
+) -> None:
+    from prism.cache_cleanup import cache_size, collect_tee
+
+    chosen = _root(root)
+    result = collect_tee(chosen, keep=keep, max_bytes=max_bytes, age_days=age_days)
+    count, size = cache_size(chosen)
+    if as_json:
+        emit_json({**result, "cache_files": count, "cache_bytes": size})
+    else:
+        emit(
+            f"Removed {result['removed_files']} saved-log files ({result['removed_bytes']} bytes). "
+            f"Kept {result['kept_logs']} logs ({result['kept_bytes']} bytes); total cache {size} bytes."
+        )
+        if result["unsafe_path"]:
+            emit("Skipped cleanup: cache path contains a symlink.")
 
 
 def _version_callback(value: bool) -> None:
