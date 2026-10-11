@@ -292,6 +292,15 @@ Blast radius: dependents grouped by distance (default depth 3) and the tests to 
 
 Show a module summary from `.aicontext/modules/`.
 
+### `prism trace SOURCE TARGET [--depth 1-8] [--max-nodes 2-1024] [--json]`
+
+Find a shortest directed static path between two symbols (calls) or two modules
+(imports). Defaults: depth 4, at most 128 visited nodes. Each edge reports its
+confidence, resolution and extracted/inferred provenance. Source revisions are
+verified; stale files or exhausted traversal limits mark the search partial.
+An absent path in a partial search does not prove disconnection. Static paths
+do not establish runtime execution. The full MCP profile exposes `prism_trace`.
+
 ## Narrative and decisions
 
 ### `prism refresh prepare [--sections NAME ...]`
@@ -307,6 +316,16 @@ resetting its drift. Generated regions can never be overwritten this way.
 ### `prism decision add | list | show`
 
 Record, list and print architecture decisions in `.aicontext/decisions/`.
+
+### `prism decision search QUERY [--limit 1-50] [--json]`
+
+Search compact decision records, default limit 10. Results include IDs, titles,
+status and source-evidence validity (`current`, `stale`, or `unverified`), without
+the full rationale. Superseded and deprecated records are excluded from search.
+Expand a selected record with `prism decision show ID`. MCP supports
+`prism_decisions(query=...)` and `prism_decisions(expand_id=ID)`; expanded results
+also report evidence validity. Old records without recorded source hashes are
+unverified rather than assumed current.
 
 ## Audit
 

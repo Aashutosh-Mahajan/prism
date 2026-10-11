@@ -141,9 +141,10 @@ counting tokens an agent reads to orient itself for realistic bug-fix requests
 | PRISM itself, 10 tasks, full session | 140 files · 20k lines | 105,846 | 28,981 | **73%** |
 | 12-file fixture | 119 lines | 1,115 | 3,136 | −181% |
 
-PRISM pays off on real projects; on tiny repositories its fixed cost (brief, search, pack) is
-larger than simply reading everything. Queries answer in 1–3 ms; a one-file update takes about
-0.4 s on a 50k-line repository.
+These harness counts estimate context volume; task completion and provider billing need
+separate measurement. Tiny repositories can pay more for the brief/search/packet workflow
+than simply reading their files. End-to-end latency includes launcher, freshness and cache
+work and varies substantially from warm query timings.
 
 ## Command overview
 
@@ -151,8 +152,8 @@ larger than simply reading everything. Queries answer in 1–3 ms; a one-file up
 |---|---|
 | Setup and consent | `init` · `enable` / `disable` · `pause` / `resume` · `uninstall-integration` · `install --global` · `doctor` |
 | Index | `scan` · `update` · `status` · `watch` · `migrate` |
-| Navigation | `task` · `brief` · `search` · `locate` · `context` · `impact` · `module` |
-| Narrative | `refresh prepare` · `refresh commit` · `decision add/list/show` |
+| Navigation | `task` · `brief` · `search` · `locate` · `context` · `impact` · `module` · `trace` |
+| Narrative | `refresh prepare` · `refresh commit` · `decision add/list/show/search` |
 | Audit | `audit plan` · `audit record` · `audit update` · `audit report` |
 | Graph | `view` · `graph export` |
 | Agent plumbing | `mcp` · `hook session-start` · `hook user-prompt` · `hook post-edit` |
@@ -166,7 +167,6 @@ Full reference: [CLI](docs/cli.md).
 | [Getting started](docs/getting-started.md) | Install, enable a repo, the daily workflow |
 | [Architecture](docs/architecture.md) | Pipeline, incremental updates, package layout, design principles |
 | [Local context engine](docs/context-engine.md) | Task compilation, CLI/MCP parity, persistent knowledge and session reuse |
-| [Measured token savings](docs/archive/token-saving-delivery-2026-10-08.md) | CLI/MCP preflight edit trials, provider counters, correctness and limits |
 | [CLI reference](docs/cli.md) | Every command and option, exit codes |
 | [The `.aicontext/` directory](docs/aicontext.md) | Artifacts, schemas, the `AGENTS.md` format |
 | [Agent integrations](docs/agents.md) | Claude Code, Cursor, Codex, Gemini CLI, Antigravity, MCP tools, hooks, the consent model |
@@ -176,8 +176,6 @@ Full reference: [CLI](docs/cli.md).
 | [Benchmarks](docs/benchmarks.md) | How token savings and latency are measured, and results |
 | [Troubleshooting](docs/troubleshooting.md) | Common problems and `prism doctor` |
 | [Decision records](docs/adr) | Why things are built the way they are |
-| [Specification](CLAUDE.md) | The product specification all work is checked against |
-| [Phase status](docs/phase-status.md) | Verified coverage and remaining work |
 
 ## Contributing
 

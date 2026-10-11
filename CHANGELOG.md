@@ -138,7 +138,7 @@ All notable changes to PRISM are documented here. The format follows
 - `prism brief --full`; `prism task --session`; `prism update a.py b.py`.
 - Edit benchmark (`tests/benchmarks/edit_bench.py`): fresh agent per change request, executable
   checks, transcript measurement; retrieval benchmark (`tests/benchmarks/retrieval_eval.py`).
-  Results: [agent benchmark 2026-10-07](docs/agent-benchmark-results-2026-10-07.md).
+  Results: agent benchmark 2026-10-07.
 - A web-app test fixture (`tests/fixtures/repos/webapp`).
 - Graph viewer redesign: new layout with a node drawer, inspector and legend card; dark and light
   themes; bundled JetBrains Mono so it stays offline.
@@ -209,7 +209,7 @@ All notable changes to PRISM are documented here. The format follows
 
 ## [0.1.0]
 
-First implementation of the specification in CLAUDE.md.
+First implementation of the product specification.
 
 ### Added
 - **Index:** discovery with scoped `.gitignore` and `.prismignore`, Python `ast` parsing and

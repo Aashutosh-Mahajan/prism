@@ -33,7 +33,7 @@ itself. Both models receive the same production 600-character symbol text.
 Small datasets and no confidence interval limit the strength of this result.
 
 Pinned revisions and license decisions are in the
-[registration](../embedding-2026-10-11-registration.md). CodeRank uses its
+registration. CodeRank uses its
 model-card query prefix, normalized CLS vectors, pinned safetensors, native
 NomicBert support, and disabled remote-code trust. Jina 0.5b is excluded before
 weight download because its CC-BY-NC-4.0 license does not support an unrestricted

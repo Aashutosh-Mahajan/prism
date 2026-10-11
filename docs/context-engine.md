@@ -110,6 +110,6 @@ operations as persistent stdio tools for a host agent. Both retrieve a working s
 knowledge; neither creates the remote model's attention/KV cache on disk. Core indexing and
 retrieval use zero LLM tokens. Host-authored narratives and coding agents consume model tokens.
 
-The latest [preflight pilot](archive/token-saving-delivery-2026-10-08.md) measures actual edit-agent
+The latest preflight pilot measures actual edit-agent
 usage for packets retrieved through each transport and supplied before the first turn.
 This is distinct from tool-only retrieval and from a verified native-host hook run.

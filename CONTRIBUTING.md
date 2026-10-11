@@ -16,8 +16,8 @@ change must pass, and the rules that keep PRISM trustworthy.
 
 ## Ground rules
 
-[CLAUDE.md](CLAUDE.md) is the product specification. When your instinct and the spec disagree,
-the spec wins; when the spec looks wrong, open an issue instead of silently diverging.
+The principles below are the product's design contract. When your instinct and the contract disagree,
+the contract wins; when it looks wrong, open an issue instead of silently diverging.
 
 Every change is checked against these non-negotiable principles:
 
@@ -34,7 +34,7 @@ Every change is checked against these non-negotiable principles:
 | Safe by default | PRISM never modifies user source code. |
 | Opt-in | Nothing runs in a repository until the user enables it there, per user. |
 
-Before adding anything, ask the questions in [CLAUDE.md §20](CLAUDE.md#20-before-you-add-anything-ask).
+Before adding anything, check the change against the principles above: offline core, consent, bounded context, deterministic artifacts, incremental performance, schema compatibility, shared library logic and no writes to user source.
 
 ## Development setup
 

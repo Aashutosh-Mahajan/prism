@@ -2,8 +2,7 @@
 
 This guide explains how PRISM is put together: the indexing pipeline, incremental updates, the
 query path, the surfaces agents and people use, and the rules that keep it all deterministic and
-local. The product specification is [CLAUDE.md](../CLAUDE.md); this document describes the code
-as it is.
+local. This document describes the code as it is.
 
 - [The core principle](#the-core-principle)
 - [System overview](#system-overview)

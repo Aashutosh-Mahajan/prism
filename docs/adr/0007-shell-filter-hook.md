@@ -18,8 +18,8 @@ long commands as `prism filter -- <cmd>` with their usual host permissions.
 Generated instructions describe this pattern. Doctor reports measured savings
 from saved output metadata, or says no measurements are available.
 
-Evidence: [native experiment](../benchmarks/shell-filter-experiment-2026-10-11/summary.json)
-and [wrapper boundary](../benchmarks/shell-filter-experiment-2026-10-11/wrapper-boundary-summary.json).
+Evidence: native experiment
+and wrapper boundary.
 Raw JSONL sessions accompany these summaries. The first `--bare` attempt failed
 before inference because that mode disables OAuth and hooks; it is excluded.
 A read-only echo without an explicit ask rule was automatically allowed and was

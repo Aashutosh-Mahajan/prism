@@ -80,6 +80,7 @@ automatically.
 | `PRISM_DAEMON=0` | Never use or start the warm query process (below). |
 | `PRISM_FEEDBACK=0` | Do not record or use ranking feedback from edits (below). |
 | `PRISM_SESSION` | A session id for `prism task`: code already returned in this session comes back as a reference. |
+| `PRISM_PROFILE=1` | Opt into local navigator timing/counter records in `query-metrics.jsonl` under the local cache directory. Records contain a query hash and estimates, not query/source text. They exclude launcher/freshness work and billing; the file rotates at 1 MiB. |
 
 ## Per-user state
 
