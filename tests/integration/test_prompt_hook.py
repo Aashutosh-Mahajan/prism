@@ -269,6 +269,21 @@ def test_a_scan_leaves_the_caches_warm(tmp_path: Path) -> None:
     assert caches_ready(root)
 
 
+def test_a_scan_builds_the_text_corpus_and_a_missing_one_is_not_ready(tmp_path: Path) -> None:
+    """The text/data corpus is part of every packet query. Left unbuilt, the first hook prompt on
+    a large repository timed out and delivered nothing (found on Django)."""
+    from prism.navigator.cache_db import cache_dir
+    from prism.navigator.freshness import caches_ready
+
+    root = shutil.copytree(FIXTURE, tmp_path / "text")
+    apply_init(plan_init(root))
+    scan(root)
+    corpus = cache_dir(root) / "text-v1.sqlite"
+    assert corpus.is_file() and caches_ready(root)
+    corpus.unlink()
+    assert not caches_ready(root)
+
+
 def test_a_result_the_agent_never_received_is_not_remembered(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -302,6 +317,29 @@ def test_the_injected_header_is_byte_stable_for_provider_caching() -> None:
 
     assert not re.search(r"\d|[/\]|[A-Z]:", HEADER.replace("PRISM", ""))
     assert HEADER.strip() == HEADER and "\n" not in HEADER
+
+
+def test_sql_failure_is_not_purged_or_reported_as_low_confidence(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import sqlite3
+
+    from prism.writers.worklog import sessions
+
+    monkeypatch.setattr("prism.navigator.daemon.ask", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        "prism.navigator.cache_db.purge_disposable_caches",
+        lambda root: pytest.fail("SQL programming error purged caches"),
+    )
+
+    def fail(*args, **kwargs):
+        raise sqlite3.IntegrityError("UNIQUE constraint failed: docs.kind, docs.ref")
+
+    monkeypatch.setattr("prism.hooks.prompt._retrieve", fail)
+    notice = user_prompt(payload(repo, T1, "broken-query"))
+    assert "retrieval failed" in notice and "bounded local search" in notice
+    logs = sessions(repo)
+    assert logs[0].deliveries[-1] == ("hook", False, "retrieval failed: index_error")
 
 
 def test_a_templated_prompt_is_searched_by_its_request_not_its_boilerplate() -> None:

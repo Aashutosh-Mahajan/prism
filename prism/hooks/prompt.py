@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 import sqlite3
 import threading
+import time
 import traceback
 from typing import Any
 
@@ -205,10 +206,30 @@ def user_prompt(
             else PROMPT_BUDGET
         )
         result: list[str] = []
+        failures: list[str] = []
         abandoned = threading.Event()
 
         def work() -> None:
             try:
+                from prism.navigator import daemon
+
+                timeout = TIME_BUDGET_SECONDS if time_budget is None else time_budget
+                reply = daemon.ask(
+                    root,
+                    {
+                        "op": "hook-prompt",
+                        "query": prompt,
+                        "session": session,
+                        "budget": budget,
+                        "deadline": time.time() + timeout,
+                    },
+                    timeout=timeout,
+                )
+                if reply is not None:
+                    result.append(reply)
+                    return
+                if abandoned.is_set():
+                    return
                 result.append(
                     _retrieve(
                         str(root),
@@ -219,17 +240,28 @@ def user_prompt(
                         inline_build,
                     )
                 )
-            except sqlite3.DatabaseError:
-                # A damaged disposable cache: drop it now so the next prompt is answered.
+            except sqlite3.DatabaseError as exc:
                 from prism.navigator.cache_db import purge_disposable_caches
+                from prism.navigator.database_errors import database_problem
 
-                purge_disposable_caches(root)
-            except BaseException:
+                problem = database_problem(exc)
+                if problem is None:
+                    purge_disposable_caches(root)
+                failures.append(problem.code if problem is not None else "index_corrupt")
+                _log(root, "user-prompt database failure:\n" + traceback.format_exc())
+            except BaseException as exc:
+                failures.append(type(exc).__name__)
                 _log(root, "user-prompt failed:\n" + traceback.format_exc())
 
         thread = threading.Thread(target=work, daemon=True)
         thread.start()
         thread.join(TIME_BUDGET_SECONDS if time_budget is None else time_budget)
+        if failures:
+            abandoned.set()
+            record_delivery(root, session, "hook", False, "retrieval failed: " + failures[0])
+            # This is a failure notice, never recorded as a delivered code packet.
+            # It prevents the agent paying for another identical broken query.
+            return "PRISM retrieval failed; use bounded local search without repeating the lookup or rebuilding."
         if not result:
             abandoned.set()
             record_delivery(root, session, "hook", False, "timed out or still warming the caches")

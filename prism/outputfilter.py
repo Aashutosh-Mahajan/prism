@@ -250,8 +250,8 @@ def run_filtered(root: Path, command: list[str]) -> int:
     shell_command = command[0] if len(command) == 1 else subprocess.list2cmdline(command)
     started = time.monotonic()
     proc = subprocess.run(
-        shell_command,
-        shell=True,
+        command[0] if len(command) == 1 else command,
+        shell=len(command) == 1,
         cwd=Path.cwd(),
         capture_output=True,
     )
@@ -292,6 +292,9 @@ def run_filtered(root: Path, command: list[str]) -> int:
                 "characters_in": len(combined),
                 "characters_out": len(rendered),
                 "exit_code": proc.returncode,
+                "elapsed_ms": round((time.monotonic() - started) * 1000, 3),
+                "measurement": "rendered command output characters; not agent tokens or billing",
+                "recovery_id": tee.stem,
             },
         )
         from prism.cache_cleanup import collect_tee

@@ -29,13 +29,13 @@ def test_installed_guidance_uses_selected_transport(
     changes = get_integration(agent).plan(tmp_path, IntegrationOptions(mcp=mcp))
     text = next(change.content for change in changes if change.path == path)
     assert text is not None
-    from prism.instructions import LOCATED, SHORT
+    from prism.instructions import LOCATED, RECOVERY, SHORT
 
     assert SHORT in text and LOCATED in text
+    assert RECOVERY in text  # transport failure must allow bounded ordinary investigation
     if mcp:
         assert "native MCP `prism_task`" in text
         assert 'prism task "' not in text
-        assert "No unverified shell fallback" in text
     else:
         assert 'prism task "<user request>"' in text
         assert "native MCP" not in text

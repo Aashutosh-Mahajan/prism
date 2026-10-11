@@ -51,7 +51,7 @@ def background_enabled() -> bool:
     return os.environ.get("PRISM_HOOK_SYNC") != "1"
 
 
-_EVENT = {"session-start": "SessionStart", "user-prompt": "UserPromptSubmit"}
+_EVENT = {"session-start": "SessionStart", "user-prompt": "UserPromptSubmit", "post-edit": "PostToolUse"}
 
 
 def parse_flags(args: list[str]) -> dict[str, str]:
@@ -70,12 +70,29 @@ def parse_flags(args: list[str]) -> dict[str, str]:
     return flags
 
 
-def run_hook(name: str, args: list[str] | None = None) -> None:
+def run_hook(name: str, args: list[str] | None = None, *, embedded: bool = False) -> None:
     """Run one hook: read the hook JSON from stdin, act, print what belongs in the agent's
     context, and exit 0 whatever happens."""
     flags = parse_flags(args or [])
     use_utf8()
     try:
+        raw = read_stdin()
+        if not embedded and name != "user-prompt":
+            import json
+
+            from prism.hooks.runner import _root_from
+            from prism.navigator import daemon
+
+            payload = json.loads(raw or "{}")
+            if isinstance(payload, dict):
+                reply = daemon.ask(
+                    _root_from(payload),
+                    {"op": "hook", "name": name, "args": args or [], "raw": raw},
+                    timeout=10.0,
+                )
+                if reply is not None:
+                    sys.stdout.write(reply)
+                    return
         from prism.hooks.formats import render_context
 
         fmt = flags.get("format", "text")
@@ -84,23 +101,24 @@ def run_hook(name: str, args: list[str] | None = None) -> None:
         if name == "session-start":
             from prism.hooks import session_start
 
-            text = session_start(read_stdin())
+            text = session_start(raw)
         elif name == "user-prompt":
             from prism.hooks import user_prompt
 
-            text = user_prompt(read_stdin())
+            text = user_prompt(raw)
         elif name == "post-edit":
             from prism.hooks import post_edit
+            from prism.hooks.edit_hints import post_edit_hint
 
-            post_edit(read_stdin(), background=background_enabled())
+            text = post_edit_hint(raw)
+            post_edit(raw, background=background_enabled())
         elif name == "pre-invocation":
             # Antigravity: always one JSON object on stdout, `{}` when there is nothing to add.
             from prism.hooks.antigravity import pre_invocation
 
-            sys.stdout.write(pre_invocation(read_stdin()) + chr(10))
+            sys.stdout.write(pre_invocation(raw) + chr(10))
             return
         elif name == "stop":
-            raw = read_stdin()
             if '"workspacePaths"' in raw:  # Antigravity: always one JSON object
                 from prism.hooks.antigravity import stop_gate
 
@@ -115,7 +133,7 @@ def run_hook(name: str, args: list[str] | None = None) -> None:
         elif name == "dedupe-read":
             from prism.hooks.dedupe import decide
 
-            text = decide(read_stdin())
+            text = decide(raw)
             if text:
                 sys.stdout.write(text + chr(10))
             return
@@ -125,4 +143,5 @@ def run_hook(name: str, args: list[str] | None = None) -> None:
     except BaseException:  # a hook must never break or slow the agent session
         pass
     finally:
-        hard_exit()
+        if not embedded:
+            hard_exit()

@@ -263,7 +263,16 @@ def test_verify_mode_lists_only_the_sites_that_still_match_after_an_edit(tmp_pat
         "def limit(age):\n    return age - 25  # years of age\n", encoding="utf-8"
     )
     done = _verify(repo, request)
+    assert not done["sufficient"] and done["search_limited"]
+    assert "incomplete" in done["next"]
+    # Direct navigator calls do not run the CLI/MCP freshness preflight. An
+    # empty result from a stale manifest cannot establish verified absence.
+    from prism.lifecycle import update
+
+    update(repo)
+    done = _verify(repo, request)
     assert not done.get("literals") and "No remaining matches" in done["next"]
+    assert done["sufficient"]
 
 
 def test_old_value_search_covers_translations_and_config_not_just_code(tmp_path: Path) -> None:
