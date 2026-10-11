@@ -1,0 +1,1402 @@
+{
+  "provenance": {
+    "source_head": "9f74f92151d655f308de08b165aa0fc6a239a983",
+    "engine_head": "9f74f92151d655f308de08b165aa0fc6a239a983",
+    "engine_python_sha256": "564158b2250611a7f04b00bcf8438f72e671d45a0d36109fec2ba3a9d0de5e1f",
+    "engine_dirty": true,
+    "budget": 2000,
+    "semantic": false,
+    "estimator": "ceil(characters / 4)",
+    "index_revision": "each commit's first parent",
+    "elapsed_seconds": 298.1566912000999
+  },
+  "definitions": "file: exact; block: any overlap; line: exact union; parent-side scorable hunks",
+  "summary": {
+    "file": {
+      "found": 10,
+      "delivered": 86,
+      "expected": 61,
+      "precision": 0.11627906976744186,
+      "recall": 0.16393442622950818,
+      "f1": 0.13605442176870747
+    },
+    "block": {
+      "found": 10,
+      "delivered": 191,
+      "expected": 302,
+      "precision": 0.05235602094240838,
+      "recall": 0.07947019867549669,
+      "f1": 0.06312467122567068
+    },
+    "line": {
+      "found": 46,
+      "delivered": 2319,
+      "expected": 614,
+      "precision": 0.019836136265631736,
+      "recall": 0.0749185667752443,
+      "f1": 0.0313672008182748
+    }
+  },
+  "cases": [
+    {
+      "sha": "9f74f92151d655f308de08b165aa0fc6a239a983",
+      "query": "do not read API names like min(3) as units of time in quantity literals",
+      "file": {
+        "found": 1,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "block": {
+        "found": 1,
+        "delivered": 6,
+        "expected": 2,
+        "precision": 0.16666666666666666,
+        "recall": 0.5,
+        "f1": 0.25,
+        "found_gold": 1
+      },
+      "line": {
+        "found": 3,
+        "delivered": 64,
+        "expected": 4,
+        "precision": 0.046875,
+        "recall": 0.75,
+        "f1": 0.08823529411764706
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 5521,
+      "packet_tokens": 1381,
+      "cost": null
+    },
+    {
+      "sha": "ab7916c1b185a322bd8b701f443e5b572909a23b",
+      "query": "skip the numpy import when the semantic channel is off; close SQLite handles when cache setup fails",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 4,
+        "expected": 6,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 24,
+        "expected": 12,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 3066,
+      "packet_tokens": 767,
+      "cost": null
+    },
+    {
+      "sha": "8e4e8b94fa139946f4935a9fa329be664581fe3a",
+      "query": "make seed selection match the previous behaviour when labels repeat",
+      "file": {
+        "found": 0,
+        "delivered": 0,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 0,
+        "expected": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 0,
+        "expected": 8,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 189,
+      "packet_tokens": 48,
+      "cost": null
+    },
+    {
+      "sha": "c61f090cf7db8cde6d086cdbe1f3b3c692f35b21",
+      "query": "register prism_task without a derived output schema so Python 3.10 SDKs accept its result",
+      "file": {
+        "found": 1,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 105,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 6751,
+      "packet_tokens": 1688,
+      "cost": null
+    },
+    {
+      "sha": "088d198921b60069c39e73d708a665ac831238dd",
+      "query": "skip optional-dependency tests without the extras, short socket paths on macOS, LF viewer bundle",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 36,
+        "expected": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 3569,
+      "packet_tokens": 893,
+      "cost": null
+    },
+    {
+      "sha": "3e467f3f6bb99e9dd71e630bb1f9793e6b5a18b4",
+      "query": "satisfy strict typing in the read dedupe and keep the viewer bundle LF",
+      "file": {
+        "found": 0,
+        "delivered": 5,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 5,
+        "expected": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 77,
+        "expected": 11,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 5314,
+      "packet_tokens": 1329,
+      "cost": null
+    },
+    {
+      "sha": "7f2a04a9ad3a63427e0a8fbd14ed5f7d16dcaa49",
+      "query": "rebuild the shipped bundle and viewer API",
+      "file": {
+        "found": 0,
+        "delivered": 4,
+        "expected": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 4,
+        "expected": 25,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 53,
+        "expected": 31,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 4288,
+      "packet_tokens": 1072,
+      "cost": null
+    },
+    {
+      "sha": "464d6c01ceb5f410de0a0f2d85adbb66c6b6c911",
+      "query": "find, diff, task --detail, init --all-skills and doctor --session",
+      "file": {
+        "found": 1,
+        "delivered": 5,
+        "expected": 2,
+        "precision": 0.2,
+        "recall": 0.5,
+        "f1": 0.28571428571428575
+      },
+      "block": {
+        "found": 0,
+        "delivered": 5,
+        "expected": 22,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 109,
+        "expected": 28,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 6680,
+      "packet_tokens": 1670,
+      "cost": null
+    },
+    {
+      "sha": "7b896f16d6a0f68fafb9d4455e2c86374659e039",
+      "query": "prism_find, detail levels and leaner tool profiles",
+      "file": {
+        "found": 1,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "block": {
+        "found": 4,
+        "delivered": 6,
+        "expected": 20,
+        "precision": 0.6666666666666666,
+        "recall": 0.2,
+        "f1": 0.30769230769230765,
+        "found_gold": 4
+      },
+      "line": {
+        "found": 4,
+        "delivered": 41,
+        "expected": 27,
+        "precision": 0.0975609756097561,
+        "recall": 0.14814814814814814,
+        "f1": 0.11764705882352941
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 4026,
+      "packet_tokens": 1007,
+      "cost": null
+    },
+    {
+      "sha": "d0bee62c99b657fa057f52361d08623ec607a211",
+      "query": "Antigravity hook and a 16 s prompt-hook budget",
+      "file": {
+        "found": 2,
+        "delivered": 4,
+        "expected": 4,
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5
+      },
+      "block": {
+        "found": 2,
+        "delivered": 5,
+        "expected": 28,
+        "precision": 0.4,
+        "recall": 0.42857142857142855,
+        "f1": 0.4137931034482759,
+        "found_gold": 12
+      },
+      "line": {
+        "found": 12,
+        "delivered": 122,
+        "expected": 28,
+        "precision": 0.09836065573770492,
+        "recall": 0.42857142857142855,
+        "f1": 0.16000000000000003
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 6727,
+      "packet_tokens": 1682,
+      "cost": null
+    },
+    {
+      "sha": "7db601f0c97f2e507f3dd1c29b63f98490e7f488",
+      "query": "opt-in deny-only Read dedupe",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 35,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 3482,
+      "packet_tokens": 871,
+      "cost": null
+    },
+    {
+      "sha": "430c8b89bc080a721f49b45631f5e7708da6bf01",
+      "query": "finish-time check that sends the agent back once when an old value remains",
+      "file": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 75,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 5802,
+      "packet_tokens": 1451,
+      "cost": null
+    },
+    {
+      "sha": "00cea25ac8b71e00818b309240b7c0859cf91f50",
+      "query": "filter noisy command output before it reaches the agent",
+      "file": {
+        "found": 0,
+        "delivered": 0,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 0,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 0,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 778,
+      "packet_tokens": 195,
+      "cost": null
+    },
+    {
+      "sha": "25b95e8e5fc6569f49df4e442465443c624026d5",
+      "query": "local ranking feedback from edited files",
+      "file": {
+        "found": 0,
+        "delivered": 1,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 1,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 5,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 1334,
+      "packet_tokens": 334,
+      "cost": null
+    },
+    {
+      "sha": "1abf1a910c162b3e720a5f9a41fe046ca02ceda2",
+      "query": "warm query process and fast task path",
+      "file": {
+        "found": 0,
+        "delivered": 3,
+        "expected": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 3,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 37,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 3575,
+      "packet_tokens": 894,
+      "cost": null
+    },
+    {
+      "sha": "fbbe517477b5c3c25efd9cc761b5381bd2c21421",
+      "query": "checked unified-diff patches and twin detection in task packets",
+      "file": {
+        "found": 0,
+        "delivered": 1,
+        "expected": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 4,
+        "expected": 51,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 14,
+        "expected": 63,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 1569,
+      "packet_tokens": 393,
+      "cost": null
+    },
+    {
+      "sha": "a0b9c4390aa489698f4c8de79bfa886fc6562b5c",
+      "query": "record per-session requests, edits and notes locally",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 6,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 95,
+        "expected": 7,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 5785,
+      "packet_tokens": 1447,
+      "cost": null
+    },
+    {
+      "sha": "af66e455000b1be4f3d8924bf67263881b0bbab1",
+      "query": "UTF-8 text helpers and repository boundary handling",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 6,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 29,
+        "expected": 9,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 3567,
+      "packet_tokens": 892,
+      "cost": null
+    },
+    {
+      "sha": "7f80a98f3f115fcae49d23592ad886e8a0877080",
+      "query": "retry artifact reads that race an atomic replace on Windows",
+      "file": {
+        "found": 0,
+        "delivered": 1,
+        "expected": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 6,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 42,
+        "expected": 6,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 3076,
+      "packet_tokens": 769,
+      "cost": null
+    },
+    {
+      "sha": "cff4ad700019718d75472f2d95451c017025ff40",
+      "query": "align CLI and MCP delivery with adaptive prompt context",
+      "file": {
+        "found": 1,
+        "delivered": 1,
+        "expected": 3,
+        "precision": 1.0,
+        "recall": 0.3333333333333333,
+        "f1": 0.5
+      },
+      "block": {
+        "found": 1,
+        "delivered": 6,
+        "expected": 11,
+        "precision": 0.16666666666666666,
+        "recall": 0.09090909090909091,
+        "f1": 0.11764705882352942,
+        "found_gold": 1
+      },
+      "line": {
+        "found": 1,
+        "delivered": 67,
+        "expected": 14,
+        "precision": 0.014925373134328358,
+        "recall": 0.07142857142857142,
+        "f1": 0.024691358024691357
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 5222,
+      "packet_tokens": 1306,
+      "cost": null
+    },
+    {
+      "sha": "352b68b6a293711ed5d6e169ec349ee5d911c074",
+      "query": "check every installed agent integration",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 40,
+        "expected": 19,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 3517,
+      "packet_tokens": 880,
+      "cost": null
+    },
+    {
+      "sha": "188463275ab12b333e0259e05bf9582acc328f61",
+      "query": "register all six agents with hook and MCP capabilities",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 9,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 126,
+        "expected": 17,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 6174,
+      "packet_tokens": 1544,
+      "cost": null
+    },
+    {
+      "sha": "7393df956e3acdbd4969a12e03c510c05de6f4a4",
+      "query": "split Cursor rules and add Cursor hooks",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 17,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 60,
+        "expected": 24,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 4316,
+      "packet_tokens": 1079,
+      "cost": null
+    },
+    {
+      "sha": "4754a4fee0b4e73f9071b881d63ead171f3e656f",
+      "query": "add experimental Antigravity support",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 120,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 6336,
+      "packet_tokens": 1584,
+      "cost": null
+    },
+    {
+      "sha": "29cc7fffb6f39c841791ee0a32af0569cf11e6d9",
+      "query": "add Gemini CLI support",
+      "file": {
+        "found": 0,
+        "delivered": 3,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 5,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 95,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 5417,
+      "packet_tokens": 1355,
+      "cost": null
+    },
+    {
+      "sha": "0e015d9c47d838c20237aba1dff81261928bd1c8",
+      "query": "install the prompt hook for Claude Code",
+      "file": {
+        "found": 1,
+        "delivered": 3,
+        "expected": 1,
+        "precision": 0.3333333333333333,
+        "recall": 1.0,
+        "f1": 0.5
+      },
+      "block": {
+        "found": 1,
+        "delivered": 4,
+        "expected": 6,
+        "precision": 0.25,
+        "recall": 0.3333333333333333,
+        "f1": 0.28571428571428575,
+        "found_gold": 2
+      },
+      "line": {
+        "found": 2,
+        "delivered": 129,
+        "expected": 42,
+        "precision": 0.015503875968992248,
+        "recall": 0.047619047619047616,
+        "f1": 0.023391812865497075
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 6732,
+      "packet_tokens": 1683,
+      "cost": null
+    },
+    {
+      "sha": "2c9bdd2050bd874935d7c364017d24f233c0bbda",
+      "query": "add managed TOML blocks and per-agent status checks",
+      "file": {
+        "found": 1,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 40,
+        "expected": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 4187,
+      "packet_tokens": 1047,
+      "cost": null
+    },
+    {
+      "sha": "f56c06bb9c78f220b41c24749e7e6e24ebc9dec2",
+      "query": "add helpers for managed hooks.json files",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 66,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 3833,
+      "packet_tokens": 959,
+      "cost": null
+    },
+    {
+      "sha": "7f5e43270c55e1e5d1b20c70b2af1906ef3da620",
+      "query": "add prism_task and a lean tool profile by default",
+      "file": {
+        "found": 0,
+        "delivered": 1,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 5,
+        "expected": 15,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 52,
+        "expected": 20,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 3679,
+      "packet_tokens": 920,
+      "cost": null
+    },
+    {
+      "sha": "717919a1e6de0521d84214e0e76b61dbbced9ac2",
+      "query": "add task, brief --full, user-prompt hook, mcp profiles and multi-file update",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 26,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 91,
+        "expected": 51,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 4936,
+      "packet_tokens": 1234,
+      "cost": null
+    },
+    {
+      "sha": "033614c8d2bf0f0426fcba594761b43ac20782dd",
+      "query": "add a light console entry point",
+      "file": {
+        "found": 0,
+        "delivered": 4,
+        "expected": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 92,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 5710,
+      "packet_tokens": 1428,
+      "cost": null
+    },
+    {
+      "sha": "fe8dce9b4c51f986264c34fba0f04d819d3a1f9e",
+      "query": "add the user-prompt hook that adds retrieval to the request",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 69,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 4717,
+      "packet_tokens": 1180,
+      "cost": null
+    },
+    {
+      "sha": "7f20ff0150f71c5e4ff37c5cd89577ea2fe5f126",
+      "query": "parse edited paths from every agent's hook payload",
+      "file": {
+        "found": 1,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666
+      },
+      "block": {
+        "found": 1,
+        "delivered": 6,
+        "expected": 13,
+        "precision": 0.16666666666666666,
+        "recall": 0.3076923076923077,
+        "f1": 0.21621621621621623,
+        "found_gold": 4
+      },
+      "line": {
+        "found": 24,
+        "delivered": 83,
+        "expected": 41,
+        "precision": 0.2891566265060241,
+        "recall": 0.5853658536585366,
+        "f1": 0.3870967741935484
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 5242,
+      "packet_tokens": 1311,
+      "cost": null
+    },
+    {
+      "sha": "1d7d542867e709fbf0246a88b0a3e5b30d53b437",
+      "query": "run index updates in a detached background job",
+      "file": {
+        "found": 0,
+        "delivered": 1,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 4,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 754,
+      "packet_tokens": 189,
+      "cost": null
+    },
+    {
+      "sha": "1bdce7b65e2d6710f2c00dde2d4f5b6adf1d50af",
+      "query": "render hook context as text, json or cursor output",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 74,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 4462,
+      "packet_tokens": 1116,
+      "cost": null
+    },
+    {
+      "sha": "ca12f645f96532da74637c1b6213becccb92df37",
+      "query": "add a hook entry point that avoids importing typer and rich",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 3,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 17,
+        "expected": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 1849,
+      "packet_tokens": 463,
+      "cost": null
+    },
+    {
+      "sha": "2259548734c68b3771a79b2e20e02766c04a0dcf",
+      "query": "shorten the shared instruction block",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 64,
+        "expected": 11,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 3924,
+      "packet_tokens": 981,
+      "cost": null
+    },
+    {
+      "sha": "b67897d895880235cd020797b7b2a69db0b455d3",
+      "query": "inject a compact session brief and make narrative sections optional",
+      "file": {
+        "found": 0,
+        "delivered": 2,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 6,
+        "expected": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 58,
+        "expected": 4,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 4373,
+      "packet_tokens": 1094,
+      "cost": null
+    },
+    {
+      "sha": "0bdb4ad23c066fb26282da1bed600698d0c048dc",
+      "query": "retry artifact replacement after a Windows sharing violation",
+      "file": {
+        "found": 0,
+        "delivered": 1,
+        "expected": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 3,
+        "expected": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 9,
+        "expected": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 1371,
+      "packet_tokens": 343,
+      "cost": null
+    },
+    {
+      "sha": "81b454acd050894ec4387296375cb01f8b240ea7",
+      "query": "move index writing into its own module",
+      "file": {
+        "found": 0,
+        "delivered": 0,
+        "expected": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "block": {
+        "found": 0,
+        "delivered": 0,
+        "expected": 8,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "found_gold": 0
+      },
+      "line": {
+        "found": 0,
+        "delivered": 0,
+        "expected": 126,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "context_used_share": null,
+      "usage_evidence": "unavailable",
+      "packet_characters": 189,
+      "packet_tokens": 48,
+      "cost": null
+    }
+  ]
+}

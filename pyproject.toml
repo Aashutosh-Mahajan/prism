@@ -93,6 +93,7 @@ ignore_missing_imports = true
 follow_imports = "skip"
 
 [tool.pytest.ini_options]
+markers = ["context_regression: frozen offline context scores with the owner-approved recall margin"]
 testpaths = ["tests"]
 norecursedirs = ["tests/fixtures", "tests/golden"]
 addopts = "-q"
