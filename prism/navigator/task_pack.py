@@ -17,6 +17,7 @@ import json
 import re
 from collections import deque
 from dataclasses import dataclass, field, replace
+from functools import lru_cache
 from itertools import combinations
 from typing import Any
 
@@ -24,6 +25,7 @@ from prism.core.errors import UserError
 from prism.core.tokens import estimate_tokens
 from prism.instructions import QUOTED_DATA
 from prism.navigator import enrich
+from prism.navigator.delegation import follow
 from prism.navigator.fusion import fuse_files
 from prism.navigator.graphwalk import pick_seeds, walk_graph
 from prism.navigator.impact import dependents
@@ -57,6 +59,8 @@ EXPLICIT_BONUS = 60.0  # a symbol or file the request names outright
 MENTIONED_BONUS = 25.0  # a code-like name in the request that resolves to one or two symbols
 CODE_KINDS = ("function", "method", "class")
 TEST_DEMOTION = 0.5
+WRAPPER_DEMOTION = 0.6
+IMPLEMENTATION_BOOST = 1.1
 MIGRATION_DEMOTION = 0.35
 DOC_DEMOTION = 0.4
 DOC_DIRS = frozenset(["docs", "doc", "documentation"])
@@ -127,6 +131,11 @@ def render_task(pack: dict[str, Any]) -> str:
         f"{pack['budget']['used_est']}/{pack['budget']['requested']} est. tokens"
     ]
     parts.append(QUOTED_DATA)
+    if pack.get("index_state"):
+        state = pack["index_state"]
+        parts.append(
+            f"Index refresh: {state['state']} ({state['reason'] or 'incomplete'}); coverage is not complete."
+        )
     if pack["stale_sources"]:
         parts.append("Source changed or unavailable; run prism update before relying on the index.")
     if pack.get("search_limited"):
@@ -264,6 +273,9 @@ def render_task(pack: dict[str, Any]) -> str:
 
 
 def _size(pack: dict[str, Any]) -> int:
+    from prism.navigator.metrics import count
+
+    count("packet_size_checks")
     # Reserve digits for the final estimate itself. Includes JSON keys/escaping, source
     # line numbers, graph links and Markdown. MCP transport envelopes are host overhead.
     pack["budget"]["used_est"] = 999999
@@ -427,15 +439,12 @@ def _source_excerpt(
     return "\n".join(parts)
 
 
-def _without_docstrings(
-    file: str, lines: list[str], ranges: list[tuple[int, int]], primary: bool
-) -> list[tuple[int, int]]:
-    if primary or not file.endswith(".py"):
-        return ranges
+@lru_cache(maxsize=128)
+def _docstring_lines(text: str) -> frozenset[int]:
     try:
-        tree = ast.parse("\n".join(lines))
+        tree = ast.parse(text)
     except (SyntaxError, ValueError, RecursionError):
-        return ranges
+        return frozenset()
     omitted: set[int] = set()
     for node in ast.walk(tree):
         if (
@@ -450,6 +459,17 @@ def _without_docstrings(
             and isinstance(first.value.value, str)
         ):
             omitted.update(range(first.lineno, (first.end_lineno or first.lineno) + 1))
+    return frozenset(omitted)
+
+
+def _without_docstrings(
+    file: str, lines: list[str], ranges: list[tuple[int, int]], primary: bool
+) -> list[tuple[int, int]]:
+    if primary or not file.endswith(".py"):
+        return ranges
+    omitted = _docstring_lines("\n".join(lines))
+    if not omitted:
+        return ranges
     visible: list[tuple[int, int]] = []
     for lo, hi in ranges:
         for number in range(lo, hi + 1):
@@ -565,6 +585,20 @@ def build_task(
             pack["slow_test_warning"] = warning
             if _size(pack) > budget:
                 del pack["slow_test_warning"]
+    from prism.navigator.readiness import assess
+
+    _offer(pack, "assessment", assess(pack), budget)
+    # Diagnostics must also fit callers that pretty-print the JSON packet.
+    # Never trade delivered source or recovery ranges for this optional field.
+    if (
+        "assessment" in pack
+        and estimate_tokens(
+            json.dumps(pack, indent=2, ensure_ascii=False),
+            pack["budget"].get("token_scale", 1.0),
+        )
+        > budget
+    ):
+        del pack["assessment"]
     pack["budget"]["used_est"] = _size(pack)
     if seen is not None:
         # Only the final delivered source counts. Recovery metadata may displace
@@ -887,6 +921,8 @@ def _fill(
         blocks = [b for b in blocks if not store._is_test(b.file) or b.file in related]
     if not tight and not exact and pack["intent"] == "edit":
         blocks = _coherent_classes(store, blocks, budget)
+    if pack["intent"] == "edit" and not exact and requested_range is None:
+        blocks = _through_wrappers(store, reader, blocks)
     # A literal list or exact lookup already answers where. Expansion is for
     # connected explanations and missing evidence, not a tax on every edit.
     if not tight:
@@ -1003,7 +1039,7 @@ def _fill(
     pack["budget"]["used_est"] = _size(pack)
 
 
-_EVIDENCE_MEMO: dict[tuple[str, int, str], Any] = {}
+_EVIDENCE_MEMO: dict[tuple[str, int, str | None, str], Any] = {}
 _EVIDENCE_MEMO_LIMIT = 4
 
 
@@ -1012,8 +1048,9 @@ def _evidence(store: IndexStore, index: SourceIndex, reader: SourceReader, query
     budget against the same index (the exact-match search does not depend on the budget)."""
     import copy
 
-    key = (store.root.as_posix(), id(store.manifest), query)
-    hit = _EVIDENCE_MEMO.get(key)
+    revision = index.text.revision
+    key = (store.root.as_posix(), id(store.manifest), revision, query)
+    hit = _EVIDENCE_MEMO.get(key) if revision is not None and not index.pending_sources else None
     if hit is not None:
         return copy.deepcopy(hit)
     evidence = find_literals(
@@ -1025,7 +1062,8 @@ def _evidence(store: IndexStore, index: SourceIndex, reader: SourceReader, query
     )
     if len(_EVIDENCE_MEMO) >= _EVIDENCE_MEMO_LIMIT:
         _EVIDENCE_MEMO.clear()
-    _EVIDENCE_MEMO[key] = copy.deepcopy(evidence)
+    if revision is not None and not index.pending_sources:
+        _EVIDENCE_MEMO[key] = copy.deepcopy(evidence)
     return evidence
 
 
@@ -1106,6 +1144,47 @@ def _edit_evidence(
         for block in blocks:
             if block.role == "contract":
                 block.score = max(b.score for b in producers) * 0.75
+
+
+def _through_wrappers(
+    store: IndexStore, reader: SourceReader, blocks: list[_Block]
+) -> list[_Block]:
+    """Add the implementation behind leading blocks that only delegate.
+
+    A request worded in a facade's terms matches the facade, a factory or a thin adapter, while
+    the edit belongs in what they call. The wrappers stay (they are the entry point) but rank
+    below the code that holds the behaviour."""
+    roots = [b.symbol for b in blocks[:4] if b.symbol is not None and not store._is_test(b.file)]
+    delegations = follow(store, roots)
+    if not delegations:
+        return blocks
+    present = {b.symbol.id for b in blocks if b.symbol is not None}
+    wrappers = {sid for d in delegations for sid in d.wrappers}
+    top = max((b.score for b in blocks), default=1.0)
+    for block in blocks:
+        if block.symbol is not None and block.symbol.id in wrappers:
+            block.score *= WRAPPER_DEMOTION
+    added: list[_Block] = []
+    for delegation in delegations:
+        symbol = delegation.target
+        lines = reader.lines(symbol.file)
+        if symbol.id in present or not lines or symbol.start > len(lines):
+            continue
+        whole = symbol.end - symbol.start + 1 <= WHOLE_SYMBOL_MAX
+        end = symbol.end if whole else min(symbol.end, symbol.start + 14)
+        added.append(
+            _Block(
+                symbol.file,
+                symbol.start,
+                end,
+                symbol,
+                top * IMPLEMENTATION_BOOST,
+                [symbol.start],
+                role="implementation",
+                whole=whole,
+            )
+        )
+    return _select(blocks + added) if added else blocks
 
 
 def _constructions(
@@ -2042,6 +2121,24 @@ def _confidence(
         # Verified locations are useful candidates even without lexical source
         # hits, but an imported relationship cannot justify high confidence.
         level = "medium"
+    if level == "high" and not exact and not exhaustive:
+        # IDF excludes words absent from the corpus. Without this check, a
+        # single surviving generic word can appear to cover an entire request.
+        asked = {
+            term
+            for word in _WORDS.findall(request_focus(query))
+            if word.lower() not in FILLER_WORDS
+            for term in tokenize(word)
+        }
+        returned = set().union(
+            *(
+                set(tokenize(b.get("source", ""))) | set(tokenize(b["symbol"] or ""))
+                for b in shown[:2]
+            )
+        )
+        supported = sum(bool(({term} | set(related_terms(term))) & returned) for term in asked)
+        if asked and supported / len(asked) < 0.5:
+            level = "medium"
     pack["confidence"] = level
     stale = bool(pack["stale_sources"])
     # With a checked patch the code beside the sites is context, so an excerpt is not a gap.

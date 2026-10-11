@@ -299,6 +299,25 @@ def _literal(
 ABSENT_CHECK_SECONDS = 0.35
 
 
+_NAME_WORDS = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|[0-9]+")
+
+
+def _interior_terms(name: str) -> list[str] | None:
+    """Index terms that every occurrence of `name` must contain, even glued into a longer string.
+
+    Text before or after a glued occurrence can only change the name's first and last words; the
+    words between them stay whole words in the file. Their stemmed forms are in the search index,
+    so only files holding all of them can contain the name. None when the name has no interior
+    word to rely on (fewer than three words, or non-ASCII)."""
+    if not name.isascii():
+        return None
+    words = [w for part in name.split("_") for w in _NAME_WORDS.findall(part)]
+    if len(words) < 3:
+        return None
+    terms = sorted({token for word in words[1:-1] for token in tokenize(word)})
+    return terms or None
+
+
 def _substring_hits(
     index: SourceIndex, reader: SourceReader, name: str, is_test: Any, deadline: float
 ) -> tuple[_Matches, bool]:
@@ -308,6 +327,10 @@ def _substring_hits(
         [*index.store.manifest.get("files", {}), *index.text.paths],
         key=lambda p: (bool(is_test(p)), p),
     )
+    terms = _interior_terms(name)
+    if terms is not None:  # a few files, not the whole repository: this is what makes it fast
+        candidates = index.files_with_all_text(terms)
+        paths = [p for p in paths if p in candidates]
     found = _Matches()
     for path in paths:
         if time.monotonic() > deadline:
@@ -457,6 +480,13 @@ def find_literals(
     result_scope = (len(index.store.manifest.get("files", {})), len(index.text.paths))
     result = EvidenceResult()
     result.scope = result_scope
+    corpus_limited = (
+        index.text.truncated
+        or bool(index.text.unavailable)
+        or not index.text.sources_current
+        or bool(index.pending_sources)
+    )
+    result.limited = corpus_limited
     is_test = index.store._is_test
     found: list[Evidence] = []
     named_limit = MECHANICAL_NAMED_LINES if mechanical else MAX_NAMED_LINES
@@ -621,5 +651,8 @@ def find_literals(
         spelled = {normalize(t): t for t in _quoted_spans(original_query, context_fields)}
         spelled.update({normalize(n): n for n in _identifier_candidates(original_query)})
         kept = [replace(lit, text=spelled.get(lit.text, lit.text)) for lit in kept]
+    if corpus_limited:
+        for literal in kept:
+            literal.scan_complete = False
     result.literals = kept[:MAX_LITERALS]
     return result

@@ -42,3 +42,22 @@ def test_weak_matches_do_not_expand(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(api, "op_task", retrieve)
     api.adaptive_task(store, "unknown concept")  # type: ignore[arg-type]
     assert budgets == [800]
+
+
+@pytest.mark.parametrize("mode", ["auto", "overview"])
+def test_overview_does_not_build_an_expansion_it_cannot_deliver(
+    monkeypatch: pytest.MonkeyPatch, mode: str
+) -> None:
+    store = SimpleNamespace(
+        conn=SimpleNamespace(execute=lambda _: SimpleNamespace(fetchone=lambda: [100]))
+    )
+    budgets = []
+
+    def retrieve(store: object, query: str, budget: int, *args: object, **kwargs: object) -> dict:
+        budgets.append(budget)
+        return {"intent": "overview", "confidence": "medium", "sufficient": False}
+
+    monkeypatch.setattr(api, "op_task", retrieve)
+    pack = api.adaptive_task(store, "architecture", mode=mode)  # type: ignore[arg-type]
+    assert not pack["sufficient"]
+    assert budgets == [800]

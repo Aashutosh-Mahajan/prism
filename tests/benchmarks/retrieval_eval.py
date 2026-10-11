@@ -147,7 +147,9 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--tier", default="core", choices=["core", "stretch", "paraphrase", "all"])
+    parser.add_argument(
+        "--tier", default="core", choices=["core", "stretch", "paraphrase", "delegated", "all"]
+    )
     parser.add_argument("--budget", type=int, default=2000)
     parser.add_argument("--json", action="store_true")
     parser.add_argument(

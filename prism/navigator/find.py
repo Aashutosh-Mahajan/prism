@@ -23,6 +23,37 @@ MAX_MATCHES_PER_PATTERN = 400  # scanning stops here and the result says so
 LINE_WIDTH = 150
 
 
+def _literal_candidates(root: Any, files: list[str], patterns: list[str]) -> set[str] | None:
+    """Optional native prefilter; final matches still use verified source and Python rules."""
+    import json
+    import shutil
+    import subprocess
+
+    executable = shutil.which("rg")
+    if executable is None or sum(len(path) + 3 for path in files + patterns) > 24000:
+        return None
+    if not files:
+        return set()
+    args = [executable, "--json", "--fixed-strings", "--no-ignore", "--hidden"]
+    for pattern in patterns:
+        args.extend(["--regexp", pattern])
+    try:
+        result = subprocess.run([*args, "--", *files], cwd=root, capture_output=True, timeout=5)
+        if result.returncode not in (0, 1):
+            return None
+        matched = set()
+        for line in result.stdout.splitlines():
+            event = json.loads(line)
+            if event.get("type") == "match":
+                path = event["data"]["path"].get("text")
+                if path is None:
+                    return None
+                matched.add(path.replace("\\", "/"))
+        return matched
+    except (OSError, subprocess.TimeoutExpired, ValueError, KeyError):
+        return None
+
+
 def _compile(pattern: str, regex: bool, ignore_case: bool) -> re.Pattern[str]:
     flags = re.IGNORECASE if ignore_case else 0
     try:
@@ -67,6 +98,10 @@ def run_find(
         files = sorted(set(store.all_files()) | set(index.text.paths))
         if globs:
             files = [f for f in files if any(fnmatch.fnmatch(f, g) for g in globs)]
+        if not regex and not ignore_case:
+            candidates = _literal_candidates(store.root, files, patterns)
+            if candidates is not None:
+                files = [file for file in files if file in candidates]
         for file in files:
             lines = reader.lines(file)
             if not lines:

@@ -14,6 +14,7 @@ from prism.navigator.literals import EvidenceResult, Occurrence
         "conflicting_destinations",
         "not_exhaustive",
         "new_name_exists",
+        "new_name_unverified",
         "line_changed",
         "git_rejected",
         "cache_unavailable",
@@ -49,6 +50,16 @@ def test_patch_refusals_have_specific_reasons(
         evidence.literals[0].complete = False
     elif reason == "new_name_exists":
         evidence.absent = []
+        evidence.literals.append(
+            SimpleNamespace(
+                kind="identifier",
+                text="NEW_LIMIT",
+                complete=True,
+                occurrences=[Occurrence("rules.py", 2, "NEW_LIMIT = 1", 0)],
+            )
+        )
+    elif reason == "new_name_unverified":
+        evidence.absent = []  # could not be proven new within the time allowed
     elif reason == "line_changed":
         reader.lines = lambda file: ["OLD_LIMIT = 25"]
     elif reason == "cache_unavailable":

@@ -394,7 +394,12 @@ def build_patch(
                 "not_exhaustive"  # never offer only part of the explicitly requested substitutions
             )
         if item.kind == "identifier" and item.new not in set(evidence.absent):
-            return "new_name_exists"  # the new name already exists: a blind rename could merge two things
+            exists = any(
+                lit.kind == "identifier" and lit.text == item.new for lit in evidence.literals
+            )
+            # A found name could be merged with the old one by a blind rename. A name that could
+            # not be proven new in time is a different problem, and must not be reported as found.
+            return "new_name_exists" if exists else "new_name_unverified"
         for (file, line), indexed_text in sorted(sites.items()):
             indexed = reader.lines(file)
             if indexed is None or line > len(indexed):

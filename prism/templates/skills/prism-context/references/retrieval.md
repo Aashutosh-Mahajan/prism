@@ -13,6 +13,11 @@ This repo has a local code index. Retrieve evidence for the actual request; avoi
 
 No status call is needed first. Follow the repository's configured transport: native `prism_task` for MCP installs, `prism task` for CLI installs. Discover a deferred tool once if needed. If unavailable or disabled, use ordinary targeted tools; do not try an unverified alternate transport. Queries refresh the index.
 
+If retrieval fails, continue with bounded ordinary searches. Search likely filenames
+first, then matching lines in those files; avoid repository-wide numeric or generic
+word searches that dump datasets and generated files. Do not repeat the failed
+lookup, switch PRISM transports, or rebuild the index to finish the request.
+
 ## Procedure
 
 1. Reuse context supplied with the prompt. For unknown code only, call the configured task tool with the user's actual wording once. Architecture requests return a selective map; edits return source and related definitions. Explicit modes are `overview` and `code` (CLI: `--mode`; MCP: `mode`).

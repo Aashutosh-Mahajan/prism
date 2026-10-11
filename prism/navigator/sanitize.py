@@ -6,8 +6,12 @@ import re
 import unicodedata
 from pathlib import PurePosixPath
 
+_ASCII_CONTROLS = re.compile("[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]")
+
 
 def strip_hidden(text: str) -> str:
+    if text.isascii():  # only C0 controls and DEL are hidden in ASCII; one pass
+        return _ASCII_CONTROLS.sub("", text)
     return "".join(
         character
         for character in text

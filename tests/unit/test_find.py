@@ -86,3 +86,19 @@ def test_the_command_does_not_expand_wildcards_itself(repo: Path) -> None:
     )
     assert result.exit_code == 0, result.output
     assert '"archive/old/c.py"' not in result.output
+
+
+def test_native_literal_prefilter_matches_python_and_never_returns_stale_source(repo, monkeypatch):
+    import shutil
+
+    from prism.navigator import find as module
+
+    if shutil.which("rg") is None:
+        pytest.skip("optional native prefilter is unavailable")
+    fast = find(repo, "apply_discount", "coupon", budget=1000)
+    with monkeypatch.context() as patch:
+        patch.setattr(module, "_literal_candidates", lambda *args: None)
+        assert find(repo, "apply_discount", "coupon", budget=1000) == fast
+    (repo / "pkg/a.py").write_text("# apply_discount stale_marker\n", encoding="utf-8")
+    result = find(repo, "stale_marker")
+    assert result["results"][0]["total"] == 0
