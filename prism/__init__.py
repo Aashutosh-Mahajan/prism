@@ -2,5 +2,5 @@
 
 __version__ = "0.1.0"
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 """Version stamped into every `.aicontext/` JSON artifact."""

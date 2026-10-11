@@ -1888,7 +1888,9 @@ def _links(
         callers = sorted(
             callers,
             key=lambda link: (
-                link.confidence != "high",
+                link.resolution != "resolved"
+                if link.resolution is not None
+                else link.confidence != "high",
                 link.symbol.file,
                 link.line or 0,
                 link.symbol.id,
@@ -1898,7 +1900,11 @@ def _links(
         for link in callers:
             if shown >= limit:
                 break
-            guessed = link.confidence != "high"
+            guessed = (
+                link.resolution != "resolved"
+                if link.resolution is not None
+                else link.confidence != "high"
+            )
             if guessed and uncertain >= 3:
                 continue
             src = reader.lines(link.symbol.file)
@@ -1910,6 +1916,7 @@ def _links(
                 "file": link.symbol.file,
                 "line": link.line,
                 "confidence": link.confidence,
+                "resolution": link.resolution or ("name" if guessed else "resolved"),
                 "snippet": _snippet(text),
                 "uncertain": guessed,
             }

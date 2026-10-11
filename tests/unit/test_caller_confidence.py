@@ -14,6 +14,7 @@ def test_inferred_caller_cap_is_shared_across_targets(monkeypatch: pytest.Monkey
                 symbol=SimpleNamespace(id=f"{identity}.caller{i}", file=f"caller{i}.py"),
                 line=1,
                 confidence="high" if i == 3 else "medium",
+                resolution="resolved" if i == 3 else "name",
             )
             for i in range(4)
         ]

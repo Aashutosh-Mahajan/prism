@@ -79,10 +79,26 @@ def call_graph_doc(index: Index) -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
         "edges": [
-            {"from": e.source, "to": e.target, "confidence": e.confidence, "line": e.line}
+            {
+                "from": e.source,
+                "to": e.target,
+                "confidence": e.confidence,
+                "line": e.line,
+                "resolution": e.resolution,
+            }
             for e in graph.edges
         ],
         "rank": dict(sorted(graph.rank.items())),
+        "ambiguous_calls": [
+            {
+                "from": call.source,
+                "target": call.target,
+                "line": call.line,
+                "resolution": "ambiguous",
+                "candidates": list(call.candidates),
+            }
+            for call in graph.ambiguous
+        ],
         "stats": {
             "edges": len(graph.edges),
             "unresolved_calls": graph.unresolved,

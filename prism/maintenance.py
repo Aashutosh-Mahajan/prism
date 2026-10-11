@@ -15,7 +15,7 @@ from prism import SCHEMA_VERSION, __version__
 from prism.consent import RepoState, repo_state
 from prism.core.errors import NotEnabledError, UserError
 from prism.core.paths import AICONTEXT
-from prism.writers.manifest import load_manifest, text_hash, write_manifest
+from prism.writers.manifest import load_manifest, text_hash
 
 SCHEMAS = Path(__file__).resolve().parent / "schemas"
 
@@ -280,8 +280,14 @@ def doctor(root: Path) -> list[Check]:
 
 Migration = Callable[[Path, dict[str, Any]], dict[str, Any]]
 
-# schema_version -> migration to the next version. Empty while 1.0 is the only schema.
-MIGRATIONS: dict[str, tuple[str, Migration]] = {}
+
+def _call_resolution_11(root: Path, manifest: dict[str, Any]) -> dict[str, Any]:
+    # Full scan below derives resolution from source; old confidence is not enough
+    # to reconstruct ambiguous name matches. Narrative artifacts remain in place.
+    return {**manifest, "schema_version": "1.1"}
+
+
+MIGRATIONS: dict[str, tuple[str, Migration]] = {"1.0": ("1.1", _call_resolution_11)}
 
 
 def migrate(root: Path) -> dict[str, Any]:
@@ -293,6 +299,8 @@ def migrate(root: Path) -> dict[str, Any]:
     manifest = load_manifest(root)
     if manifest is None:
         raise UserError("PRISM is not initialized in this repo.")
+    if repo_state(root, manifest.get("repo_id")) != RepoState.ENABLED:
+        raise NotEnabledError("Enable PRISM for this repo before migrating its artifacts.")
     start = str(manifest.get("schema_version", "1.0"))
     version = start
     steps = []
@@ -305,10 +313,10 @@ def migrate(root: Path) -> dict[str, Any]:
         manifest = fn(root, manifest)
         steps.append(f"{version} -> {nxt}")
         version = nxt
-    manifest["schema_version"] = SCHEMA_VERSION
-    write_manifest(root, manifest)
     from prism.lifecycle import scan
 
+    # The index writer publishes the version with regenerated artifacts.
+    # A failed rebuild must not publish a premature schema upgrade.
     scan(root, full=True)
     return {
         "from": start,

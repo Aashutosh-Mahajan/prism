@@ -7,7 +7,8 @@
     "schema_version",
     "edges",
     "rank",
-    "stats"
+    "stats",
+    "ambiguous_calls"
   ],
   "properties": {
     "schema_version": {
@@ -23,7 +24,8 @@
           "from",
           "to",
           "confidence",
-          "line"
+          "line",
+          "resolution"
         ],
         "properties": {
           "from": {
@@ -43,6 +45,13 @@
             "type": [
               "integer",
               "null"
+            ]
+          },
+          "resolution": {
+            "enum": [
+              "resolved",
+              "name",
+              "ambiguous"
             ]
           }
         }
@@ -77,6 +86,44 @@
           }
         }
       }
+    },
+    "ambiguous_calls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "target",
+          "line",
+          "resolution",
+          "candidates"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "resolution": {
+            "const": "ambiguous"
+          },
+          "candidates": {
+            "type": "array",
+            "minItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
     }
-  }
+  },
+  "description": "Schema 1.1: call resolution and explicit ambiguous candidate records."
 }

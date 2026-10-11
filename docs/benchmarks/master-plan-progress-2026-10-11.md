@@ -79,3 +79,25 @@ T20: native updated-input experiment and permission boundary recorded in ADR 000
 Phase 2 focused integration batch: 92 checks pass. First full offline run had 14 failures tied to intentionally changed instruction/skill wording; updated contracts and all 79 affected prompt/transport/skill/parity checks pass. Full confirmation passes; the late current-note compaction addition also passes all 30 gate/work-log checks. Ruff and strict package mypy pass. T40 offline scorer added with exact file and line metrics, overlap block metrics and explicit observed usage only; unknown transcript usage is not scored as zero.
 
 T40: pure scorer and its owner-approved regression gate pass against the frozen T00 and accepted Phase 1 reports. Reports include engine digest/dirty provenance; actual transcript-use and provider-cost evidence is unavailable in these offline packets. Phase 2 replay remains to run after the implementation commit.
+
+Phase 2 implementation committed as 6d3c603. T40 committed as ef964a4. Phase 2 parent replay: precision 20.0339448%, file recall 14.7540984%, mean 628.95 estimated tokens; file/block/line metrics match the accepted Phase 1 scores. T22 remains pending native paired transport data. T41 pilot preparation is frozen; native hook preflight is running.
+
+T44 and T47 committed as ae49472: conservative language-server doctor guidance,
+bounded saved-output cleanup, cache-size reporting, 500-log limit verification.
+Dart (dac89bf), Kotlin (7fe04a8) and Swift (ab8e3c2) optional AST grammars each
+have their own language-specific commit and pass fixture/caller checks plus
+two-edit full artifact equivalence. Language-specific PR publication remains.
+
+T16b schema 1.1 is implemented. Full offline confirmation with all three optional
+grammars passes, as do Ruff and strict mypy. Migration preservation, consent
+refusal and failed-rebuild publication checks pass. The former inference-cap
+mock was updated to provide explicit resolution evidence.
+
+T41 native diagnostics are preserved and excluded from the pilot. Project trust
+needed persisted configuration. A dedicated local Codex state directory fixed
+the global Windows sandbox helper lock, using existing ChatGPT authentication
+with no API fallback. Native hook delivery remains under investigation; no
+hook-arm improvement is claimed. T42 has pinned local weights and a fixed
+1,922-document historical corpus, 40 replay requests and nine real code-twin
+queries. Initial retrieval scores are recorded; final timing verification and
+recommendation remain.

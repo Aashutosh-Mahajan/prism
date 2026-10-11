@@ -21,7 +21,7 @@ from typing import Any
 from prism.core.paths import AICONTEXT
 from prism.navigator.text import term_counts
 
-CACHE_FORMAT = "6"  # 6: short plurals stem ("kpis" -> "kpi")
+CACHE_FORMAT = "7"  # 7: persisted call resolution
 
 SCHEMA = """
 CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -32,7 +32,7 @@ CREATE TABLE symbols (
 );
 CREATE INDEX symbols_name ON symbols(name);
 CREATE INDEX symbols_file ON symbols(file);
-CREATE TABLE calls (src TEXT, dst TEXT, confidence TEXT, line INTEGER);
+CREATE TABLE calls (src TEXT, dst TEXT, confidence TEXT, line INTEGER, resolution TEXT);
 CREATE INDEX calls_src ON calls(src);
 CREATE INDEX calls_dst ON calls(dst);
 CREATE TABLE modules (
@@ -180,8 +180,17 @@ def _build(conn: sqlite3.Connection, out: Path, manifest: dict[str, Any]) -> Non
     )
     calls = (_read(out / "call_graph.json") or {}).get("edges", [])
     conn.executemany(
-        "INSERT INTO calls VALUES (?,?,?,?)",
-        [(e["from"], e["to"], e["confidence"], e["line"]) for e in calls],
+        "INSERT INTO calls VALUES (?,?,?,?,?)",
+        [
+            (
+                e["from"],
+                e["to"],
+                e["confidence"],
+                e["line"],
+                e.get("resolution", "name" if e["confidence"] == "low" else "resolved"),
+            )
+            for e in calls
+        ],
     )
     dep = _read(out / "dependency_graph.json") or {}
     modules = dep.get("modules", [])

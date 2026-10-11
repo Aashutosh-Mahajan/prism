@@ -29,5 +29,6 @@ No status call is needed first. Follow the repository's configured transport: na
 
 - Never run `prism init`, `prism scan`, `prism enable`, or `prism install --global` unless the user explicitly asks in this conversation.
 - Static analysis misses dynamic calls (reflection, string dispatch, framework magic): when the answer looks incomplete, do a targeted grep for that name, not a full scan.
+- Schema 1.1 stores call `resolution`: `resolved` for scope/type evidence and `name` for a unique name match. `ambiguous_calls` records multiple candidates without treating them as confirmed callers. Use `prism migrate` to rebuild an enabled 1.0 index while preserving notes. A `~` caller needs verification.
 - Never load `.aicontext/*.json` files into context and never edit `.aicontext/` by hand.
 - If findings are listed as open, mention them; mark one fixed (`prism audit update <id> --status fixed`) only after its evidence command passes.

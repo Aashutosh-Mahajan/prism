@@ -10,7 +10,15 @@ from __future__ import annotations
 
 import builtins
 
-from prism.core.models import CallGraph, CallRef, Confidence, Edge, Symbol
+from prism.core.models import (
+    AmbiguousCall,
+    CallGraph,
+    CallRef,
+    Confidence,
+    Edge,
+    Resolution,
+    Symbol,
+)
 from prism.graph.ranking import Ranker, pagerank
 from prism.graph.symbol_table import SymbolTable
 
@@ -101,7 +109,7 @@ class Resolver:
         mod: str,
         call: CallRef,
         local_types: dict[str, str] | None = None,
-    ) -> tuple[str, Confidence] | None:
+    ) -> tuple[str, Confidence, Resolution] | None:
         parts = call.target.split(".")
         head = parts[0]
         if local_types and len(parts) == 2 and head in local_types:
@@ -109,40 +117,52 @@ class Resolver:
             if cls and self.table.symbols[cls].kind == "class":
                 found = self.method_in_class(cls, parts[1])
                 if found:
-                    return found, "medium"
+                    return found, "medium", "resolved"
         enclosing_class = self._enclosing_class(sym)
         if len(parts) == 1 and enclosing_class and self.table.files[mod].language == "java":
             # In Java an unqualified call inside a method is a call on the enclosing class.
             direct = f"{enclosing_class}.{head}"
             if direct in self.table.symbols:
-                return direct, "high"
+                return direct, "high", "resolved"
             found = self.method_in_class(enclosing_class, head)
             if found:
-                return found, "medium"
+                return found, "medium", "resolved"
         if head in ("self", "cls", "this") and enclosing_class and len(parts) == 2:
             direct = f"{enclosing_class}.{parts[1]}"
             if direct in self.table.symbols:
-                return direct, "high"
+                return direct, "high", "resolved"
             found = self.method_in_class(enclosing_class, parts[1])
             if found:
-                return found, "medium"
+                return found, "medium", "resolved"
             return None
         if head == "super()" and enclosing_class and len(parts) == 2:
             for base in self.bases.get(enclosing_class, []):
                 found = self.method_in_class(base, parts[1])
                 if found:
-                    return found, "medium"
+                    return found, "medium", "resolved"
             return None
         resolved = self.resolve_name(mod, call.target)
         if resolved:
-            return resolved, "high"
+            return resolved, "high", "resolved"
         if len(parts) == 1 and head in _BUILTINS:
             return None
         if len(parts) == 2 and head not in self.table.scopes[mod].bindings:
             candidates = self.by_name.get(parts[-1], [])
             if len(candidates) == 1 and not parts[-1].startswith("__"):
-                return candidates[0], "low"
+                return candidates[0], "low", "name"
         return None
+
+    def ambiguous_candidates(self, mod: str, call: CallRef) -> tuple[str, ...]:
+        parts = call.target.split(".")
+        if (
+            len(parts) != 2
+            or parts[0] in {"self", "cls", "this", "super()"}
+            or parts[0] in self.table.scopes[mod].bindings
+            or parts[-1].startswith("__")
+        ):
+            return ()
+        candidates = self.by_name.get(parts[-1], [])
+        return tuple(candidates) if len(candidates) > 1 else ()
 
     def _enclosing_class(self, sym: Symbol | None) -> str | None:
         while sym is not None:
@@ -157,6 +177,7 @@ def build_call_graph(table: SymbolTable, ranker: Ranker = pagerank) -> CallGraph
     best: dict[tuple[str, str], Edge] = {}
     order: dict[Confidence, int] = {"high": 0, "medium": 1, "low": 2}
     unresolved = 0
+    ambiguous: set[AmbiguousCall] = set()
     for mod, pf in sorted(table.files.items()):
         for ps in pf.symbols:
             sid = f"{mod}.{ps.qualname}"
@@ -165,8 +186,11 @@ def build_call_graph(table: SymbolTable, ranker: Ranker = pagerank) -> CallGraph
                 result = resolver.resolve_call(sym, mod, call, ps.local_types)
                 if result is None:
                     unresolved += 1
+                    candidates = resolver.ambiguous_candidates(mod, call)
+                    if candidates:
+                        ambiguous.add(AmbiguousCall(sid, call.target, call.line, candidates))
                     continue
-                target, confidence = result
+                target, confidence, resolution = result
                 if target == sid:
                     continue
                 key = (sid, target)
@@ -176,7 +200,7 @@ def build_call_graph(table: SymbolTable, ranker: Ranker = pagerank) -> CallGraph
                     or order[confidence] < order[existing.confidence]
                     or (confidence == existing.confidence and call.line < (existing.line or 0))
                 ):
-                    best[key] = Edge(sid, target, confidence, call.line)
+                    best[key] = Edge(sid, target, confidence, call.line, resolution)
 
     edges = [best[k] for k in sorted(best)]
     for sym in table.symbols.values():
@@ -191,7 +215,12 @@ def build_call_graph(table: SymbolTable, ranker: Ranker = pagerank) -> CallGraph
     ranks = ranker(table.symbols, ((e.source, e.target) for e in edges))
     for sid, sym in table.symbols.items():
         sym.rank = ranks.get(sid, 0.0)
-    return CallGraph(edges=edges, unresolved=unresolved, rank=ranks)
+    return CallGraph(
+        edges=edges,
+        unresolved=unresolved,
+        rank=ranks,
+        ambiguous=sorted(ambiguous, key=lambda call: (call.source, call.line, call.target)),
+    )
 
 
 def resolve_module_calls(table: SymbolTable, mod: str, calls: list[CallRef]) -> list[str]:

@@ -1,69 +1,81 @@
 {
+  "ambiguous_calls": [],
   "edges": [
     {
       "confidence": "high",
       "from": "tests.test_pricing.test_cart_total",
       "line": 10,
+      "resolution": "resolved",
       "to": "tinyshop.cart.Cart"
     },
     {
       "confidence": "medium",
       "from": "tests.test_pricing.test_cart_total",
       "line": 11,
+      "resolution": "resolved",
       "to": "tinyshop.cart.Cart.add"
     },
     {
       "confidence": "medium",
       "from": "tests.test_pricing.test_cart_total",
       "line": 12,
+      "resolution": "resolved",
       "to": "tinyshop.cart.Cart.total"
     },
     {
       "confidence": "high",
       "from": "tests.test_pricing.test_coupon",
       "line": 6,
+      "resolution": "resolved",
       "to": "tinyshop.pricing.apply_discount"
     },
     {
       "confidence": "high",
       "from": "tinyshop.cart.Cart.total",
       "line": 20,
+      "resolution": "resolved",
       "to": "tinyshop.cart.Cart.subtotal"
     },
     {
       "confidence": "high",
       "from": "tinyshop.cart.Cart.total",
       "line": 20,
+      "resolution": "resolved",
       "to": "tinyshop.pricing.apply_discount"
     },
     {
       "confidence": "high",
       "from": "tinyshop.cli.main",
       "line": 9,
+      "resolution": "resolved",
       "to": "tinyshop.cart.Cart"
     },
     {
       "confidence": "medium",
       "from": "tinyshop.cli.main",
       "line": 11,
+      "resolution": "resolved",
       "to": "tinyshop.cart.Cart.add"
     },
     {
       "confidence": "medium",
       "from": "tinyshop.cli.main",
       "line": 12,
+      "resolution": "resolved",
       "to": "tinyshop.cart.Cart.total"
     },
     {
       "confidence": "high",
       "from": "tinyshop.pricing._debug_rates",
       "line": 23,
+      "resolution": "resolved",
       "to": "tinyshop.pricing.eligible_rules"
     },
     {
       "confidence": "high",
       "from": "tinyshop.pricing.apply_discount",
       "line": 16,
+      "resolution": "resolved",
       "to": "tinyshop.pricing.eligible_rules"
     }
   ],
@@ -80,7 +92,7 @@
     "tinyshop.pricing.apply_discount": 0.140784,
     "tinyshop.pricing.eligible_rules": 0.223191
   },
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "stats": {
     "by_confidence": {
       "high": 7,

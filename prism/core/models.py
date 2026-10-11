@@ -11,6 +11,7 @@ from typing import Literal
 SymbolKind = Literal["function", "class", "method"]
 Visibility = Literal["public", "private"]
 Confidence = Literal["high", "medium", "low"]
+Resolution = Literal["resolved", "name", "ambiguous"]
 
 
 @dataclass(frozen=True)
@@ -156,6 +157,15 @@ class Edge:
     target: str
     confidence: Confidence = "high"
     line: int | None = None
+    resolution: Resolution = "resolved"
+
+
+@dataclass(frozen=True)
+class AmbiguousCall:
+    source: str
+    target: str
+    line: int
+    candidates: tuple[str, ...]
 
 
 @dataclass
@@ -185,6 +195,7 @@ class CallGraph:
     edges: list[Edge]
     unresolved: int
     rank: dict[str, float] = field(default_factory=dict)
+    ambiguous: list[AmbiguousCall] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

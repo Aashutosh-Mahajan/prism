@@ -168,7 +168,9 @@ def test_doctor_and_migrate(repo: Path, tmp_path: Path) -> None:
     (repo / ".aicontext" / "symbols.json").write_text("{}")
     assert {c.name: c for c in doctor(repo)}["artifacts"].status == "warn"
     result = migrate(repo)
-    assert result["rebuilt"] and result["from"] == result["to"] == "1.0"
+    from prism import SCHEMA_VERSION
+
+    assert result["rebuilt"] and result["from"] == result["to"] == SCHEMA_VERSION
     assert {c.name: c for c in doctor(repo)}["artifacts"].status == "ok"
     fresh = tmp_path / "empty"
     fresh.mkdir()

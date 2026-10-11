@@ -76,7 +76,7 @@
       "smells": []
     }
   },
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "smell_counts": {},
   "symbols": {
     "tinyshop.cart.Cart.__init__": {

@@ -57,6 +57,7 @@ class Link:
     symbol: SymbolRow
     line: int | None
     confidence: str
+    resolution: str | None = None
 
 
 @dataclass(frozen=True)
@@ -149,19 +150,25 @@ class IndexStore:
 
     def callers(self, sid: str) -> list[Link]:
         rows = self.conn.execute(
-            "SELECT s.*, c.line, c.confidence FROM calls c JOIN symbols s ON s.id = c.src "
-            "WHERE c.dst = ? ORDER BY s.rank DESC, s.id",
+            "SELECT s.*, c.line, c.confidence, c.resolution FROM calls c JOIN symbols s ON s.id = c.src "
+            "WHERE c.dst = ? AND c.resolution != 'ambiguous' ORDER BY s.rank DESC, s.id",
             (sid,),
         )
-        return [Link(SymbolRow(*tuple(r)[:13]), r["line"], r["confidence"]) for r in rows]
+        return [
+            Link(SymbolRow(*tuple(r)[:13]), r["line"], r["confidence"], r["resolution"])
+            for r in rows
+        ]
 
     def callees(self, sid: str) -> list[Link]:
         rows = self.conn.execute(
-            "SELECT s.*, c.line, c.confidence FROM calls c JOIN symbols s ON s.id = c.dst "
-            "WHERE c.src = ? ORDER BY c.line, s.id",
+            "SELECT s.*, c.line, c.confidence, c.resolution FROM calls c JOIN symbols s ON s.id = c.dst "
+            "WHERE c.src = ? AND c.resolution != 'ambiguous' ORDER BY c.line, s.id",
             (sid,),
         )
-        return [Link(SymbolRow(*tuple(r)[:13]), r["line"], r["confidence"]) for r in rows]
+        return [
+            Link(SymbolRow(*tuple(r)[:13]), r["line"], r["confidence"], r["resolution"])
+            for r in rows
+        ]
 
     def call_edges(self) -> list[tuple[str, str, str]]:
         rows = self.conn.execute("SELECT src, dst, confidence FROM calls")
