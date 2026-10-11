@@ -44,4 +44,8 @@ def get_parser(language: str) -> BaseParser | None:
 
             with suppress(ImportError):
                 register_parser(DartTreeSitterParser())
+            from prism.parsing.kotlin_treesitter import KotlinTreeSitterParser
+
+            with suppress(ImportError):
+                register_parser(KotlinTreeSitterParser())
     return _REGISTRY.get(language)
