@@ -1,0 +1,292 @@
+[
+  {
+    "id": "f_p01",
+    "repo": "prism",
+    "kind": "localise",
+    "prompt": "Locate the saved shell output writer and the function that retrieves saved output with grep/line-context controls. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "prism/outputfilter.py",
+      "save_tee",
+      "show_tee"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_p02",
+    "repo": "prism",
+    "kind": "localise",
+    "prompt": "Locate the source sanitization functions that remove hidden controls and protect instruction documents from incidental retrieval. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "prism/navigator/sanitize.py",
+      "strip_hidden",
+      "allowed_document"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_p03",
+    "repo": "prism",
+    "kind": "localise",
+    "prompt": "Locate the progressive retrieval helper that expands packet budgets only when the initial packet is insufficient. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "prism/navigator/api.py",
+      "adaptive_task"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_p04",
+    "repo": "prism",
+    "kind": "localise",
+    "prompt": "Locate the optional read-deduplication decision and its range-merging helper. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "prism/hooks/dedupe.py",
+      "decide",
+      "_merge"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_p05",
+    "repo": "prism",
+    "kind": "explain",
+    "prompt": "Explain which function chooses relevant tests by direct and bounded transitive call evidence, and which function renders the resulting task packet. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "prism/navigator/task_pack.py",
+      "_related_tests",
+      "render_task"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_p06",
+    "repo": "prism",
+    "kind": "explain",
+    "prompt": "Explain which function exports the human Obsidian view and which helper produces its consistent frontmatter. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "prism/writers/obsidian.py",
+      "export_obsidian",
+      "_frontmatter"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_p07",
+    "repo": "prism",
+    "kind": "explain",
+    "prompt": "Explain where proposed narrative summaries are prepared and then validated and committed. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "prism/narrator/refresh.py",
+      "refresh_prepare",
+      "refresh_commit"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_p08",
+    "repo": "prism",
+    "kind": "explain",
+    "prompt": "Explain how shell output filtering selects a command family and guarantees retention of failure-adjacent lines. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "prism/outputfilter.py",
+      "_family",
+      "_keep_failures",
+      "filter_output"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_p09",
+    "repo": "prism",
+    "kind": "edit",
+    "prompt": "Increase the shell output threshold below which output is returned unchanged from 60 lines to 80 lines. Update the related constant and wording. Use targeted checks and preserve unrelated behavior.",
+    "checker": "filter_threshold"
+  },
+  {
+    "id": "f_p10",
+    "repo": "prism",
+    "kind": "edit",
+    "prompt": "Limit a single prism find request to six patterns instead of eight. Six patterns must remain valid; seven must fail with a clear error. Use targeted checks and preserve unrelated behavior.",
+    "checker": "find_pattern_limit"
+  },
+  {
+    "id": "f_p11",
+    "repo": "prism",
+    "kind": "edit",
+    "prompt": "Increase the default maximum source file size from 1,000,000 to 2,000,000 bytes. Preserve project overrides and invalid-value rejection. Use targeted checks and preserve unrelated behavior.",
+    "checker": "file_size_default"
+  },
+  {
+    "id": "f_p12",
+    "repo": "prism",
+    "kind": "bug fix",
+    "prompt": "Fix configuration validation so max_file_size=true or false is rejected rather than treated as an integer. Positive integers must remain valid. Use targeted checks and preserve unrelated behavior.",
+    "checker": "file_size_bool"
+  },
+  {
+    "id": "f_p13",
+    "repo": "prism",
+    "kind": "bug fix",
+    "prompt": "Fix configuration validation so drift_threshold=true or false is rejected rather than treated as an integer. Positive integers must remain valid. Use targeted checks and preserve unrelated behavior.",
+    "checker": "drift_bool"
+  },
+  {
+    "id": "f_p14",
+    "repo": "prism",
+    "kind": "rename",
+    "prompt": "Rename MAX_MATCHES_PER_PATTERN to MATCH_LIMIT_PER_PATTERN across production Python code. Keep its value and exact-match truncation behavior unchanged. Use targeted checks and preserve unrelated behavior.",
+    "checker": "find_constant_rename"
+  },
+  {
+    "id": "f_p15",
+    "repo": "prism",
+    "kind": "rename",
+    "prompt": "Rename EXPIRY_SECONDS to READ_EXPIRY_SECONDS across production Python code for the optional dedupe-read hook. Keep the 20-minute expiry behavior unchanged. Use targeted checks and preserve unrelated behavior.",
+    "checker": "dedupe_constant_rename"
+  },
+  {
+    "id": "f_a01",
+    "repo": "arogya",
+    "kind": "localise",
+    "prompt": "Locate the asynchronous queue processor for surveillance inference and its surveillance-data upsert helper. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "backend/surveillance/tasks.py",
+      "process_inference_queue",
+      "_upsert_surveillance_data"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_a02",
+    "repo": "arogya",
+    "kind": "localise",
+    "prompt": "Locate the periodic low-adherence patient flagging job and its doctor notification helper. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "backend/adherence/tasks.py",
+      "flag_low_adherence_patients",
+      "_notify_doctor_low_adherence"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_a03",
+    "repo": "arogya",
+    "kind": "localise",
+    "prompt": "Locate the doctor patient-chart page component and its inline allergy-entry form. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "frontend/app/doctor/patients/[id]/page.tsx",
+      "PatientChartPage",
+      "AddAllergy"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_a04",
+    "repo": "arogya",
+    "kind": "localise",
+    "prompt": "Locate the mobile doctor-patients tab widget and its state implementation. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "mobile_app/lib/screens/doctor/doctor_patients_tab.dart",
+      "DoctorPatientsTab",
+      "_DoctorPatientsTabState"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_a05",
+    "repo": "arogya",
+    "kind": "explain",
+    "prompt": "Explain how the legacy doctor my-patients route redirects to the current patient list, naming its component and destination. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "frontend/app/doctor/my-patients/page.tsx",
+      "MyPatientsRedirect",
+      "/doctor/patients"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_a06",
+    "repo": "arogya",
+    "kind": "explain",
+    "prompt": "Explain how the legacy create-prescription route redirects to the combined consultation page, naming its component and destination suffix. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "create-prescription/page.tsx",
+      "Redirect",
+      "create-consultation"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_a07",
+    "repo": "arogya",
+    "kind": "explain",
+    "prompt": "Explain which authentication class enforces CSRF protection for cookie requests and name the enforcement method. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "backend/accounts/authentication.py",
+      "CookieJWTAuthentication",
+      "enforce_csrf"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_a08",
+    "repo": "arogya",
+    "kind": "explain",
+    "prompt": "Explain where the consultation UI implements its medicine picker and safety-report card. Return the source file and symbol names; do not edit files.",
+    "required": [
+      "create-consultation/page.tsx",
+      "MedicinePicker",
+      "SafetyCard"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "f_a09",
+    "repo": "arogya",
+    "kind": "edit",
+    "prompt": "Allow doctor registration from age 21 rather than 23 in accounts validation. Preserve the maximum age of 80 and rejection of future birth dates. Use targeted checks and preserve unrelated behavior.",
+    "checker": "doctor_min_age"
+  },
+  {
+    "id": "f_a10",
+    "repo": "arogya",
+    "kind": "edit",
+    "prompt": "Increase the accounts doctor-registration maximum age from 80 to 85. Preserve the minimum age of 23 and rejection of future birth dates. Use targeted checks and preserve unrelated behavior.",
+    "checker": "doctor_max_age"
+  },
+  {
+    "id": "f_a11",
+    "repo": "arogya",
+    "kind": "edit",
+    "prompt": "Raise the accounts medical-certificate upload size ceiling from 10 MiB to 12 MiB. Accept exactly 12 MiB and reject larger files; preserve the allowed extension set. Use targeted checks and preserve unrelated behavior.",
+    "checker": "upload_size"
+  },
+  {
+    "id": "f_a12",
+    "repo": "arogya",
+    "kind": "edit",
+    "prompt": "Increase the accounts medical-registration identifier maximum length from 20 to 25 characters. Preserve the six-character minimum, trimming, case-insensitive input, and allowed separator set. Use targeted checks and preserve unrelated behavior.",
+    "checker": "registration_length"
+  },
+  {
+    "id": "f_a13",
+    "repo": "arogya",
+    "kind": "bug fix",
+    "prompt": "Reject non-string medical-registration identifiers with Django ValidationError rather than leaking an AttributeError. Preserve all valid string behavior and existing format/length checks. Use targeted checks and preserve unrelated behavior.",
+    "checker": "registration_type"
+  },
+  {
+    "id": "f_a14",
+    "repo": "arogya",
+    "kind": "rename",
+    "prompt": "Rename validate_doctor_age to validate_registration_age throughout backend Python code, preserving its existing validation behavior and import/call wiring. Use targeted checks and preserve unrelated behavior.",
+    "checker": "doctor_age_rename"
+  },
+  {
+    "id": "f_a15",
+    "repo": "arogya",
+    "kind": "rename",
+    "prompt": "Rename validate_medical_registration to validate_registration_identifier throughout backend Python code, preserving its existing validation behavior and import/call wiring. Use targeted checks and preserve unrelated behavior.",
+    "checker": "registration_rename"
+  }
+]
