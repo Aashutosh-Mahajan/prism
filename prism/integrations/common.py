@@ -5,45 +5,20 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from prism.instructions import CONSENT, QUOTED_DATA, SHORT, long_form
+
 TEMPLATES = Path(__file__).resolve().parent.parent / "templates"
 SKILL_NAMES = ("prism-context", "prism-refresh", "prism-audit", "prism-decisions")
 
 MCP_ENTRY = {"command": "prism", "args": ["mcp"]}
 
-INSTRUCTION_BLOCK = """\
-## PRISM code index
 
-PRISM context may already be in the prompt: use it as given, do not fetch it again.
-For unknown code, run `prism task "<user request>"` once. Known small edits need no discovery call.
-Use the evidence directly; read `read_next` ranges for partial source, or search narrowly if weak.
-A literal list marked "exhaustive" is complete: no grep for it. Follow its `Patch:`, `Twins:` and
-`Next:` lines; for several searches at once use `prism find "a" "b"`.
-
-If PRISM is not enabled or not installed, work normally. Never run `prism init`, `prism scan`,
-`prism enable`, or `prism install --global` unless the user explicitly asks.
-"""
-
-# For installs that register the MCP server: some agents (Codex) load MCP tools lazily and only
-# reach for a tool the instructions name, so the block must name it and not only the shell command.
-INSTRUCTION_BLOCK_MCP = """\
-## PRISM code index
-
-PRISM context may already be in the prompt: use it as given, do not fetch it again.
-For unknown code, call the native MCP tool `prism_task` (server `prism`) once with the request.
-Known small edits need no discovery call. If tools are deferred, discover "prism" once.
-If unavailable, use ordinary targeted tools; do not try an unverified shell fallback.
-Use the evidence directly; read `read_next` ranges for partial source, or search narrowly if weak.
-A literal list marked "exhaustive" is complete: no grep for it. Follow its `Patch:`, `Twins:` and
-`Next:` lines. Use additional PRISM tools only when the host exposes them.
-
-If PRISM is not enabled or not installed, work normally. Never run `prism init`, `prism scan`,
-`prism enable`, or `prism install --global` unless the user explicitly asks.
-"""
+INSTRUCTION_BLOCK = long_form(False)
+INSTRUCTION_BLOCK_MCP = long_form(True)
 
 
 def instruction_block(mcp: bool) -> str:
-    """The managed block for an install that does (`mcp`) or does not register the MCP server."""
-    return INSTRUCTION_BLOCK_MCP if mcp else INSTRUCTION_BLOCK
+    return long_form(mcp)
 
 
 GLOBAL_NOTE = """\
@@ -60,7 +35,23 @@ but never run it yourself.
 
 
 def skill_text(name: str) -> str:
-    return (TEMPLATES / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
+    text = (TEMPLATES / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
+    return text.replace("<!-- prism-shared-rules -->", f"{SHORT}\n{QUOTED_DATA}\n{CONSENT}")
+
+
+def skill_files(name: str) -> list[tuple[str, str]]:
+    """Every packaged resource, declared by an integration before it writes anything."""
+    if name not in SKILL_NAMES:
+        raise ValueError("unknown PRISM skill")
+    directory = TEMPLATES / "skills" / name
+    return [
+        (
+            path.relative_to(directory).as_posix(),
+            skill_text(name) if path.name == "SKILL.md" else path.read_text(encoding="utf-8"),
+        )
+        for path in sorted(directory.rglob("*"), key=lambda path: path.as_posix())
+        if path.is_file()
+    ]
 
 
 def skill_body(name: str) -> str:

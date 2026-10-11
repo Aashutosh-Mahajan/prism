@@ -229,3 +229,27 @@ def test_an_explain_the_project_request_gets_the_map_unless_switched_off(tmp_pat
     assert text and "overview" in text and "Map:" in text
     write(tmp_path, "prism.toml", "prompt_overview = false\n")
     assert prompt(tmp_path, "o2", asked) == ""
+
+
+@pytest.mark.parametrize("source", ["compact", "clear"])
+def test_compaction_resends_delivered_source(age_repo: Path, source: str) -> None:
+    from prism.hooks.runner import session_start
+    from prism.navigator.session import load_seen, save_seen
+    from prism.writers.manifest import load_manifest
+
+    manifest = load_manifest(age_repo)
+    assert manifest is not None
+    sent = {("backend/accounts.py", 1, 2)}
+    save_seen(age_repo, "compact-me", sent, manifest)
+    save_seen(age_repo, "other-session", sent, manifest)
+    assert load_seen(age_repo, "compact-me", manifest) == sent
+    from prism.writers.worklog import record_note
+
+    record_note(age_repo, "compact-me", "Still need to verify the account age validation.")
+    orientation = session_start(stop_payload(age_repo, "compact-me", source=source))
+    assert orientation
+    assert "Before compaction" in orientation
+    assert "Still need to verify the account age validation" in orientation
+    assert load_seen(age_repo, "compact-me", manifest) == set()
+    assert load_seen(age_repo, "other-session", manifest) == sent
+    assert "MIN_DOCTOR_AGE" in prompt(age_repo, "compact-me")

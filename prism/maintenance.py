@@ -59,6 +59,43 @@ def doctor(root: Path) -> list[Check]:
     from prism.hooks.formats import MAX_CONTEXT_CHARS
 
     configured_budget = load_config(root).extra.get("prompt_budget", 2000)
+    from prism.outputfilter import saved_saving
+
+    saving = saved_saving(root)
+    detail = (
+        f"saved outputs are {saving[1]:.1f}% shorter across {saving[0]} logs; "
+        if saving
+        else "no saved-output measurements yet; "
+    )
+    add("shell output", True, detail + "run long test/build/log commands as prism filter -- <cmd>")
+    from prism.narrator.refresh import _current, all_sections
+    from prism.navigator.sanitize import strip_hidden
+
+    narratives = [section for section in all_sections(root) if section.startswith("modules/")]
+    filled = sum(bool(_current(root, section)) for section in narratives)
+    add(
+        "module narratives",
+        True,
+        f"{filled}/{len(narratives)} filled ({100 * filled / max(1, len(narratives)):.0f}%)",
+    )
+
+    hidden = []
+    for relative in sorted(manifest.get("files", {})):
+        path = root / relative
+        if not path.resolve().is_relative_to(root.resolve()) or path.is_symlink():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+            if strip_hidden(text) != text:
+                hidden.append(relative)
+        except (OSError, UnicodeError):
+            continue
+    add(
+        "source Unicode",
+        not hidden,
+        "no hidden controls" if not hidden else "hidden controls: " + ", ".join(hidden[:5]),
+        warn_only=True,
+    )
     if isinstance(configured_budget, int) and configured_budget * 4 > MAX_CONTEXT_CHARS:
         add(
             "hook context cap",

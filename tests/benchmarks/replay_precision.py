@@ -48,7 +48,7 @@ def parse_packet(text: str) -> list[SourceBlock]:
     i = 0
     while i < len(lines):
         match = HEADER.match(lines[i])
-        if not match or i + 1 == len(lines) or lines[i + 1] != "```":
+        if not match or i + 1 == len(lines) or not re.fullmatch(r"`{3,}", lines[i + 1]):
             i += 1
             continue
         start = int(match[3])
@@ -56,8 +56,9 @@ def parse_packet(text: str) -> list[SourceBlock]:
         body: list[str] = []
         delivered: set[int] = set()
         cursor = start
+        fence = lines[i + 1]
         i += 2
-        while i < len(lines) and lines[i] != "```":
+        while i < len(lines) and lines[i] != fence:
             line = lines[i]
             numbered = NUMBER.match(line)
             if numbered:

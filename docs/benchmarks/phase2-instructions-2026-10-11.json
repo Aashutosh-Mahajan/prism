@@ -1,0 +1,12 @@
+[
+  {
+    "transport": "cli",
+    "before_words": 177,
+    "after_words": 119
+  },
+  {
+    "transport": "mcp",
+    "before_words": 203,
+    "after_words": 126
+  }
+]

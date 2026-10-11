@@ -41,10 +41,11 @@ def composition(text: str) -> dict[str, Any]:
     prefixes = test_callers = 0
     source = None
     fenced = callers = False
+    fence = "```"
     for raw in text.splitlines(keepends=True):
         line = raw.rstrip("\r\n")
         if fenced:
-            if line == "```":
+            if line == fence:
                 fenced = False
                 category = "other"
             else:
@@ -55,7 +56,8 @@ def composition(text: str) -> dict[str, Any]:
             source = match[2]
             callers = False
             category = "candidate_headers"
-        elif line == "```" and source:
+        elif re.fullmatch(r"`{3,}", line) and source:
+            fence = line
             fenced = True
             category = "other"
         elif line.startswith("Callers of "):

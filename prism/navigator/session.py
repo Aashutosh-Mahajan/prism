@@ -30,6 +30,11 @@ def _path(root: Path, session: str) -> Path:
     return cache_root(root) / "sessions" / f"{digest}.json"
 
 
+def clear_seen(root: Path, session: str) -> None:
+    """A cleared/compacted host context no longer contains delivered source."""
+    _path(root, session).unlink(missing_ok=True)
+
+
 def _prune(directory: Path, now: float) -> None:
     try:
         for entry in directory.glob("*.json"):

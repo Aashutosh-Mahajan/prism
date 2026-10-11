@@ -1,6 +1,7 @@
 ---
 name: prism-audit
-description: Use when the user asks to audit, review, or health-check the codebase (or part of it), find bugs, check what's broken, or verify that tests pass. Runs a prioritized, evidence-based audit using the PRISM index and records findings in .aicontext/audit/.
+description: Audit repository code when the user requests an evidence-based review, bug search or health check; record verified findings in PRISM.
+disable-model-invocation: true
 ---
 <!-- prism-managed: installed and updated by `prism init`. Local edits are overwritten on upgrade. -->
 

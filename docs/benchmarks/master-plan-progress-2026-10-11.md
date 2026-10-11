@@ -15,9 +15,19 @@ deferred Anthropic token-count measurement; token_scale remains 1.0 by default.
 | T04 | committed | c59bc78; 9,500-character cap through smaller retrieval budget; doctor warning and ADR 0006 |
 | T05 | committed | 22c18c2 + 5755671; specific patch refusal codes; six safety branches tested plus cache failure |
 | T10 | committed | da42c72; 80-site checked compact patch; 450-site refusal; replay recall and precision unchanged |
-| T11–T15, T16a | accepted; commit pending | final replay precision 20.0339%, file recall 14.7541% (within 2 points), mean 624.725; format saving 13.3349%; adaptive audit 681.9; parity and offline suite pass |
+| T11–T15, T16a | accepted; 4b006fe | final replay precision 20.0339%, file recall 14.7541% (within 2 points), mean 624.725; format saving 13.3349%; adaptive audit 681.9; parity and offline suite pass |
 | T16b | pending, later persisted form | schema version, migration and scan/update equivalence still required |
-| T20–T30 | pending | experiment-dependent defaults remain unchanged |
+| T20 | implemented; Branch B | native permission experiment and ADR 0007; explicit filtering only |
+| T21 | implemented | saved-output round trip, CRLF, query and fallback checks |
+| T22 | pending paired data | transport defaults unchanged |
+| T23 | implemented; native listing measured | PRISM ~50 tokens; total host listing 2.2k includes built-ins |
+| T24 | implemented | shared rules; standing word count reduced >30% |
+| T25 | implemented; native compact verified | actual source=compact hook; seen ranges cleared; other session preserved |
+| T26 | implemented | recorded full pytest duration or explicit flag; edit packets only |
+| T27 | implemented | hidden controls and multiline Markdown comments removed; instruction docs require named request |
+| T28 | implemented | staged/unstaged symbols, callers/tests, budgeted JSON, warm fixture <0.5 s |
+| T29 | implemented | deterministic linked index/cluster notes and common frontmatter |
+| T30 | implemented | placeholders hidden; ranked --top preparation; validator commits; doctor fill ratio |
 | T40–T48 | pending | subscription campaign and optional experiments still required |
 
 Validation environment: sandboxed Windows asyncio stalled creating its loopback
@@ -29,7 +39,7 @@ temporary files passed individually with corrected isolation.
 Phase 0 automated validation passes: full offline suite, Ruff and strict package
 mypy. T02 API measurement is deferred by owner approval. Claude Code 2.1.296 /context now confirms project CLAUDE.md at 2.3k tokens
 and total memory at 2.4k, with MCP disabled and no session persistence. No startup
-length warning was emitted. T02 commits: 33257ea + 08d7c4c. Phase 1 is in progress.
+length warning was emitted. T02 commits: 33257ea + 08d7c4c. Phase 1 is accepted; Phase 2 is in progress.
 Do not interpret implementation as
 acceptance where live, manual or regression measurements are still outstanding.
 
@@ -63,3 +73,9 @@ A final focused test verifies the inferred-caller limit is three across the
 whole packet, with resolved callers retained for both targets. Earlier replay
 packets had at most one delivered inferred caller; audit packets had none.
 All refusal codes now have coverage, including generic_name and budget_exceeded.
+
+T20: native updated-input experiment and permission boundary recorded in ADR 0007; Branch B selected, no automatic rewriting hook. T21 saved queries and T23 supporting-resource install/uninstall checks pass. T24 shared instruction rules and T25 compaction reset are implemented; further live checks remain pending. T22 defaults remain unchanged pending paired data.
+
+Phase 2 focused integration batch: 92 checks pass. First full offline run had 14 failures tied to intentionally changed instruction/skill wording; updated contracts and all 79 affected prompt/transport/skill/parity checks pass. Full confirmation passes; the late current-note compaction addition also passes all 30 gate/work-log checks. Ruff and strict package mypy pass. T40 offline scorer added with exact file and line metrics, overlap block metrics and explicit observed usage only; unknown transcript usage is not scored as zero.
+
+T40: pure scorer and its owner-approved regression gate pass against the frozen T00 and accepted Phase 1 reports. Reports include engine digest/dirty provenance; actual transcript-use and provider-cost evidence is unavailable in these offline packets. Phase 2 replay remains to run after the implementation commit.

@@ -30,7 +30,7 @@ from prism.integrations.base import (
     with_block,
     without_block,
 )
-from prism.integrations.common import MCP_ENTRY, instruction_block, skill_text
+from prism.integrations.common import MCP_ENTRY, instruction_block, skill_files
 
 AGENTS_MD = "AGENTS.md"
 HOOKS = ".agents/hooks.json"
@@ -67,7 +67,12 @@ class AntigravityIntegration(Integration):
                 with_block(read_text(root / AGENTS_MD), instruction_block(options.mcp)),
                 "PRISM instruction block (always active)",
             ),
-            FileChange(SKILL, skill_text("prism-context"), "prism-context skill"),
+            *[
+                FileChange(
+                    (Path(SKILL).parent / relative).as_posix(), content, "prism-context resource"
+                )
+                for relative, content in skill_files("prism-context")
+            ],
         ]
         config = load_json(root / HOOKS)
         new = _without_prism_hook(config)
@@ -92,7 +97,11 @@ class AntigravityIntegration(Integration):
             changes.append(
                 FileChange(HOOKS, dump_json(remaining) if remaining else None, "PRISM hook")
             )
-        for path, detail in ((SKILL, "prism-context skill"), (LEGACY_RULE, "old PRISM rule")):
+        resources = [
+            ((Path(SKILL).parent / relative).as_posix(), "prism-context resource")
+            for relative, _ in skill_files("prism-context")
+        ]
+        for path, detail in [*resources, (LEGACY_RULE, "old PRISM rule")]:
             if (root / path).is_file():
                 changes.append(FileChange(path, None, detail))
         return [c for c in changes if not c.is_noop(root)]

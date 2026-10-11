@@ -60,7 +60,9 @@ def test_claude_code_install_contents(tiny_repo: Path) -> None:
     assert mcp["mcpServers"]["prism"] == {"command": "prism", "args": ["mcp"]}
     claude_md = (tiny_repo / "CLAUDE.md").read_text()
     assert claude_md.startswith("<!-- prism-managed:start -->")
-    assert "Never run `prism init`" in claude_md
+    from prism.instructions import CONSENT
+
+    assert CONSENT in claude_md
 
 
 def test_install_is_idempotent_and_merges_user_config(tiny_repo: Path) -> None:
@@ -115,9 +117,7 @@ def test_uninstall_is_surgical_after_user_edits(tiny_repo: Path) -> None:
     apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
     assert claude_md.read_text() == "# Added later by the user\n"
     assert not (tiny_repo / ".mcp.json").exists()
-    assert not (tiny_repo / ".claude" / "skills" / "prism-context").exists() or not any(
-        (tiny_repo / ".claude" / "skills" / "prism-context").iterdir()
-    )
+    assert not any((tiny_repo / ".claude" / "skills" / "prism-context").rglob("*.md"))
 
 
 def test_opt_outs(tiny_repo: Path) -> None:
@@ -411,3 +411,27 @@ def test_global_note(fake_home: Path) -> None:
     assert "mention PRISM once" in target.read_text()
     uninstall_global()
     assert target.read_text() == "# Global rules\n"
+
+
+@pytest.mark.parametrize(
+    "agent,directory", [("claude-code", ".claude"), ("antigravity", ".agents")]
+)
+def test_skill_supporting_resources_are_planned_and_restored(
+    tiny_repo: Path, agent: str, directory: str
+) -> None:
+    from prism.integrations.common import skill_files
+
+    relative = f"{directory}/skills/prism-context/references/retrieval.md"
+    reference = tiny_repo / relative
+    reference.parent.mkdir(parents=True)
+    reference.write_text("owner reference\n", encoding="utf-8")
+    plan = plan_init(tiny_repo, [agent], IntegrationOptions())
+    assert relative in {change.path for change in plan.file_changes}
+    apply_init(plan)
+    assert (
+        reference.read_text(encoding="utf-8")
+        == dict(skill_files("prism-context"))["references/retrieval.md"]
+    )
+    assert plan_init(tiny_repo, [agent], IntegrationOptions()).file_changes == ()
+    apply_uninstall(tiny_repo, plan_uninstall(tiny_repo))
+    assert reference.read_text(encoding="utf-8") == "owner reference\n"

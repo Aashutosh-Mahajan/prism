@@ -420,3 +420,30 @@ def test_concurrent_requests_survive_an_index_refresh(server: ViewerServer, repo
         for f in futures:
             f.result()
     assert errors == []
+
+
+def test_obsidian_schema_index_clusters_and_links(repo: Path, tmp_path: Path) -> None:
+    import re
+
+    vault = tmp_path / "schema-vault"
+    export_obsidian(repo, vault, include_symbols=True)
+    snapshot = {
+        path.relative_to(vault).as_posix(): path.read_bytes() for path in vault.rglob("*.md")
+    }
+    assert "index.md" in snapshot and "README.md" in snapshot
+    assert any(path.startswith("clusters/") for path in snapshot)
+    for name, raw in snapshot.items():
+        text = raw.decode("utf-8")
+        front = text.split("---", 2)[1]
+        assert all(
+            f"{field}:" in front for field in ("type", "path", "kind", "lines", "callers", "tests")
+        ), name
+        for link in re.findall(r"\[\[([^]|]+)(?:\|[^]]*)?\]\]", text):
+            assert any(path == link + ".md" or Path(path).stem == link for path in snapshot), (
+                name,
+                link,
+            )
+    export_obsidian(repo, vault, include_symbols=True)
+    assert snapshot == {
+        path.relative_to(vault).as_posix(): path.read_bytes() for path in vault.rglob("*.md")
+    }

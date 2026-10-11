@@ -17,8 +17,9 @@ from prism.core.markers import parse_regions
 from prism.core.paths import AICONTEXT
 from prism.core.tokens import estimate_tokens
 from prism.drift import reset_section
+from prism.narrator.policy import real_narrative
 from prism.navigator.store import IndexStore
-from prism.writers.agents_md import BRIEF_TOKEN_LIMIT, NARRATIVE_PLACEHOLDER, NARRATIVE_SECTIONS
+from prism.writers.agents_md import BRIEF_TOKEN_LIMIT, NARRATIVE_SECTIONS
 from prism.writers.manifest import load_manifest, now_iso, text_hash, write_manifest
 from prism.writers.narrative import write_narrative
 
@@ -56,7 +57,7 @@ def _current(root: Path, section: str) -> str:
     regions = parse_regions(path.read_text(encoding="utf-8"))
     body = regions.get(("narrative", region))
     text = body.body if body else ""
-    return "" if text.strip() == NARRATIVE_PLACEHOLDER else text
+    return real_narrative(text)
 
 
 def _facts_for(store: IndexStore, ids: list[str]) -> list[dict[str, Any]]:
@@ -100,7 +101,9 @@ def all_sections(root: Path) -> list[str]:
     return [*NARRATIVE_SECTIONS, *mods]
 
 
-def refresh_prepare(root: Path, sections: list[str] | None = None) -> dict[str, Any]:
+def refresh_prepare(
+    root: Path, sections: list[str] | None = None, top: int | None = None
+) -> dict[str, Any]:
     manifest = load_manifest(root)
     if manifest is None:
         raise NotEnabledError("PRISM is not initialized in this repo.")
@@ -115,6 +118,24 @@ def refresh_prepare(root: Path, sections: list[str] | None = None) -> dict[str, 
                 chosen.append(name)
     store = IndexStore.open(root)
     try:
+        if top is not None:
+            if sections or not 1 <= top <= 100:
+                raise UserError("--top must be 1–100 and cannot be combined with --sections")
+            groups = [section for section in all_sections(root) if section.startswith("modules/")]
+            modules = list(store.modules())
+
+            def value(section: str) -> tuple[int, int, str]:
+                group = section.split("/", 1)[1]
+                members = [
+                    module
+                    for module in modules
+                    if module.id == group or module.id.startswith(group + ".")
+                ]
+                fan_in = sum(len(store.importers_of(module.id)) for module in members)
+                recent = int(drift.get(section, {}).get("score", 0))
+                return (-fan_in, -recent, section)
+
+            chosen = sorted(groups, key=value)[:top]
         packets = []
         for section in chosen:
             _file_and_region(root, section)  # validates the name

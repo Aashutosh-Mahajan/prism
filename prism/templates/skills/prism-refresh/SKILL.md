@@ -1,6 +1,7 @@
 ---
 name: prism-refresh
-description: Use when PRISM reports stale AGENTS.md or module-summary sections, after significant structural changes, or when the user asks to refresh the project brief. Rewrites only the narrative sections that drifted.
+description: Refresh PRISM narrative summaries when the user asks or the project brief has drifted after structural changes.
+disable-model-invocation: true
 ---
 <!-- prism-managed: installed and updated by `prism init`. Local edits are overwritten on upgrade. -->
 

@@ -94,6 +94,10 @@ def session_start(raw_stdin: str) -> str:
             return ""
         if state is RepoState.NOT_ENABLED:
             return NOT_ENABLED_LINE
+        if payload.get("source") in ("compact", "clear") and (session := session_of(payload)):
+            from prism.navigator.session import clear_seen
+
+            clear_seen(root, session)
         from prism.navigator.api import freshness_line
         from prism.status import compute_status
 
@@ -119,7 +123,8 @@ def session_start(raw_stdin: str) -> str:
         from prism.writers.worklog import prune
 
         prune(root)
-        previous = last_session_brief(root, current=session_of(payload))
+        compacted = payload.get("source") in ("compact", "clear")
+        previous = last_session_brief(root, current=session_of(payload), current_only=compacted)
         return f"{text}\n{previous}\n" if previous else text
     except BaseException:
         _log(root, "session-start failed:\n" + traceback.format_exc())

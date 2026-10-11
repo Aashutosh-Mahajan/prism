@@ -15,12 +15,15 @@ Safety rules (docs/adr/0004-output-filtering.md):
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import subprocess
 import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
+
+from prism.core.errors import UserError
 
 MIN_LINES = 60  # shorter output is already cheap and is printed unchanged
 CONTEXT = 3  # lines kept before and after every failure line
@@ -140,44 +143,150 @@ def tee_dir(root: Path) -> Path:
     return cache_root(root) / "tee"
 
 
-def save_tee(root: Path, command: str, text: str) -> Path | None:
+def save_tee(root: Path, command: str, text: str, *, raw: bytes | None = None) -> Path | None:
     directory = tee_dir(root)
     try:
         directory.mkdir(parents=True, exist_ok=True)
         stamp = time.strftime("%H%M%S")
-        digest = hashlib.sha256((command + text).encode("utf-8", "replace")).hexdigest()[:8]
+        payload = raw if raw is not None else text.encode("utf-8", "replace")
+        digest = hashlib.sha256(command.encode("utf-8", "replace") + b"\0" + payload).hexdigest()[
+            :8
+        ]
         path = directory / f"{stamp}-{digest}.txt"
-        path.write_text(text, encoding="utf-8", errors="replace")
+        path.write_bytes(raw if raw is not None else text.encode("utf-8", "replace"))
         files = sorted(directory.glob("*.txt"), key=lambda p: p.stat().st_mtime, reverse=True)
         for old in files[TEE_KEEP:]:
             old.unlink(missing_ok=True)
+            old.with_suffix(".meta.json").unlink(missing_ok=True)
         return path
     except OSError:
         return None
 
 
+def saved_saving(root: Path) -> tuple[int, float] | None:
+    """Measured rendered-character savings; never infer a command from its log text."""
+    before = after = count = 0
+    directory = tee_dir(root)
+    for path in sorted(directory.glob("*.meta.json"))[-TEE_KEEP:]:
+        try:
+            if path.is_symlink() or path.stat().st_size > 16384:
+                continue
+            row = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(row, dict):
+                continue
+            incoming, outgoing = row.get("characters_in"), row.get("characters_out")
+            if (
+                not all(
+                    isinstance(value, int) and not isinstance(value, bool) and value >= 0
+                    for value in (incoming, outgoing)
+                )
+                or not incoming
+            ):
+                continue
+            assert isinstance(incoming, int) and isinstance(outgoing, int)
+            before += incoming
+            after += outgoing
+            count += 1
+        except (OSError, ValueError):
+            continue
+    return (count, 100 * (before - after) / before) if before else None
+
+
+def show_tee(
+    root: Path,
+    identity: str,
+    *,
+    grep: str | None = None,
+    around: int | None = None,
+    context: int = 3,
+    tail: int | None = None,
+    cap: int = 12000,
+) -> str:
+    """Read saved output without running its command; line numbers are one-based."""
+    if not re.fullmatch(r"\d{6}-[0-9a-f]{8}", identity):
+        raise UserError("invalid saved-output id")
+    if not 128 <= cap <= 64000 or not 0 <= context <= 100:
+        raise UserError("cap must be 128–64000 characters and context 0–100 lines")
+    if sum(value is not None for value in (grep, around, tail)) > 1:
+        raise UserError("choose one of --grep, --around or --tail")
+    if (around is not None and around < 1) or (tail is not None and tail < 1):
+        raise UserError("line and tail counts must be positive")
+    path = tee_dir(root) / f"{identity}.txt"
+    if path.is_symlink():
+        raise UserError("saved output must be a regular local file")
+    try:
+        text = path.read_bytes().decode("utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise UserError("saved output is unavailable") from exc
+    lines = text.splitlines(keepends=True)
+    if grep is not None:
+        selected = [(i, line) for i, line in enumerate(lines, 1) if grep in line]
+    elif around is not None:
+        selected = list(enumerate(lines, 1))[max(0, around - context - 1) : around + context]
+    elif tail is not None:
+        selected = list(enumerate(lines, 1))[-tail:]
+    else:
+        selected = []
+    if any(value is not None for value in (grep, around, tail)):
+        text = "".join(f"{number}: {line}" for number, line in selected)
+    if len(text) <= cap:
+        return text
+    footer = f"\n[truncated; use prism filter --show {identity} --around <line>]\n"
+    clipped = text[: cap - len(footer)]
+    if "\n" in clipped:
+        clipped = clipped.rsplit("\n", 1)[0]
+    return clipped + footer
+
+
 def run_filtered(root: Path, command: list[str]) -> int:
     """Run `command` (through the shell, as an agent would), print the filtered output."""
     shell_command = command[0] if len(command) == 1 else subprocess.list2cmdline(command)
+    started = time.monotonic()
     proc = subprocess.run(
         shell_command,
         shell=True,
         cwd=Path.cwd(),
         capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
     )
-    combined = (proc.stdout or "") + (proc.stderr or "")
+    raw = (proc.stdout or b"") + (proc.stderr or b"")
+    try:
+        from prism.navigator.test_timing import record_full_suite
+
+        record_full_suite(root, shell_command, time.monotonic() - started)
+    except OSError:
+        pass
+    combined = raw.decode("utf-8", "replace")
     result = filter_output(shell_command, combined)
     if result.lines_out >= result.lines_in:
-        sys.stdout.write(combined)
+        sys.stdout.buffer.write(raw)
         return proc.returncode
-    tee = save_tee(root, shell_command, combined)
-    sys.stdout.write(result.text + "\n")
-    sys.stdout.write(
-        f"[prism filter: {result.lines_in} lines → {result.lines_out}"
-        + (f"; full output: {tee}" if tee else "")
-        + "]\n"
+    tee = save_tee(root, shell_command, combined, raw=raw)
+    if tee is None:
+        sys.stdout.buffer.write(raw)
+        return proc.returncode  # never trim data that cannot be recovered
+    rendered = (
+        result.text
+        + "\n"
+        + (
+            f"[prism filter: {result.lines_in} lines → {result.lines_out}"
+            + f"; full output: {tee}"
+            + "]\n"
+        )
     )
+    rendered += f"Full output: prism filter --show {tee.stem}\n"
+    sys.stdout.buffer.write(rendered.encode("utf-8"))
+    try:
+        from prism.writers.json_writer import write_json
+
+        write_json(
+            tee.with_suffix(".meta.json"),
+            {
+                "family": result.family,
+                "characters_in": len(combined),
+                "characters_out": len(rendered),
+                "exit_code": proc.returncode,
+            },
+        )
+    except OSError:
+        pass  # measurement failure does not discard the recoverable output
     return proc.returncode

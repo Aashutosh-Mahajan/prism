@@ -123,10 +123,20 @@ def _fit(text: str, budget: int) -> str:
     return "\n".join(lines)
 
 
-def last_session_brief(root: Path, current: str | None = None, budget: int = BRIEF_BUDGET) -> str:
+def last_session_brief(
+    root: Path,
+    current: str | None = None,
+    budget: int = BRIEF_BUDGET,
+    *,
+    current_only: bool = False,
+) -> str:
     """The most recent other session worth resuming from, in a few lines (or "")."""
     try:
-        recent = sessions(root, exclude=current, days=RECENT_DAYS)
+        recent = sessions(root, exclude=None if current_only else current, days=RECENT_DAYS)
+        if current_only:
+            from prism.writers.worklog import _digest
+
+            recent = [log for log in recent if current and log.digest == _digest(current)]
         # A session that changed code or left a note beats a later one that only looked around
         # (e.g. an MCP server's log of the same conversation the hooks recorded).
         candidates = [s for s in recent if s.edits or s.notes] or [s for s in recent if s.focus]
@@ -139,7 +149,7 @@ def last_session_brief(root: Path, current: str | None = None, budget: int = BRI
             if store is not None:
                 store.close()
         text = (
-            render_session(info)
+            render_session(info, heading="Before compaction" if current_only else "Last session")
             + "\n  (Verify against the code before relying on it; `prism recall` for more.)"
         )
         return _fit(text, budget)

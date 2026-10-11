@@ -89,3 +89,40 @@ def test_whole_brief_budget_is_enforced(repo: Path) -> None:
         refresh_commit(
             repo, "conventions", "Use Money for all amounts; never floats for cents. " * 11
         )
+
+
+def test_top_modules_have_no_placeholder_and_commit_uses_validator(repo: Path) -> None:
+    from prism.maintenance import doctor
+    from prism.navigator.api import op_brief, op_module
+    from prism.navigator.store import IndexStore
+    from prism.writers.modules_md import NARRATIVE_PLACEHOLDER
+
+    packet = refresh_prepare(repo, top=2)
+    assert len(packet["sections"]) == 2
+    assert all(section["section"].startswith("modules/") for section in packet["sections"])
+    assert all(section["current_text"] == "" for section in packet["sections"])
+    store = IndexStore.open(repo)
+    try:
+        assert NARRATIVE_PLACEHOLDER not in op_module(store, "shop.pricing")["text"]
+        assert "Not written yet" not in op_brief(repo, full=True)["brief"]
+    finally:
+        store.close()
+    ratio = next(check for check in doctor(repo) if check.name == "module narratives")
+    assert ratio.detail.startswith("0/")
+    refresh_commit(
+        repo,
+        packet["sections"][0]["section"],
+        "Responsible for the listed pricing and currency entry points.",
+    )
+    ratio = next(check for check in doctor(repo) if check.name == "module narratives")
+    assert ratio.detail.startswith("1/")
+
+
+def test_refresh_top_cli(repo: Path) -> None:
+    from typer.testing import CliRunner
+
+    from prism.cli import app
+
+    result = CliRunner().invoke(app, ["refresh", "--top", "1", "--root", str(repo)])
+    assert result.exit_code == 0, result.output
+    assert len(json.loads(result.output)["sections"]) == 1

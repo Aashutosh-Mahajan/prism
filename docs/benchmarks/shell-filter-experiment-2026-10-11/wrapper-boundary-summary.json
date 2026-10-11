@@ -1,0 +1,16 @@
+{
+  "claude_version": "2.1.296",
+  "permission_decision_returned": false,
+  "auth": "existing Claude.ai subscription, API credentials removed",
+  "rows": [
+    {
+      "arm": "original-deny",
+      "exit_code": 0,
+      "elapsed_seconds": 9.99089749995619,
+      "hook_called": true,
+      "result": "The tool output was:\n\n```\nPRISM_ORIGINAL_NATIVE\n```",
+      "permission_denials": [],
+      "is_error": false
+    }
+  ]
+}

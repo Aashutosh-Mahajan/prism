@@ -19,17 +19,14 @@ from urllib.parse import urlencode
 from prism import __version__
 from prism.consent import RepoState, repo_state
 from prism.core.errors import PrismError
+from prism.instructions import SHORT
 from prism.navigator import api as nav
 from prism.navigator.freshness import refresh_if_stale
 from prism.navigator.store import IndexStore
 from prism.status import compute_status
 from prism.writers.manifest import load_manifest
 
-INSTRUCTIONS = (
-    "Reuse PRISM context already in the prompt. Otherwise call prism_task once with the request; "
-    "use complete evidence directly, read missing ranges, search only if weak. Literal matches "
-    "cover the searched scope only. After an old-value edit, mode=verify lists remaining sites."
-)
+INSTRUCTIONS = SHORT
 
 
 class PrismTools:

@@ -14,6 +14,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from prism.core.errors import UserError
 from prism.viewer.model import GraphModel
 from prism.writers.json_writer import write_text
 
@@ -22,7 +23,8 @@ _SAFE = re.compile(r"[^A-Za-z0-9_.-]")
 
 
 def note_name(ident: str) -> str:
-    return _SAFE.sub("_", ident)
+    name = _SAFE.sub("_", ident)
+    return f"module--{name}" if name.lower() in {"index", "readme"} else name
 
 
 def _risk_tag(risk: float) -> str:
@@ -32,7 +34,7 @@ def _risk_tag(risk: float) -> str:
 def _frontmatter(fields: dict[str, Any]) -> str:
     lines = ["---", MARKER]
     for key, value in fields.items():
-        if value is None or value == [] or value == "":
+        if value is None:
             continue
         if isinstance(value, list):
             lines.append(f"{key}:")
@@ -49,6 +51,12 @@ def _is_generated(path: Path) -> bool:
     except OSError:
         return False
     return head.startswith("---") and MARKER in head
+
+
+def _write_note(path: Path, text: str) -> None:
+    if path.exists() and not _is_generated(path):
+        raise UserError(f"vault note belongs to the user: {path}")
+    write_text(path, text)
 
 
 def export_obsidian(
@@ -85,6 +93,11 @@ def export_obsidian(
         body = [
             _frontmatter(
                 {
+                    "type": "module",
+                    "path": path,
+                    "lines": [1, m.get("loc", 0)],
+                    "callers": sorted(set(imported_by.get(mid, []))),
+                    "tests": sorted(set(model.tests_by_file.get(path, []))),
                     "id": mid,
                     "file": path,
                     "kind": "test" if path in model.test_files else "module",
@@ -137,7 +150,7 @@ def export_obsidian(
                 "",
             ]
         target = out / f"{note_name(mid)}.md"
-        write_text(target, "\n".join(body).rstrip() + "\n")
+        _write_note(target, "\n".join(body).rstrip() + "\n")
         written.add(target)
 
     if include_symbols:
@@ -149,6 +162,10 @@ def export_obsidian(
             body = [
                 _frontmatter(
                     {
+                        "type": "symbol",
+                        "path": s["file"],
+                        "callers": sorted(set(called_by.get(sid, []))),
+                        "tests": sorted(set(model.tests_by_file.get(s["file"], []))),
                         "id": sid,
                         "file": s["file"],
                         "lines": s["lines"],
@@ -176,9 +193,64 @@ def export_obsidian(
                     "",
                 ]
             target = sym_dir / f"{note_name(sid)}.md"
-            write_text(target, "\n".join(body).rstrip() + "\n")
+            _write_note(target, "\n".join(body).rstrip() + "\n")
             written.add(target)
 
+    clusters: dict[str, list[str]] = {}
+    for mid in sorted(model.modules):
+        clusters.setdefault(model.group_of_module[mid], []).append(mid)
+    for group, members in sorted(clusters.items()):
+        target = out / "clusters" / f"{note_name(group)}.md"
+        body = [
+            _frontmatter(
+                {
+                    "type": "cluster",
+                    "path": group,
+                    "kind": "module-group",
+                    "lines": [],
+                    "callers": [],
+                    "tests": [],
+                }
+            ),
+            f"# {group}",
+            "",
+            "## Members",
+            *(f"- [[{note_name(member)}]]" for member in members),
+        ]
+        _write_note(target, "\n".join(body) + "\n")
+        written.add(target)
+    target = out / "index.md"
+    body = [
+        _frontmatter(
+            {"type": "index", "path": "", "kind": "vault", "lines": [], "callers": [], "tests": []}
+        ),
+        "# Code index",
+        "",
+        f"{len(model.modules)} modules · {len(model.symbols)} symbols · {len(clusters)} clusters",
+        "",
+        *(
+            f"- [[clusters/{note_name(group)}|{group}]] ({len(members)} modules)"
+            for group, members in sorted(clusters.items())
+        ),
+    ]
+    _write_note(target, "\n".join(body) + "\n")
+    written.add(target)
+    target = out / "README.md"
+    _write_note(
+        target,
+        _frontmatter(
+            {
+                "type": "guide",
+                "path": "",
+                "kind": "human-view",
+                "lines": [],
+                "callers": [],
+                "tests": [],
+            }
+        )
+        + "\n# PRISM vault\n\nStart at [[index]]. Cluster notes link to module members; optional symbols/ notes link calls and callers. Frontmatter uses type, path, kind, lines, callers and tests for Dataview. Re-export updates generated notes; keep personal notes in separate files.\n\nThis is a human view. Agents retrieve task packets instead of loading this vault.\n",
+    )
+    written.add(target)
     removed = 0
     for note in out.rglob("*.md"):
         if note not in written and ".obsidian" not in note.parts and _is_generated(note):

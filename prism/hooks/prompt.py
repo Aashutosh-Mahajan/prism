@@ -17,6 +17,7 @@ from typing import Any
 
 from prism.consent import RepoState
 from prism.hooks.runner import _log, _root_from, _spawn_update, _state, parse_payload
+from prism.instructions import SHORT
 
 PROMPT_BUDGET = 2000  # hard cap; ordinary complete requests still start at 1,200
 INITIAL_PACKET_BUDGET = 1200
@@ -33,10 +34,8 @@ _ACKNOWLEDGEMENT = re.compile(
     re.IGNORECASE,
 )
 _CODE_LIKE = re.compile(r"[A-Za-z0-9]+_[A-Za-z0-9_]+|[a-z][A-Z]|\w+\.\w+\(|/\w+\.\w{1,5}\b")
-HEADER = (
-    "PRISM looked up this request in the local index (below). Literal lists marked exhaustive "
-    "cover the stated indexed scope. Use this context directly; do not fetch the same request again."
-)
+
+HEADER = SHORT
 
 
 _LABEL = re.compile(

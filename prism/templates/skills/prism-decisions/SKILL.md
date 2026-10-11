@@ -1,6 +1,7 @@
 ---
 name: prism-decisions
-description: Use when the user makes or asks you to record an architecture or design decision ("let's go with X because Y", "write that down", "record this decision"), or when you need to know why the code is built a certain way. Reads and records ADR-style notes in .aicontext/decisions/.
+description: Read or record the rationale for a repository design decision when the user asks for decision history or explicitly makes a decision.
+disable-model-invocation: true
 ---
 <!-- prism-managed: installed and updated by `prism init`. Local edits are overwritten on upgrade. -->
 

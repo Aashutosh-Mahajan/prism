@@ -83,7 +83,9 @@ def test_a_request_gets_the_code_it_needs(repo: Path) -> None:
     # Literal lines are grouped under their file: the path once, then `line: text`.
     assert "VerifyEmailPage.tsx" in text and "    11: " in text
     assert "ForgotPasswordPage.tsx" in text and "    12: " in text
-    assert text.startswith("PRISM looked up this request")
+    from prism.instructions import SHORT
+
+    assert text.startswith(SHORT)
     assert estimate_tokens(text) <= 1300
 
 

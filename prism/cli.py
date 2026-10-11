@@ -30,7 +30,10 @@ app = typer.Typer(
     pretty_exceptions_enable=False,
 )
 hook_app = typer.Typer(help="Entry points for host-agent hooks (read hook JSON on stdin).")
-refresh_app = typer.Typer(help="Keep AGENTS.md and module summaries current (prism-refresh skill).")
+refresh_app = typer.Typer(
+    help="Keep AGENTS.md and module summaries current (prism-refresh skill).",
+    invoke_without_command=True,
+)
 app.add_typer(hook_app, name="hook")
 audit_app = typer.Typer(help="Agent-driven codebase audit (prism-audit skill).")
 app.add_typer(refresh_app, name="refresh")
@@ -563,15 +566,37 @@ def context(
 @app.command("impact")
 @handle_errors
 def impact_cmd(
-    target: Annotated[str, typer.Argument(help="Symbol id, file, file:line, module, or route.")],
+    target: Annotated[
+        str | None, typer.Argument(help="Symbol id, file, file:line, module, or route.")
+    ] = None,
     root: RootOption = None,
     depth: Annotated[int, typer.Option("--depth", min=1, max=6)] = 3,
     as_json: JsonOption = False,
+    changed: Annotated[
+        bool, typer.Option("--changed", help="Map staged and unstaged changes (read-only).")
+    ] = False,
+    budget: Annotated[int, typer.Option("--budget", min=128, max=32000)] = 1200,
 ) -> None:
     """Blast radius: what could break if the target changes, and which tests to run."""
     from prism.navigator import api as nav
     from prism.navigator import render
 
+    if changed:
+        if target is not None:
+            raise UserError("choose a target or --changed")
+        from prism.navigator.changed_impact import changed_impact, render_changed_impact
+        from prism.navigator.store import IndexStore
+
+        # No freshness refresh: this review operation never updates the index.
+        store = IndexStore.open(_root(root))
+        try:
+            result = changed_impact(store, budget)
+        finally:
+            store.close()
+        _output(result, as_json, render_changed_impact)
+        return
+    if target is None:
+        raise UserError("give a target or --changed")
     _output(nav.op_impact(_store(root), target, depth), as_json, render.render_impact)
 
 
@@ -783,6 +808,22 @@ def module(
 # --- narrator ----------------------------------------------------------------------
 
 
+@refresh_app.callback()
+@handle_errors
+def refresh_default(
+    ctx: typer.Context,
+    top: Annotated[int | None, typer.Option("--top", min=1, max=100)] = None,
+    root: RootOption = None,
+) -> None:
+    """Prepare the highest-value module summaries for the host agent to write."""
+    if ctx.invoked_subcommand is None:
+        from prism.narrator import refresh_prepare
+
+        emit_json(refresh_prepare(_root(root), top=top))
+    elif top is not None:
+        raise UserError("use prism refresh --top N without a subcommand")
+
+
 @refresh_app.command("prepare")
 @handle_errors
 def refresh_prepare_cmd(
@@ -790,11 +831,12 @@ def refresh_prepare_cmd(
         list[str] | None, typer.Option("--sections", help="Sections to prepare.")
     ] = None,
     root: RootOption = None,
+    top: Annotated[int | None, typer.Option("--top", min=1, max=100)] = None,
 ) -> None:
     """Emit the refresh packet (JSON) for stale or requested sections."""
     from prism.narrator import refresh_prepare
 
-    emit_json(refresh_prepare(_root(root), sections))
+    emit_json(refresh_prepare(_root(root), sections, top=top))
 
 
 @refresh_app.command("commit")
@@ -1141,7 +1183,18 @@ def doctor(
 
 
 @app.command("filter", context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
-def filter_cmd(ctx: typer.Context, root: RootOption = None) -> None:
+def filter_cmd(
+    ctx: typer.Context,
+    root: RootOption = None,
+    show: Annotated[str | None, typer.Option("--show")] = None,
+    grep: Annotated[
+        str | None, typer.Option("--grep", help="Literal text to find in saved output.")
+    ] = None,
+    around: Annotated[int | None, typer.Option("--around")] = None,
+    context: Annotated[int, typer.Option("-C")] = 3,
+    tail: Annotated[int | None, typer.Option("--tail")] = None,
+    cap: Annotated[int, typer.Option("--cap")] = 12000,
+) -> None:
     """Run a command and print only what matters of its output (failures, summaries).
 
     Usage: prism filter -- <command>. The full output is saved under .aicontext/cache/tee/ and
@@ -1149,12 +1202,23 @@ def filter_cmd(ctx: typer.Context, root: RootOption = None) -> None:
     you in this repo: otherwise the command's output is printed unchanged."""
     from prism.consent import RepoState
     from prism.hooks.runner import _state
-    from prism.outputfilter import run_filtered
+    from prism.outputfilter import run_filtered, show_tee
 
     command = list(ctx.args)
+    repo = _root(root)
+    if show is not None:
+        if command:
+            raise UserError("--show cannot be combined with a command")
+        sys.stdout.buffer.write(
+            show_tee(
+                repo, show, grep=grep, around=around, context=context, tail=tail, cap=cap
+            ).encode("utf-8")
+        )
+        return
+    if any(value is not None for value in (grep, around, tail)):
+        raise UserError("saved-output queries require --show <id>")
     if not command:
         raise UserError("give a command: prism filter -- pytest -q")
-    repo = _root(root)
     if _state(repo) is not RepoState.ENABLED:
         import subprocess
 

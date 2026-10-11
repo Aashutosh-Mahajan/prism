@@ -299,6 +299,9 @@ def op_module(store: IndexStore, name: str) -> dict[str, Any]:
             or available[:10],
         )
     text = (modules_dir / f"{chosen}.md").read_text(encoding="utf-8")
+    from prism.narrator.policy import without_placeholders
+
+    text = without_placeholders(text)
     record_activity(store.root, "module", [chosen])
     return {"module": chosen, "text": text}
 
@@ -336,6 +339,9 @@ def op_brief(root: Path, full: bool = False) -> dict[str, Any]:
 
     path = root / AICONTEXT / "AGENTS.md"
     text = path.read_text(encoding="utf-8") if path.is_file() else ""
+    from prism.narrator.policy import without_placeholders
+
+    text = without_placeholders(text)
     return {
         "brief": text if full else compact_brief(text),
         "freshness": freshness_line(root),

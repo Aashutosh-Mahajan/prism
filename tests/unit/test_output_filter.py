@@ -90,6 +90,43 @@ def test_a_long_git_diff_is_not_cut_in_the_middle() -> None:
     assert filter_output("git diff", diff).text.count("+line") == 400
 
 
+def test_saved_output_round_trip_queries_and_caps(tmp_path: Path) -> None:
+    from prism.outputfilter import save_tee, show_tee
+
+    text = "".join(f"progress {i}\n" for i in range(3000))
+    text = text.replace("progress 1500\n", "ERROR: needle\n")
+    saved = save_tee(tmp_path, "pytest", text)
+    assert saved is not None
+    assert saved.read_bytes() == text.encode("utf-8")
+    assert show_tee(tmp_path, saved.stem, cap=64000) == text
+    assert show_tee(tmp_path, saved.stem, grep="needle") == "1501: ERROR: needle\n"
+    nearby = show_tee(tmp_path, saved.stem, around=1501, context=1)
+    assert nearby == "1500: progress 1499\n1501: ERROR: needle\n1502: progress 1501\n"
+    assert show_tee(tmp_path, saved.stem, tail=1) == "3000: progress 2999\n"
+    capped = show_tee(tmp_path, saved.stem, cap=256)
+    assert len(capped) <= 256 and "truncated" in capped and "--around" in capped
+
+
+def test_saved_output_cli_preserves_crlf_bytes(tmp_path: Path) -> None:
+    from prism.outputfilter import save_tee
+
+    text = "first line\r\nERROR: second line\r\n"
+    saved = save_tee(tmp_path, "pytest", text)
+    assert saved is not None
+    result = CliRunner().invoke(app, ["filter", "--root", str(tmp_path), "--show", saved.stem])
+    assert result.exit_code == 0, result.output
+    assert result.stdout_bytes == text.encode("utf-8")
+
+
+@pytest.mark.parametrize("identity", ["../secret", "000000-abcd1234/../x", "missing"])
+def test_saved_output_rejects_paths(tmp_path: Path, identity: str) -> None:
+    from prism.core.errors import UserError
+    from prism.outputfilter import show_tee
+
+    with pytest.raises(UserError, match="invalid"):
+        show_tee(tmp_path, identity)
+
+
 def test_the_command_prints_the_tee_path_and_keeps_the_exit_status(tmp_path: Path) -> None:
     from tests.conftest import copy_fixture  # type: ignore[import-not-found]
 
@@ -109,3 +146,43 @@ def test_the_command_prints_the_tee_path_and_keeps_the_exit_status(tmp_path: Pat
     assert result.output.count("progress") < 80
     tee = next((repo / ".aicontext" / "cache" / "tee").glob("*.txt"))
     assert tee.read_text(encoding="utf-8").count("progress") == 300
+
+
+def test_save_failure_returns_all_bytes_and_failed_exit(
+    tmp_path: Path, monkeypatch, capfdbinary
+) -> None:
+    from types import SimpleNamespace
+
+    from prism import outputfilter
+
+    raw = b"".join(f"progress {i}\r\n".encode() for i in range(300)) + b"ERROR: boom\r\n"
+    monkeypatch.setattr(
+        outputfilter.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(stdout=raw, stderr=b"stderr\r\n", returncode=3),
+    )
+    monkeypatch.setattr(outputfilter, "save_tee", lambda *args, **kwargs: None)
+    assert outputfilter.run_filtered(tmp_path, ["some-tool"]) == 3
+    assert capfdbinary.readouterr().out == raw + b"stderr\r\n"
+
+
+def test_measured_savings_skip_invalid_metadata(tmp_path: Path) -> None:
+    import json
+
+    from prism.outputfilter import saved_saving, tee_dir
+
+    assert saved_saving(tmp_path) is None
+    directory = tee_dir(tmp_path)
+    directory.mkdir(parents=True)
+    for number, row in enumerate(
+        [
+            {"characters_in": 1000, "characters_out": 200},
+            {"characters_in": True, "characters_out": 0},
+            {"characters_in": 0, "characters_out": 0},
+            {"characters_in": 4000, "characters_out": 400},
+        ]
+    ):
+        (directory / f"120000-0000000{number}.meta.json").write_text(
+            json.dumps(row), encoding="utf-8"
+        )
+    assert saved_saving(tmp_path) == (2, 88.0)

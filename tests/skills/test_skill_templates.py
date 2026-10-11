@@ -43,7 +43,12 @@ def implemented_commands() -> set[str]:
 
 
 def read(name: str) -> str:
-    return (SKILLS / name / "SKILL.md").read_text(encoding="utf-8")
+    from prism.integrations.common import skill_files, skill_text
+
+    # Contracts cover the progressively loaded references as well as the entry point.
+    return skill_text(name) + "\n" + "\n".join(
+        text for relative, text in skill_files(name) if relative != "SKILL.md"
+    )
 
 
 def resolve(tokens: list[str]) -> tuple[TyperCommand | TyperGroup | None, list[str]]:

@@ -25,7 +25,7 @@ from prism.integrations.common import (
     MCP_ENTRY,
     SKILL_NAMES,
     instruction_block,
-    skill_text,
+    skill_files,
 )
 from prism.integrations.hooks_json import add_hooks, strip_hooks
 
@@ -70,8 +70,9 @@ class ClaudeCodeIntegration(Integration):
     def plan(self, root: Path, options: IntegrationOptions) -> list[FileChange]:
         names = SKILL_NAMES if options.all_skills else SKILL_NAMES[:1]
         changes = [
-            FileChange(f".claude/skills/{name}/SKILL.md", skill_text(name), f"{name} skill")
+            FileChange(f".claude/skills/{name}/{relative}", content, f"{name} skill resource")
             for name in names
+            for relative, content in skill_files(name)
         ]
         settings = load_json(root / SETTINGS)
         wanted = {**HOOKS, **(DEDUPE_HOOK if options.dedupe_reads else {})}
@@ -110,9 +111,10 @@ class ClaudeCodeIntegration(Integration):
 
     def plan_removal(self, root: Path) -> list[FileChange]:
         changes = [
-            FileChange(f".claude/skills/{name}/SKILL.md", None, f"{name} skill")
+            FileChange(f".claude/skills/{name}/{relative}", None, f"{name} skill resource")
             for name in SKILL_NAMES
-            if (root / f".claude/skills/{name}/SKILL.md").is_file()
+            for relative, _ in skill_files(name)
+            if (root / f".claude/skills/{name}/{relative}").is_file()
         ]
         if (root / SETTINGS).is_file():
             changes.append(

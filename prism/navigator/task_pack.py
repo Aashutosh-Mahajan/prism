@@ -22,6 +22,7 @@ from typing import Any
 
 from prism.core.errors import UserError
 from prism.core.tokens import estimate_tokens
+from prism.instructions import QUOTED_DATA
 from prism.navigator import enrich
 from prism.navigator.fusion import fuse_files
 from prism.navigator.graphwalk import pick_seeds, walk_graph
@@ -30,6 +31,7 @@ from prism.navigator.literals import EvidenceResult, find_literals
 from prism.navigator.overview import overview_items, render_overview, wants_overview
 from prism.navigator.request import introduced_identifiers, request_focus, request_operations
 from prism.navigator.resolve import Target
+from prism.navigator.sanitize import allowed_document, clean_source, strip_hidden
 from prism.navigator.source_index import SourceIndex, SourceReader
 from prism.navigator.store import IndexStore, SymbolRow
 from prism.navigator.support import local_support, produces_shape
@@ -124,6 +126,7 @@ def render_task(pack: dict[str, Any]) -> str:
         f"PRISM task · {pack['intent']} · confidence {pack['confidence']} · "
         f"{pack['budget']['used_est']}/{pack['budget']['requested']} est. tokens"
     ]
+    parts.append(QUOTED_DATA)
     if pack["stale_sources"]:
         parts.append("Source changed or unavailable; run prism update before relying on the index.")
     if pack.get("search_limited"):
@@ -190,7 +193,9 @@ def render_task(pack: dict[str, Any]) -> str:
         if block["truncated"]:
             head += " [new excerpt]" if block.get("continued") else " [excerpt]"
         parts.append(head)
-        parts.append("```\n" + block["source"] + "\n```")
+        source = block["source"]
+        fence = "`" * max(3, max((len(run) + 1 for run in re.findall(r"`+", source)), default=3))
+        parts.append(fence + "\n" + source + "\n" + fence)
     links = pack.get("links", [])
     callers = [link for link in links if link["role"] == "caller"]
     last_target = None
@@ -220,6 +225,8 @@ def render_task(pack: dict[str, Any]) -> str:
         parts.append("Tests: " + ", ".join(tests))
     if pack.get("test_warning"):
         parts.append("Tests: " + pack["test_warning"])
+    if pack.get("slow_test_warning"):
+        parts.append("Tests: " + pack["slow_test_warning"])
     impact = pack.get("impact")
     if impact and impact["symbols"]:
         parts.append(
@@ -386,7 +393,9 @@ def _group_blocks(
 
 def _render_source(lines: list[str], start: int, end: int, *, compact: bool = False) -> str:
     return "\n".join(
-        f"{i}: {lines[i - 1]}" if i == start or not compact else lines[i - 1]
+        f"{i}: {strip_hidden(lines[i - 1])}"
+        if i == start or not compact
+        else strip_hidden(lines[i - 1])
         for i in range(start, end + 1)
     )
 
@@ -463,8 +472,43 @@ def _delivered(pack: dict[str, Any], *, source_only: bool = False) -> set[tuple[
 
 
 def _snippet(line: str | None) -> str:
-    text = " ".join((line or "").split())
+    text = " ".join(strip_hidden(line or "").split())
     return text if len(text) <= 100 else text[:99] + "…"
+
+
+def _sanitize_packet(pack: dict[str, Any], query: str, reader: SourceReader) -> None:
+    cache: dict[str, tuple[list[str], list[str]]] = {}
+
+    def lines(file: str) -> tuple[list[str], list[str]]:
+        if file not in cache:
+            raw = reader.lines(file) or []
+            cache[file] = raw, clean_source("\n".join(raw), file).split("\n")
+        return cache[file]
+
+    pack["blocks"] = [block for block in pack["blocks"] if allowed_document(block["file"], query)]
+    for block in pack["blocks"]:
+        if block.get("source"):
+            _, cleaned = lines(block["file"])
+            ranges = [tuple(pair) for pair in block.get("source_ranges", [block["lines"]])]
+            block["source"] = _source_excerpt(cleaned, ranges, compact=True)
+    for literal in pack.get("literals", []):
+        literal["text"] = strip_hidden(literal["text"])
+        for occurrence in literal["occurrences"]:
+            raw, cleaned = lines(occurrence["file"])
+            number = occurrence["line"] - 1
+            if 0 <= number < len(raw) and cleaned[number] != raw[number]:
+                occurrence["text"] = " ".join(cleaned[number].split())[: len(occurrence["text"])]
+            else:
+                occurrence["text"] = strip_hidden(occurrence["text"])
+    if "links" in pack:
+        pack["links"] = [link for link in pack["links"] if allowed_document(link["file"], query)]
+        for link in pack["links"]:
+            if link.get("snippet"):
+                _, cleaned = lines(link["file"])
+                number = (link.get("line") or 0) - 1
+                link["snippet"] = _snippet(
+                    cleaned[number] if 0 <= number < len(cleaned) else link["snippet"]
+                )
 
 
 # --- assembly -----------------------------------------------------------------------
@@ -513,6 +557,15 @@ def build_task(
         return pack
     with SourceIndex(store) as index:
         _fill(store, index, query, budget, staged_seen, pack, brief=detail == "brief")
+    if pack["intent"] == "edit":
+        from prism.navigator.test_timing import slow_suite_warning
+
+        warning = slow_suite_warning(store.root)
+        if warning:
+            pack["slow_test_warning"] = warning
+            if _size(pack) > budget:
+                del pack["slow_test_warning"]
+    pack["budget"]["used_est"] = _size(pack)
     if seen is not None:
         # Only the final delivered source counts. Recovery metadata may displace
         # a peripheral block that was staged while fitting the answer.
@@ -611,6 +664,17 @@ def _fill(
     terms = _query_terms(query, index)
     operations = request_operations(query)
     evidence = _evidence(store, index, reader, query)
+    for literal in evidence.literals:
+        allowed = [
+            occurrence
+            for occurrence in literal.occurrences
+            if allowed_document(occurrence.file, query)
+        ]
+        if len(allowed) != len(literal.occurrences):
+            literal.occurrences = allowed
+            literal.lines = {pair for pair in literal.lines if allowed_document(pair[0], query)}
+            literal.scan_complete = False
+            evidence.limited = True
     introduced = introduced_identifiers(query)
     # Existing occurrences of a newly supported type are not necessarily where its
     # behaviour belongs. Preserve literal disclosure, but do not let those hits
@@ -689,6 +753,7 @@ def _fill(
         if store.file_exists(file):  # text/data files hold literals, never code blocks
             prior.setdefault(file, 0.2)
     definitions = _definitions(store, query, ranking_evidence, exact_symbol, named, exact_file)
+    definitions = [block for block in definitions if allowed_document(block.file, query)]
     if requested_range is not None:
         file, start, end = requested_range
         lines = reader.lines(file)
@@ -714,6 +779,8 @@ def _fill(
         for key in lit.lines
     }  # fmt: skip
     for file in candidates:
+        if not allowed_document(file, query):
+            continue
         lines = reader.lines(file)
         if lines is None:
             continue
@@ -932,6 +999,7 @@ def _fill(
         pack["confidence"] = "high"
         pack["sufficient"] = True
         pack["next"] = "Apply the checked patch; run the named tests."
+    _sanitize_packet(pack, query, reader)
     pack["budget"]["used_est"] = _size(pack)
 
 
