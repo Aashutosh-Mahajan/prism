@@ -39,6 +39,16 @@ async function boot(): Promise<void> {
   $("depth-out").textContent = String(app.state.depth);
   renderChrome(app);
 
+  window.addEventListener("message", (event: MessageEvent) => {
+    if (event.origin !== location.origin || event.source !== window.parent || window.parent === window) return;
+    const data = event.data;
+    if (data?.type !== "prism-dashboard-theme" || !["light", "dark"].includes(data.theme)) return;
+    document.documentElement.dataset.theme = data.theme;
+    readPalette();
+    app.encode();
+    app.renderer.refresh();
+  });
+
   try {
     const meta = await source.meta();
     $("project").textContent = meta.project;
@@ -58,6 +68,8 @@ async function boot(): Promise<void> {
     toast(err instanceof Error ? err.message : String(err), true);
   }
   if (!source.live) {
+    // An exported graph is standalone: it must not link to a nonexistent local server.
+    $("dashboard-link").hidden = true;
     for (const id of ["f-changed", "o-diff", "o-diff-go"]) $<HTMLInputElement>(id).disabled = true;
   }
   app.on("graph", () => renderOverview(app));
