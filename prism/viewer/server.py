@@ -29,6 +29,7 @@ from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit
 from prism.core.errors import PrismError
 from prism.core.paths import AICONTEXT, manifest_path
 from prism.viewer.api import ViewerBackend
+from prism.viewer.dashboard import DashboardService
 from prism.writers.activity import activity_path
 from prism.writers.json_writer import write_json
 
@@ -146,6 +147,8 @@ class Watcher(threading.Thread):
 def make_handler(
     backend: ViewerBackend, hub: EventHub, token: str, port_ref: list[int]
 ) -> type[BaseHTTPRequestHandler]:
+    dashboard = DashboardService(backend.root)
+
     class Handler(BaseHTTPRequestHandler):
         server_version = "prism-viewer"
         sys_version = ""
@@ -165,7 +168,7 @@ def make_handler(
             candidates = [query.get("token", ""), self.headers.get("X-Prism-Token", "")]
             for part in (self.headers.get("Cookie") or "").split(";"):
                 name, _, value = part.strip().partition("=")
-                if name == COOKIE:
+                if name in (f"{COOKIE}_{port_ref[0]}", COOKIE):
                     candidates.append(value)
             return any(c and hmac.compare_digest(c, token) for c in candidates)
 
@@ -175,7 +178,15 @@ def make_handler(
             self.send_response(status)
             self.send_header("Content-Type", ctype)
             self.send_header("Content-Length", str(len(body)))
-            self.send_header("Content-Security-Policy", CSP)
+            # The graph can be embedded by our same-origin dashboard; other documents
+            # remain unframeable, and external sites still cannot frame either surface.
+            graph_page = urlsplit(self.path).path in ("/", "/index.html")
+            policy = (
+                CSP.replace("frame-ancestors 'none'", "frame-ancestors 'self'")
+                if graph_page
+                else CSP
+            )
+            self.send_header("Content-Security-Policy", policy)
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Referrer-Policy", "no-referrer")
             self.send_header("Cache-Control", "no-store")
@@ -238,7 +249,8 @@ def make_handler(
                 self.send_response(302)
                 self.send_header("Location", location)
                 self.send_header(
-                    "Set-Cookie", f"{COOKIE}={token}; HttpOnly; SameSite=Strict; Path=/"
+                    "Set-Cookie",
+                    f"{COOKIE}_{port_ref[0]}={token}; HttpOnly; SameSite=Strict; Path=/",
                 )
                 self.send_header("Content-Length", "0")
                 self.end_headers()
@@ -261,6 +273,18 @@ def make_handler(
             if gated is None:
                 return
             path, _ = gated
+            origin = self.headers.get("Origin")
+            if (
+                path.startswith("/api/dashboard/")
+                and origin
+                and origin
+                not in (
+                    f"http://127.0.0.1:{port_ref[0]}",
+                    f"http://localhost:{port_ref[0]}",
+                )
+            ):
+                self._json(403, {"error": "forbidden", "message": "cross-origin mutation denied"})
+                return
             try:
                 length = int(self.headers.get("Content-Length") or 0)
             except ValueError:
@@ -277,7 +301,15 @@ def make_handler(
                 return
             try:
                 body = json.loads(self.rfile.read(length) or b"{}")
-                if path == "/api/layout":
+                if path == "/api/dashboard/context":
+                    self._json(200, dashboard.preview(body))
+                elif path == "/api/dashboard/refresh":
+                    self._json(202, dashboard.refresh())
+                elif path == "/api/dashboard/runs":
+                    self._json(201, dashboard.import_run(body))
+                elif path == "/api/dashboard/sandboxes":
+                    self._json(202, dashboard.prepare_sandboxes(body))
+                elif path == "/api/layout":
                     self._json(200, backend.save_layout(body))
                 elif path == "/api/views":
                     self._json(200, backend.save_view(body))
@@ -289,6 +321,30 @@ def make_handler(
                 self._error(exc)
 
         def _api_get(self, path: str, q: dict[str, str]) -> Any:
+            # Artifact publication briefly precedes the new manifest. A request
+            # encountering that generation boundary must retry, not serve mixed facts.
+            deadline = time.monotonic() + 3.0
+            while True:
+                try:
+                    return self._api_get_once(path, q)
+                except PrismError as exc:
+                    if exc.code != "index_stale" or time.monotonic() >= deadline:
+                        raise
+                    time.sleep(0.05)
+
+        def _api_get_once(self, path: str, q: dict[str, str]) -> Any:
+            if path == "/api/dashboard/status":
+                return dashboard.status()
+            if path == "/api/dashboard/hosts":
+                return dashboard.hosts()
+            if path == "/api/dashboard/job":
+                return dashboard.job()
+            if path == "/api/dashboard/sandboxes":
+                return dashboard.sandbox_job()
+            if path == "/api/dashboard/runs":
+                return dashboard.runs()
+            if path.startswith("/api/dashboard/runs/"):
+                return dashboard.run(path.rsplit("/", 1)[-1])
             if path == "/api/meta":
                 return backend.meta()
             if path == "/api/graph":
@@ -379,7 +435,8 @@ class ViewerServer:
             params["focus"] = focus
         if depth:
             params["depth"] = str(depth)
-        return f"http://127.0.0.1:{self.port}/?" + "&".join(
+        page = "/" if focus else "/dashboard.html"
+        return f"http://127.0.0.1:{self.port}{page}?" + "&".join(
             f"{k}={quote(v)}" for k, v in params.items()
         )
 
