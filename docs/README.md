@@ -16,6 +16,8 @@ New to PRISM? Start with [Getting started](getting-started.md).
 
 ## Understanding PRISM
 
+Dashboard: [Local workspace guide](dashboard.md) covers the implemented graph, context preview, recorded comparisons, exports and current live-run limitation. [Current UI PRD](../ui.prd) defines release gates; [initial integration PRD](dashboard-integration-prd.md) records the original proposal.
+
 | Document | Covers |
 |---|---|
 | [Architecture](architecture.md) | The pipeline, incremental updates, the query path, surfaces, determinism |
