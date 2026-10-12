@@ -1,0 +1,405 @@
+# PRISM dashboard — product requirements
+
+Date: 12 October 2026
+Version: 2.0 — reviewed workflow and engineering requirements
+Status: implementation started on branch dashboard-workspace; release gates remain open
+Repository baseline: 39e3a67
+Audience: developers, project demonstrators and college judges
+
+Implementation status (12 October 2026): local workspace, graph embedding, core context preview, repository status/refresh, host executable detection, evidence import/reconciliation, recorded comparisons and patch/report exports are implemented. Managed agent adapters, enforced coding-session isolation, live paired execution, source ZIP exports and post-run graph snapshots remain pending. A disabled live-run control communicates the adapter requirement. Do not present the workspace increment as the completed benchmark runner.
+
+Synchronization increment: context preview now follows the core's automatic freshness and consent policy, excludes agent delivery/activity bookkeeping, and labels packet index revisions. Repository status updates while visible. Index jobs persist across reloads. Separate committed copies can be prepared outside the original repository with identical source hashes and With-only indexing. This preparer does not prove OS isolation or launch agents. Imported scores require matching evaluator checksums and distinct provider response identities; saved summaries are recomputed from evidence.
+
+## 1. Product purpose
+
+Build a local web dashboard that makes PRISM's code context engine visible and its effect measurable. The central experience is one coding task shown side by side: without PRISM and with PRISM. Users inspect each agent's context gathering, edits, checks and actual token usage, then export the code changes and comparison report.
+
+PRISM remains usable through its CLI, MCP and supported automatic hooks. The dashboard uses the same indexing, graph, retrieval and freshness engine. Opening a page, drawing a graph or changing a theme must not change agent context budgets or require users to use the website.
+
+No external dashboard platform, user account or cloud upload is required. Provider authentication is needed only for live agent coding runs. Local graph exploration and context retrieval work independently of provider access.
+
+## 2. Existing foundation and required work
+
+The current repository already contains a TypeScript graph viewer, bundled assets and a token-protected localhost HTTP server launched by `prism view`. It exposes graph metadata, node inspection, search, paths, impact, saved layouts and live index events. Its current server does not execute agent tasks or write source files.
+
+Reuse these graph capabilities. Task retrieval, lifecycle controls, benchmark orchestration, patch exports and explicit application of changes require additional application services and endpoints. Existing benchmark scripts are implementation references; their hardcoded repositories, revisions and models must not become dashboard defaults without adaptation and validation.
+
+This document specifies future behavior. A graph viewer or imported benchmark report alone does not satisfy the live comparison requirement.
+
+## 3. User workflow
+
+1. Start PRISM locally and open the authenticated dashboard URL.
+2. Open the local Git repository explicitly supplied to the launcher. Show the resolved path and pinned commit. Git URL cloning is a later capability.
+3. Build the PRISM index. Display files, symbols, relationships, parse failures, time and any knowledge-generation cost.
+4. Explore the real graph, source snippets and function relationships. Enter a request to preview the same context engine used by the CLI or MCP.
+5. Create a comparison: enter ONE meaningful coding task, select an available host/model and freeze its verification requirements.
+6. Run two fresh copies of the same source commit with identical task text and model settings. One uses normal navigation; the other uses a verified PRISM delivery method.
+7. Watch both sides gather context, edit source and run checks. Inspect actual counters as they arrive; pending counters remain unavailable.
+8. Review correctness before interpreting savings. Inspect changed files and patches on both sides.
+9. Export either patch, a source snapshot or the comparison report. Direct patch application is a later capability with the safeguards specified below.
+
+The comparison page is the default demonstration destination. Graph and context screens explain how the PRISM side obtained its evidence.
+
+## 4. Navigation and page requirements
+
+Navigation: Compare, Repository, Context, Graph, Runs. Settings and help remain accessible from the application shell.
+
+### Compare — primary screen
+
+Header shows repository, pinned source commit, task, selected host, model, reasoning settings, PRISM revision and execution state. A concise setup form collects the host/IDE tool, model, task text, verification commands and the supported PRISM delivery method. Advanced settings contain repetitions, concurrency and time limits.
+
+Desktop uses equal-width columns with shared alignment:
+
+| Without PRISM | With PRISM |
+|---|---|
+| Normal agent navigation | PRISM context first, then necessary fallback navigation |
+| Search/read activity | Hook or retrieval delivery and fallback activity |
+| Files and source ranges read | Supplied ranges, missing details and repeated reads |
+| Changes and diff | Changes and diff |
+| Verification results | Identical verification results |
+| Actual usage and elapsed time | Actual usage and elapsed time |
+
+Each column has Overview, Trace, Code and Checks tabs. Trace entries show real commands, responses, timestamps and status. Collapsible terminal panels display captured stdout/stderr separately from model commentary. A running command, failed command and successful command have distinct states.
+
+Shared result area shows input, cached input, uncached input, output, total tokens, elapsed time, tool calls and correctness. A small bar chart complements the numerical table. Index construction and warm-up costs appear in a separate section. Provide links from each metric to its supporting records.
+
+Show the savings percentage only for compatible, completed measurements. A failed solution displays failure prominently and cannot receive an equivalent-success savings badge. A higher PRISM token total is presented plainly as an increase. Unknown counters are labeled Unavailable, never zero.
+
+On narrow screens, switch between the two labeled columns while keeping the comparison table visible. Do not squeeze traces and source into unreadable columns.
+
+### Repository
+
+Display the selected repository path, branch, commit, consent state, index revision and freshness. Show indexed file/symbol counts, language coverage, parse failures and excluded paths. Actions: Build index, Refresh index, Open graph and New comparison.
+
+Index jobs show real stages and diagnostics. Opening a repository does not silently enable hooks, MCP, Git hooks or source writes. Changes to integration configuration require an explicit setup action.
+
+### Context
+
+Task input, supported context mode and token budget feed the existing retrieval engine. Show the exact final packet, source paths/ranges, confidence, sufficiency, missing evidence and estimated packet size. Allow readable and structured views, exact packet copy and download.
+
+Preview requests use a separate session namespace so they cannot mark source as already delivered to a coding agent. Expanded UI source inspection is not silently added to the model's context. Label estimates separately from provider usage.
+
+### Graph
+
+Embed the existing interactive graph and preserve package/file/symbol levels, imports, calls, tests, search, focus, paths, impact, layouts, overlays and node inspection. Read the same .aicontext artifacts and backend as the existing viewer; do not create a second graph generator.
+
+Show function signatures, source locations, callers/callees and test relationships in the inspector when available. Approximate relationships retain their confidence labels. The graph represents indexed static relationships, not a guaranteed runtime execution trace.
+
+For a completed comparison, allow selecting the original graph or an explicitly rebuilt result graph for either sandbox. Label each with its source/index revision. Result graphs are rebuilt outside the original repository and never mixed with original facts. A layout difference alone is not evidence of token savings.
+
+Provide a searchable relationship table and keyboard-selectable node list alongside the canvas. Theme changes must preserve graph positions and selection.
+
+### Runs
+
+List campaigns with repository, task, model, date, state, pass rate and measurement completeness. Open any run to inspect its frozen configuration, source commit, patches, checks, usage and failures. Import a validated report when live execution is unavailable; mark it as imported with its original date and provenance.
+
+### Settings and help
+
+Theme, UI preferences, available agent adapters, verified integration status and repository consent controls. Explain CLI, MCP and automatic hooks in plain language. Configuration presence does not prove a hook fired or its output reached the model.
+
+Provide a short judge walkthrough: inspect index → follow a function relationship → preview context → run/open a matched comparison → inspect correctness and tokens → export a patch/report.
+
+### Host / IDE tool selection
+
+Users can choose Codex, Claude Code, Antigravity or another tool with a validated adapter. This is a product requirement, not a claim that all hosts currently support automated runs, hooks or usage extraction.
+
+Selection flow: choose host → check local availability and authentication → choose a model exposed by that host → choose a verified PRISM delivery method → run preflight → start the comparison. Discover local installations when practical and allow an explicitly configured executable or supported connection. Never silently install a host, switch models or substitute a different host.
+
+Each host card shows its detected version, connection state and separate capabilities: context handoff, CLI retrieval, MCP, automatic hook delivery, isolated coding runs, trace capture and actual provider usage. Use Available, Setup required, Unavailable and Unsupported states with a concrete explanation. Expose model and reasoning controls only when the adapter can set and verify them; record unavailable settings explicitly.
+
+Both Without PRISM and With PRISM use the same selected host, exact model and equivalent settings. Comparing Codex without PRISM against Claude Code with PRISM is not a PRISM savings comparison. Multi-host campaigns contain a separate matched pair for each host and show results by host rather than blending their token totals.
+
+Changing the host invalidates the previous preflight and refreshes model/integration choices. Store the selected host, adapter version, executable/version, model, settings and delivery proof in every run and exported report.
+
+Provide two explicit operating modes:
+- Dashboard-managed comparison: enabled only when the adapter can launch fresh sessions, isolate workspaces, capture traces and verify permissions. Actual token comparisons additionally require reliable provider usage counters.
+- Open in selected tool / export context: hands off a repository, reviewed context packet or supported setup instructions for manual work. This does not constitute a measured comparison. Unknown usage remains unavailable; validated external run records may be imported later.
+
+Antigravity and other IDE-oriented hosts require a documented automation or connection interface that can satisfy these checks. An installed IDE or an Open button alone does not establish benchmark support. When execution or measurement is unsupported, keep graph/context/export features available and disable the unsupported run action with its reason.
+
+Host credentials remain in the host's supported local authentication mechanism. The browser shows authentication status without reading, storing or exporting credentials. Context handoff and integration setup do not alter global host settings silently.
+
+## 5. Comparison protocol and measurement contract
+
+Freeze before dispatch: repository commit, task text, independent evaluator, dependency snapshot, host version, exact model, reasoning settings, limits and delivery method. Hash these records and retain them with the campaign.
+
+Both agents start with fresh histories and separate workspaces/configuration. Neither can access the other solution, earlier results or the hidden evaluator. The baseline has no PRISM context, tools or integration instructions. Allow efficient ordinary search; never force it to read the entire repository.
+
+Build the index before the PRISM run. If using a hook, verify automatic host dispatch and model-visible context in a preflight. A manual CLI call or injected packet must never be labeled a hook. If unavailable, show the limitation and offer an explicitly labeled supported method before execution.
+
+The PRISM agent uses delivered context first and fetches missing details as necessary. Record fallbacks and reasons. Do not block necessary reads to inflate savings. Keep failed commands, retries, failed attempts and interrupted runs in accounting.
+
+Run identical independent checks for both solutions. The evaluator lives outside agent-visible workspaces. Capture agent verification separately from independent verification. A source diff by itself does not establish correctness.
+
+Provider usage fields:
+- Input tokens, including cached input when that provider defines it as a subset.
+- Cached input tokens.
+- Uncached input tokens, derived only when the provider's definition permits it.
+- Output tokens, including reasoning when the provider already includes it.
+- Total tokens, using documented definitions and checked against response/session totals.
+
+Do not count reasoning twice. Deduplicate usage records by response identity; preserve originals. If a counter is missing, record null and explain why. Never present character estimates as actual usage.
+
+Saving = (without − with) / without × 100. If the baseline is zero, saving is undefined. Report raw total savings separately from uncached-input-plus-output changes. Neither equals billing savings without verified model prices and applicable cache pricing.
+
+Record preprocessing separately: scan/warm-up wall time, files/symbols, parse errors, LLM calls and tokens if any. Show already-built-index task cost and first-use cost without adding unlike token estimates to provider totals. State the amortization assumptions if showing multiple future tasks.
+
+One pair demonstrates one task only. Repetitions show variation; intervals containing zero are inconclusive. Do not infer typical repository-wide savings or guarantee a target percentage.
+
+## 6. Code review, export and application
+
+Every solution shows changed-file lists and unified/split diffs. Identify added, modified and deleted files. Preserve agent-added regression tests in exports.
+
+Exports:
+- Git-compatible patch for either side.
+- Source snapshot for either side, including untracked source/test files.
+- Exact retrieved context packet.
+- JSON evidence bundle and human-readable comparison report.
+- Graph image and graph data with source/index revision labels.
+
+Exclude secrets, authentication files, node_modules, virtual environments, disposable caches and benchmark-private evaluators. List exclusions in the export manifest. Validate paths and archive names.
+
+Applying a patch is separate from exporting. Require selection of one solution, a visible diff, passing required checks, and confirmation of the destination. Check that the destination still matches the recorded base and has no conflicting local changes. Refuse stale/conflicting application with a clear explanation. Do not automatically commit, push or publish.
+
+## 7. UI design specification
+
+Visual character: a precise developer workstation with restrained color, readable code, generous spacing and compact controls. Use real repository graphs, source previews and product screenshots as primary imagery. Do not use fabricated charts, fake terminal activity or generic decorative AI illustrations.
+
+| Token | Light theme | Dark theme |
+|---|---|---|
+| Page background | #F6F7F9 | #101318 |
+| Surface | #FFFFFF | #181D25 |
+| Elevated surface | #EEF1F5 | #222A35 |
+| Primary text | #17202E | #EDF1F7 |
+| Secondary text | #526074 | #A8B3C4 |
+| Border | #D5DCE6 | #364252 |
+| Primary action/focus | #1D4ED8 | #93B4FF |
+| Success text | #166534 | #86EFAC |
+| Warning text | #92400E | #FCD34D |
+| Error text | #B91C1C | #FCA5A5 |
+
+Use the existing bundled Bricolage Grotesque for headings and JetBrains Mono for code; retain local font assets and offline operation. Body text must remain easily readable. Verify actual component contrast rather than assuming token colors guarantee accessibility.
+
+Desktop shell: approximately 224px navigation, 64px header, 24px content gutters and equal comparison columns. Use a 4/8px spacing scale, 8px control corners and 12px cards. Tables use tabular numerals. Code panels show line numbers and controlled horizontal scrolling.
+
+Without PRISM and With PRISM labels remain explicit. Use neutral and blue accents respectively; reserve green/red for measured outcomes and verification, not preassigned winners. Savings charts accommodate increases and unknown values.
+
+Support Light, Dark and System modes with persisted UI preference. Respect reduced motion; animations explain transitions rather than simulate work. Loading states never invent progress percentages.
+
+Keyboard navigation, visible focus, descriptive labels, accessible status announcements and WCAG 2.2 AA contrast are release requirements. Charts and graph relationships have text/table equivalents. Test comparison layouts at desktop, tablet and mobile widths.
+
+## 8. Architecture and boundaries
+
+Extend the existing TypeScript viewer into an application shell. Add narrowly scoped Python application services behind authenticated localhost endpoints. UI components call services; indexing and context behavior remain in the existing core.
+
+Proposed service areas: repository/status, explicit lifecycle jobs, isolated context preview, campaign configuration/preflight/execution, recorded evidence, and safe exports/patch application. Final endpoint names and schemas are implementation decisions to document before coding.
+
+Agent adapters provide availability/authentication checks, model discovery, verified settings, fresh-session creation, usage extraction, streaming traces, cancellation and final artifacts. Build a shared capability-based adapter contract for Codex, Claude Code, Antigravity and future tools. Deliver Codex first, then enable each additional host only after equivalent execution and accounting are verified. Host-specific token definitions remain explicit. No generic browser-supplied shell-command endpoint.
+
+Run jobs outside HTTP request threads. Persist queued/running/completed/failed/cancelled/interrupted states and recover them on restart. Cancellation terminates only the associated processes and preserves partial evidence. Closing a browser tab does not cancel a run or disable CLI integrations.
+
+Keep loopback binding, launch-token exchange, protected cookies, Host checks and same-origin protections. Add mutation protection and strict request schemas. Never send authentication credentials to the browser or include them in reports. Capture stdout/stderr through files or queues so a viewer cannot block the process writer.
+
+Graph rendering adds no LLM calls. Dashboard preview sessions do not share delivery memory with agents. Original CLI/MCP/hook entry points remain independently functional.
+
+## 9. States and honest failure handling
+
+Required states: no repository, uninitialized index, indexing, partial parse coverage, stale graph, paused consent, missing provider access, unsupported hook, failed execution preflight, running pair, one-side failure, unknown usage, verification failure, interrupted run, disconnected server and conflicting patch application.
+
+Keep request text and evidence after failures. Display the failed stage and actionable diagnostics. Reruns receive new attempt IDs linked to prior attempts; never erase the earlier usage. A disconnected page can reconnect to the recorded job state.
+
+## 10. Implementation milestones
+
+1. Application shell, themes, repository status and existing graph integration.
+2. Context workbench using the existing engine with isolated preview accounting.
+3. Recorded comparison import, side-by-side traces/diffs/checks and evidence exports.
+4. Host selector and shared adapter contract; live Codex comparison adapter with permission/tool/hook preflight and actual usage accounting. Add validated Claude Code and Antigravity adapters in follow-up increments; show unsupported capabilities honestly until implemented.
+5. Reviewed source exports, demonstration and accessibility polish. Guarded patch application follows the first release.
+
+Do not display a live Run comparison button as available until milestone 4 works end to end. Earlier milestones explicitly support inspection and recorded-result review.
+
+## 11. Acceptance criteria
+
+- CLI, MCP and supported hooks retain their current behavior and pass relevant regression checks.
+- CLI and dashboard context previews agree at the same commit, mode and budget, allowing documented volatile fields only.
+- Graph facts and relationships match the existing viewer/backend and have visible revision labels.
+- Two agent sessions use the same frozen task/settings/source and cannot see solutions or evaluator state.
+- Execution preflight proves tools can read, edit and verify before spending on a scored campaign.
+- Host selection works for registered adapters; unavailable installations, authentication, models and capabilities have actionable states. Both comparison arms use the selected host/model/settings, and changing the host requires a fresh preflight.
+- Manual IDE/context handoff is clearly distinguished from an automated measured run. Each enabled host adapter passes isolation, delivery, trace and usage-accounting checks before token savings are displayed.
+- Hook claims have dispatch, captured output and model-visible delivery evidence.
+- Both results undergo identical independent checks; failures and missing usage prevent misleading savings claims.
+- Provider response sums cross-check with session totals; cached/uncached/output definitions are disclosed.
+- Exported patches/source include actual changes and tests, omit credentials and have usable manifests.
+- Patch application protects local changes and refuses stale/conflicting destinations.
+- Light/dark/system themes, keyboard paths and graph/table alternatives work across supported screen sizes.
+- A judge can understand the workflow, inspect a real graph and explain the comparison result in a 3–5 minute demonstration.
+
+## 12. Deliverables
+
+Local dashboard served by PRISM; documented launch and demo flow; versioned campaign/report schemas; host/IDE selector and adapter capability contract; Codex adapter and preflight, followed by validated Claude Code and Antigravity adapters; source/patch/context/report exports; automated parity, accounting and safety checks; manual visual/accessibility verification; one reproducible measured demonstration with its limitations stated.
+
+The product claim is measurable: PRISM supplies relevant local code context, and the dashboard shows whether that reduced work and tokens for the tested task while preserving correctness.
+
+## 13. Detailed engineering contract and release gates
+
+This section defines the implementation boundaries and release gates for the screen requirements above. Its delivery order replaces the earlier milestone list. These are requirements, not claims that the features are already implemented.
+
+### Product focus
+
+Build an operating developer dashboard centered on one task and two measured coding sessions. Repository inspection, context retrieval, graph exploration, code review and exports support that central workflow. Keep promotional content out of the operating screens. A judge should see actual source, actual work and actual evidence.
+
+The user chooses a repository, a task and an installed host such as Codex, Claude Code or Antigravity. The system prepares two equivalent source snapshots, verifies the runner, executes both agents, checks their solutions and displays an honest comparison. PRISM continues to operate through CLI, API, MCP and supported hooks using the same core engine.
+
+The graph is a visual representation of indexed facts. The coding agent receives relevant text context compiled from those facts and source evidence; it does not understand the repository merely by looking at the graph picture.
+
+### Final first-release boundaries
+
+| Capability | First-release decision |
+|---|---|
+| Repository selection | Local Git repository explicitly supplied to the launcher; one approved repository per workspace |
+| Git URL cloning | Follow-up feature with explicit destination and validated Git arguments |
+| Comparison | One task, one selected host/model, two fresh isolated sessions |
+| Repetitions | Opt-in; default one pair, since every repetition consumes provider usage |
+| Host support | Selector lists registered adapters; executable support depends on verified capabilities |
+| Original source | Remains unchanged during runs and exports; edits happen in disposable copies |
+| Applying a solution | First release exports a reviewed patch/source snapshot for the user's Git workflow |
+| Apply patch button | Later feature with destination/base/conflict checks; not required for initial release |
+| Graphs | Original graph plus optional result graphs built after scored sessions end |
+| Result claims | Require matching configuration, correct solutions and complete actual usage |
+
+A browser file picker must not pretend to supply a trusted local directory path. Users open the repository through the local launcher until a validated repository-opening service is implemented.
+
+### Concrete screen flow
+
+1. Repository: show resolved path, branch, selected commit, working-tree status, consent, index revision and parse coverage. Explicit Build/Refresh actions use existing lifecycle code.
+2. Graph: explore the existing package/file/symbol graph, signatures, callers, callees and tests. Each view identifies its index/source revision.
+3. Context: preview relevant evidence for a task using its own session namespace. Preview reads cannot change either agent's delivered-source memory.
+4. Compare setup: enter task, select host/model/settings and delivery method, specify independent verification, set resource limits, and review the configuration.
+5. Preflight: validate execution, isolation, dependencies, integration and usage extraction before spending on scored sessions.
+6. Compare live: equal-width Without PRISM and With PRISM columns, with Overview, Trace, Code and Checks tabs. A terminal drawer displays captured commands/stdout/stderr separately from agent commentary.
+7. Compare result: show correctness, measurement completeness and comparison integrity separately; then display eligible token changes and code exports.
+8. Runs: retain the frozen configuration, all attempts, logs, patches, checks and evidence. Recorded or imported runs display their dates and provenance.
+
+Comparison header always shows repository commit, task, host/model, reasoning setting, PRISM revision and campaign state. Each column identifies its current step. No simulated terminal output, made-up progress percentage or preset winner styling.
+
+### Source snapshot and dependency policy
+
+First release benchmarks committed source. If the original working tree has uncommitted changes, show that the selected committed revision excludes them. Do not automatically stash, discard or include those changes. Supporting an uncommitted snapshot is a separate feature requiring its own content hash and export semantics.
+
+Persist a frozen manifest before either agent starts: source commit/hash, task hash, independent evaluator hash, dependency snapshot, host/adapter versions, exact model/settings, PRISM revision, delivery method, network/permission policy, order, repetitions and limits.
+
+Keep common source instructions equivalent except the intended PRISM integration. Baseline must not contain PRISM indexes, generated context, hooks, MCP registration or integration instructions. Allow efficient normal navigation; never force baseline to read the whole repository.
+
+Dependencies must be equivalent and prepared before dispatch. Do not allow mutable dependency sharing between agents or silently run installation scripts from arbitrary repositories. Record dependency preparation failures before starting the comparison.
+
+### Enforced isolation
+
+Fresh history and separate folders alone do not establish isolation. A managed comparison needs a validated OS sandbox, container or VM policy that prevents either agent from reading sibling solutions, prior results, the hidden evaluator or original repository. Permit only necessary tool/dependency paths and scoped PRISM runtime access on the With side.
+
+If the chosen adapter cannot enforce and verify this boundary, disable managed comparison with a specific reason. Graph/context exploration, manual tool handoff and recorded-result inspection remain usable. Do not represent a prompt instruction alone as an enforced sandbox.
+
+The trusted evaluator runs outside the agent-visible workspace. Agents may add regression tests, but they cannot modify the frozen checks that determine success.
+
+### Host and integration capability gates
+
+Codex, Claude Code and Antigravity remain explicit choices. Each adapter independently proves installation/connection, authentication status, exact model/settings, fresh sessions, tool permissions, trace capture, cancellation and usage extraction. An installed IDE or an Open button is not proof of automated benchmark support.
+
+Supported delivery methods are separate capabilities: CLI, MCP, automatic hook and MCP + hook. Never change methods silently. A hook requires actual host dispatch plus captured context that reached the model. Configuration presence and a manually executed hook command are insufficient.
+
+Model/settings changes invalidate preflight. Both sides always use the same host/model and equivalent settings. Multi-host experiments produce separate matched pairs; their totals must not be merged into a single PRISM saving percentage.
+
+If a host lacks reliable automated execution or provider counters, offer clearly labeled manual handoff. Antigravity is not assumed to have a usable automation interface until one is validated. Provider credentials remain in supported local host storage and never enter browser state or exports.
+
+### Execution preflight
+
+Run a disposable probe that actually reads a file, writes a file and executes a harmless check. Validate effective session permissions and settings from recorded evidence. A requested writable configuration is not sufficient when the host actually starts read-only.
+
+Preflight also verifies snapshot equivalence, original repository test/build viability, evaluator validity, dependency readiness, transport availability, selected hook delivery and usage extraction. A hook canary uses a diagnostic history separate from scored sessions. Preserve diagnostic token costs separately.
+
+Stop before scored dispatch on a required failure. Explain the failed check and preserve its evidence. No working-looking Run button over an unverified runner.
+
+### Durable jobs and recovery
+
+Campaign state sequence: Draft → Preparing → Preflight → Ready → Running → Verifying → Completed. Failure, cancellation and process/server loss produce Failed, Cancelled and Interrupted respectively. Completed means orchestration finished; solution pass/fail is a separate field.
+
+Only Ready can start. Use an idempotency key so double clicks cannot launch duplicate sessions. Freeze active configuration; create a new campaign to change settings.
+
+Run managed processes outside HTTP request threads. Persist job state and bounded event logs with sequence IDs; reconnect resumes after the last received event. Closing the browser does not cancel a campaign. On restart, reconcile process ownership and mark abandoned jobs Interrupted; never automatically restart provider-consuming runs.
+
+Cancellation terminates only the campaign's verified process tree and preserves partial usage/logs/patches. Reruns have new attempt IDs linked to earlier attempts; failed attempts remain in accounting. Save artifacts before cleanup. Cleanup validates resolved paths and does not follow symlinks or dependency junctions outside a sandbox.
+
+Default execution is sequential, with recorded order to reduce local contention. Repeated experiments balance/randomize order using a recorded seed. Parallel mode is advanced and discloses concurrency and possible latency contention.
+
+Index jobs use the existing core locks and a repository mutation lease. External source changes mark views stale; do not publish a mixture of revisions as one coherent graph.
+
+### Three independent result states
+
+| Result dimension | States |
+|---|---|
+| Correctness | Passed, Failed, Not completed |
+| Usage completeness | Complete, Partial, Unavailable |
+| Comparison integrity | Valid, Invalid with recorded reason |
+
+Verified equivalent-success savings require both solutions to pass identical independent checks, complete required counters and valid comparison integrity. Otherwise display factual usage and failures but mark equivalent-success savings Not comparable. A valid With run using more tokens displays an increase plainly.
+
+Input/cached/output fields follow the provider's definitions. Unknown counters are null, never zero. Reasoning included in output is not added again. Deduplicate response records by response identity and reconcile sums with session totals; inconsistencies block verified savings. Context tokenizer/character estimates are never substituted for provider counters.
+
+Record all retrieval, hook, fallback, edit, verification, retry and failed-command usage inside scored sessions. Separately itemize index build/warm-up, diagnostics and independent verification. Include actual LLM-generated knowledge costs where present. Do not add estimates to actual totals. Amortized scenarios state their task count and reuse assumptions.
+
+Raw saving remains (without total − with total) / without total × 100. Zero baseline is undefined. Uncached-input-plus-output changes remain separate. No billing-saving claim without verified applicable pricing. One pair only describes one task; repeated intervals containing zero are inconclusive.
+
+### Result graphs and code exports
+
+Build optional result graphs only after agent completion and usage capture, from immutable result snapshots. The baseline agent must never receive PRISM as a side effect of visualization. Label Original, Without result and With result with their exact source/index revisions. Record post-run visualization cost separately.
+
+Exports include both tracked changes and untracked source/tests, preserve deletions, and include manifests/checksums. Offer either patch, source ZIP, context packet, report and evidence bundle. Exclude credentials, secret environment files, dependencies, disposable caches and hidden evaluators. Preserve redaction markers in exported logs.
+
+Validate archive paths and symlink targets; malformed imports cannot overwrite existing evidence. The original repository remains unchanged through runs, cancellations and exports. A later Apply patch feature requires a reviewed diff, explicit destination, matching base, conflict checks and a recovery plan.
+
+### Service and record contracts
+
+Separate HTTP handlers from Repository, Index job, Context preview, Campaign, Host adapter, Verification, Usage ledger and Export services. Each calls the existing core as appropriate. Do not expose a generic browser-supplied shell-command endpoint. Launch processes with argument arrays; task text must never be interpolated into shell code.
+
+Versioned records:
+- RepositorySnapshot: approved root, revision/content hash, working-tree status, index revision and coverage.
+- CampaignSpec: immutable task/evaluator/settings hashes, dependency policy, delivery, limits and order.
+- Attempt: campaign/arm/repetition/session IDs, timestamps, effective settings and states.
+- RunEvent: attempt ID, sequence, timestamp, event type, details and redaction state.
+- UsageRecord: response identity, raw counters, provider semantics, derived values and reconciliation.
+- Artifact: ID, checksum, kind, attempt/revision, relative path and exclusions.
+- ComparisonResult: correctness, completeness, integrity, eligible metrics and limitations.
+
+Preserve existing loopback/authentication/Host protections; mutation endpoints validate origin, CSRF protection, structured inputs and approved repository scope. Limit request sizes and trace payloads. Source, task and terminal text render as text, never executable HTML. Unknown schema versions produce an actionable error.
+
+### Revised delivery order
+
+Phase A: prove the runner before expanding the UI. Define adapter/record contracts; validate actual permissions, isolation, fresh history, delivery and usage; complete one matched task with identical independent checks and both patch exports.
+
+Phase B: application shell, dark/light/system themes, repository status, existing graph, isolated context preview and recorded comparison views using the same campaign schema.
+
+Phase C: durable live comparison, streaming/reconnect/cancel/restart handling, diffs/checks/usage and exports. Enable Codex after its gates pass; enable Claude Code and Antigravity independently after equivalent validation.
+
+Phase D: compatibility and failure-injection checks, packaging, accessibility and a reproducible judge walkthrough. Guarded patch application and repository cloning follow after the first release.
+
+### Release acceptance matrix
+
+| Area | Required evidence |
+|---|---|
+| Core behavior | Relevant CLI/MCP/hook regressions and existing viewer interactions pass |
+| Retrieval parity | Same source/mode/budget produces equivalent CLI and dashboard packets, excluding documented volatile fields |
+| Preview isolation | Preview cannot alter either agent's delivery memory |
+| Original source | Clean and dirty originals remain unchanged after success, failure, cancellation and export |
+| Agent boundaries | Attempts cannot read sibling solutions, prior results, evaluator or original source |
+| Host settings | Actual host/model/reasoning/permissions match the frozen manifest |
+| Hook delivery | Real dispatch, captured output and model-visible context are proven |
+| Independent evaluator | Frozen checks validated before dispatch and run identically on both results |
+| Usage | Duplicate/missing/reasoning/cache records and response/session reconciliation handled correctly |
+| Result eligibility | Failed, incomplete or incompatible pairs never receive verified-savings badges |
+| Job lifecycle | Double start, timeout, cancellation, crash, server restart and reconnect preserve evidence |
+| Graph | Same backend facts, explicit revisions, visible coverage/caps; post-run graphs do not affect agents |
+| Export/import | New files/deletions/checksums preserved; unsafe paths/secrets excluded; invalid schemas rejected |
+| UI | Readable terminals, responsive columns, keyboard access, contrast and graph/table alternatives verified in both themes |
+| Demonstration | One real task can be followed from repository/graph to solutions, checks, measured tokens and export |
+
+Automated checks cover meaningful state, accounting, isolation and source-protection behavior. Manual checks cover visual layouts, graph usability and keyboard/assistive navigation. Disclose untested areas. No design can guarantee zero bugs; release means these gates pass and remaining limitations are documented.
