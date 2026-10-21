@@ -84,6 +84,46 @@ def test_git_urls_must_be_plain_https(tmp_path: Path, url: str) -> None:
         manager.add_git(url)
 
 
+def test_clone_reports_progress_before_destination_exists(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import threading
+
+    manager = ProjectManager(make_repo(tmp_path, "small", "first"), Runtime)
+    release = threading.Event()
+    finished = threading.Event()
+
+    def delayed_clone(ident: str, url: str, destination: Path) -> None:
+        try:
+            assert release.wait(10)
+            destination.mkdir()
+            manager._finish(ident, None)
+        finally:
+            finished.set()
+
+    monkeypatch.setattr(manager, "_clone_then_index", delayed_clone)
+    try:
+        added = manager.add_git("https://github.com/example/project.git")
+        assert not Path(added["root"]).exists()
+        assert added["state"] == "cloning"
+        assert added["error"] is None
+        assert manager.projects()[-1]["state"] == "cloning"
+    finally:
+        release.set()
+        assert finished.wait(10)
+
+
+def test_clone_failure_preserves_error_when_destination_is_absent(tmp_path: Path) -> None:
+    manager = ProjectManager(make_repo(tmp_path, "small", "first"), Runtime)
+    ident = manager._add_record(
+        tmp_path / "download", source="git", url="https://github.com/example/project.git"
+    )
+    manager._finish(ident, "git clone failed: repository not found")
+    record = manager.record(ident)
+    assert record["state"] == "failed"
+    assert record["error"] == "git clone failed: repository not found"
+
+
 def test_http_routes_follow_the_selected_project(tmp_path: Path) -> None:
     first = make_repo(tmp_path, "small", "first")
     second = make_repo(tmp_path, "tiny", "second")

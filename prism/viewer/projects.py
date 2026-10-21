@@ -46,11 +46,7 @@ class ProjectManager:
         try:
             saved = json.loads(self._path.read_text(encoding="utf-8"))
             for row in saved if isinstance(saved, list) else []:
-                if (
-                    isinstance(row, dict)
-                    and isinstance(row.get("root"), str)
-                    and Path(row["root"]).is_dir()
-                ):
+                if isinstance(row, dict) and isinstance(row.get("root"), str):
                     self._add_record(
                         Path(row["root"]),
                         source="git" if row.get("source") == "git" else "path",
@@ -88,12 +84,14 @@ class ProjectManager:
         root = Path(record["root"])
         manifest = load_manifest(root) if root.is_dir() else None
         job = self._jobs.get(record["id"])
-        if not root.is_dir():
-            state, error = "missing", "The folder no longer exists"
-        elif job and job["state"] in _BUSY:
+        # Git creates the destination asynchronously. Report the job first so the
+        # dashboard keeps polling before that folder exists, and keeps clone errors.
+        if job and job["state"] in _BUSY:
             state, error = job["state"], None
         elif job and job["state"] == "failed":
             state, error = "failed", job.get("error")
+        elif not root.is_dir():
+            state, error = "missing", "The folder no longer exists"
         else:
             state, error = ("ready", None) if manifest else ("needs_index", None)
         stats = (manifest or {}).get("stats", {})
@@ -164,8 +162,22 @@ class ProjectManager:
         return self.record(ident)
 
     def index(self, ident: str) -> dict[str, Any]:
-        self.record(ident)
-        self._start(ident, self._index_only)
+        record = self.record(ident)
+        with self._lock:
+            runtime = self._runtimes.get(ident)
+            if runtime is not None and runtime.dashboard.live.running():
+                raise UserError("Stop the live comparison before reindexing this project")
+        if record["source"] == "git" and not Path(record["root"]).is_dir():
+            url = record.get("url")
+            if not isinstance(url, str) or not _GIT_URL.fullmatch(url):
+                raise UserError(
+                    "The saved download URL is invalid; remove and add this project again"
+                )
+            destination = Path(record["root"])
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            self._start(ident, self._clone_then_index, url, destination)
+        else:
+            self._start(ident, self._index_only)
         return self.record(ident)
 
     def _start(self, ident: str, target: Callable[..., None], *args: Any) -> None:
@@ -229,6 +241,10 @@ class ProjectManager:
             record = self.record(ident)
             if record["default"]:
                 raise UserError("The project this server was started on cannot be removed")
+            if self._jobs.get(ident, {}).get("state") in _BUSY:
+                raise UserError(
+                    "Wait for this project's download or indexing to finish before removing it"
+                )
             runtime = self._runtimes.get(ident)
             if runtime is not None and runtime.dashboard.live.running():
                 raise UserError("Stop the live comparison first")
