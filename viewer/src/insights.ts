@@ -115,17 +115,18 @@ export function renderOverview(app: App): void {
     bar.append(el("i", { style: `flex:${a.count} 0 0;background:${color}`, title: `${a.name} · ${plural(a.count, nodesNoun.replace(/s$/, ""), nodesNoun)}` }));
   }
   const areaList = el("ul", { class: "ov-areas" }, ins.areas.slice(0, 8).map((a) =>
-    el("li", {}, [
+    el("li", { style: `--area-color:${ctx?.areas.get(a.name) ?? "var(--dim)"};--area-share:${(a.count / total) * 100}%`, title: `${a.name}: ${plural(a.count, nodesNoun.replace(/s$/, ""), nodesNoun)}` }, [
       el("span", { class: "sw", style: `background:${ctx?.areas.get(a.name) ?? "var(--dim)"}`, "aria-hidden": "true" }),
       el("span", { class: "ov-area-name" }, [a.name]),
       el("span", { class: "ov-area-n" }, [`${Math.round((a.count / total) * 100)}%`]),
+      el("span", { class: "ov-area-track", "aria-hidden": "true" }, [el("i")]),
     ]),
   ));
 
   const blocks: HTMLElement[] = [];
   if (ins.hubs.length) {
-    blocks.push(block("Load-bearing", "Most depended on: changes here ripple furthest.",
-      ins.hubs.map((n) => nodeButton(app, n, `${n.fan_in} in`))));
+    blocks.push(block("Key dependencies", "Most referenced code in this view.",
+      ins.hubs.map((n) => nodeButton(app, n, `${n.fan_in} refs`))));
   }
   if (ins.cycles.length) {
     blocks.push(block(
@@ -147,7 +148,10 @@ export function renderOverview(app: App): void {
       ins.orphans.slice(0, TOP).map((n) => nodeButton(app, n, KIND_LABELS[n.kind] ?? n.kind))));
   }
   pane.replaceChildren(
-    el("div", { class: "ov-head" }, [figures, bar, areaList]),
+    el("div", { class: "ov-head" }, [
+      el("div", { class: "ov-summary-label" }, ["Graph overview"]), figures,
+      el("div", { class: "ov-distribution" }, [el("h3", { class: "ov-title" }, ["Code areas"]), ...(ins.areas.length > 8 ? [bar] : []), areaList]),
+    ]),
     ...blocks,
   );
 }
