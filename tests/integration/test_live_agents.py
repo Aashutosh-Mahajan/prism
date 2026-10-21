@@ -30,6 +30,11 @@ def test_claude_terminal_commands_are_streamed_and_counted(root: Path) -> None: 
         assert snapshot["arms"][arm]["commands_run"] == 1
         end = next(e for e in events if e["kind"] == "terminal_end")
         assert end["output"] == "2 passed" and end["ok"]
+        verification = [e for e in events if e.get("phase") == "verification"]
+        assert [e["kind"] for e in verification] == ["terminal_start", "terminal_end"]
+        assert verification[0]["command"] == CHECK
+        assert verification[1]["ok"]
+        assert verification[1]["output"] == snapshot["arms"][arm]["check"]["output"]
         assert snapshot["arms"][arm]["lines_added"] == 3
     assert snapshot["verdict"]["commands_saving_pct"] == pytest.approx(0.0)
 
@@ -66,19 +71,52 @@ def test_antigravity_is_a_manual_handoff_with_real_checks(root: Path) -> None:  
     else:
         raise AssertionError("never reached the manual step")
     assert [a["state"] for a in snapshot["arms"].values()] == ["manual", "manual"]
+    assert "config-empty" in snapshot["manual_launch"]["without"]
+    assert str(Path(sys.executable).parent) in snapshot["manual_launch"]["with"]
+    assert "PRISM_CONFIG_HOME" in snapshot["manual_launch"]["with"]
+    with pytest.raises(UserError, match="No source changes detected"):
+        runner.finish_manual()
+    assert runner.snapshot()["state"] == "awaiting_manual"
     for arm in ("without", "with"):  # the person does the task in each folder
         target = Path(snapshot["preparation"]["arms"][arm]) / "src/shop/money.py"
         target.write_text(
             target.read_text(encoding="utf-8").replace("\n\ndef zero()", SUBTRACT),
             encoding="utf-8",
         )
+        if arm == "without":
+            with pytest.raises(UserError, match="With PRISM"):
+                runner.finish_manual()
     runner.finish_manual()
     done = wait(runner)
     assert done["state"] == "completed", done["error"]
     assert done["verdict"]["quality"] == "same"
     assert done["verdict"]["token_saving_pct"] is None  # nothing is measurable in a manual run
+    assert done["verdict"]["time_saving_pct"] is None
+    assert done["verdict"]["commands_saving_pct"] is None
+    for arm in done["arms"].values():
+        assert arm["started"] and arm["finished"] and arm["duration_seconds"] >= 0
+        assert arm["commands_run"] == 0  # verifier commands are separate from agent commands
+        assert any(e.get("phase") == "verification" for e in arm["events"])
     with pytest.raises(UserError):
         runner.finish_manual()
+
+
+def test_manual_read_only_task_requires_explicit_unchanged_override(root: Path) -> None:  # noqa: F811
+    runner = runner_for(root)
+    runner.start({"task": "Review the code without editing", "agent": "antigravity"})
+    deadline = time.monotonic() + 120
+    while time.monotonic() < deadline:
+        snapshot = runner.snapshot()
+        if snapshot and snapshot["state"] == "awaiting_manual":
+            break
+        time.sleep(0.1)
+    else:
+        raise AssertionError("never reached the manual step")
+    runner.finish_manual(allow_unchanged=True)
+    done = wait(runner)
+    assert done["state"] == "completed"
+    assert done["verdict"]["quality"] == "unverified"
+    assert all(a["usage"] is None for a in done["arms"].values())
 
 
 def test_finished_runs_are_kept_in_history(root: Path) -> None:  # noqa: F811
