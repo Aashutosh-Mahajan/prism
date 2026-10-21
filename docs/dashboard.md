@@ -14,9 +14,26 @@ The local workspace includes:
 
 Light, dark and system themes are available. Assets and fonts are bundled locally. No source edits or model calls occur when opening the dashboard, exploring the graph or retrieving context.
 
+## Live comparison (Claude Code)
+
+The **Live** page runs one task through Claude Code twice at the same time: once in a plain copy of the repository (Without PRISM) and once in an identical copy that has PRISM's index and Claude Code hooks (With PRISM). You see each agent's messages, tool calls and token counter as they happen.
+
+1. Open the repository with `prism view --root <repository>`. It needs a committed Git repository; uncommitted edits are excluded.
+2. Enter one task. Optionally enter a **check command**, such as `python -m pytest -q`. It is run in both finished copies and is what proves the result is still correct. Without it the page says quality is *not verified*.
+3. Start. The page prepares the two copies, runs both agents, runs the check, and shows a verdict.
+
+What it reports, from Claude Code's own usage counters: total, input (including cached reads and cache writes) and output tokens, the cost Claude Code reports, turns, time, the files each run changed, and each run's check result. The quality verdict is one of *same*, *degraded*, *better*, *both failed*, *unverified* or *incomplete*. A token saving next to a *degraded* verdict is shown as a warning, never as a success.
+
+Requirements and limits:
+
+- Claude Code must be installed and logged in (`claude auth login`). The page finds it on PATH or in the desktop app's folder; set `PRISM_CLAUDE_BIN` to override. Every run spends real tokens from your plan.
+- Both agents use `--setting-sources project`, no MCP servers and the same permission rules (file edits in their own folder, plus Python, pytest, npm test and prism commands). Only the With copy has PRISM on `PATH` and its hooks installed.
+- Folder copies are not an operating-system sandbox. One paired run is one example, not a typical saving.
+- Runs are saved to `.aicontext/cache/dashboard/live/last-run.json`; a server restart marks an unfinished run *interrupted* and does not rerun it.
+
 ## Current execution limit
 
-Managed agent execution is not implemented in this first workspace increment. The Run comparison action is disabled and explains the missing validated isolation/provider adapter. Installation detection alone is not proof of authentication, hooks, permissions or usable counters. No live token-saving claim is made.
+Managed execution of other hosts (Codex, Antigravity) is not implemented. On the Compare page the Run comparison action is disabled; live Claude Code runs are on the Live page and explains the missing validated isolation/provider adapter. Installation detection alone is not proof of authentication, hooks, permissions or usable counters. No live token-saving claim is made.
 
 The next implementation gate in `ui.prd` is a working Codex adapter with enforced isolation, permission probes, fresh histories, automatic delivery proof, complete counters and independent checks. Other hosts require their own validated adapters. Existing repository-specific benchmark scripts are not exposed as a generic runner.
 

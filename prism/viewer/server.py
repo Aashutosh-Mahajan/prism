@@ -309,6 +309,10 @@ def make_handler(
                     self._json(201, dashboard.import_run(body))
                 elif path == "/api/dashboard/sandboxes":
                     self._json(202, dashboard.prepare_sandboxes(body))
+                elif path == "/api/dashboard/live":
+                    self._json(202, dashboard.live.start(body))
+                elif path == "/api/dashboard/live/cancel":
+                    self._json(200, dashboard.live.cancel())
                 elif path == "/api/layout":
                     self._json(200, backend.save_layout(body))
                 elif path == "/api/views":
@@ -341,6 +345,10 @@ def make_handler(
                 return dashboard.job()
             if path == "/api/dashboard/sandboxes":
                 return dashboard.sandbox_job()
+            if path == "/api/dashboard/live/status":
+                return dashboard.live.status()
+            if path == "/api/dashboard/live":
+                return dashboard.live.snapshot(_offset(q.get("without")), _offset(q.get("with")))
             if path == "/api/dashboard/runs":
                 return dashboard.runs()
             if path.startswith("/api/dashboard/runs/"):
@@ -411,6 +419,10 @@ def make_handler(
                 hub.unsubscribe(q)
 
     return Handler
+
+
+def _offset(value: str | None) -> int:
+    return int(value) if value and value.isdigit() else 0
 
 
 class ViewerServer:

@@ -2,6 +2,7 @@ import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource/jetbrains-mono/400.css";
 import "./dashboard.css";
 import "./dashboard-polish.css";
+import "./live-compare";
 
 type Usage = Record<string, number>;
 interface Configuration { repository: string; source_commit: string; task: string; host: string; model: string; reasoning: string; delivery: string }
@@ -32,7 +33,7 @@ let hosts: Host[] = [];
 let packetText = "";
 let packet: unknown = null;
 let refreshTimer: number | undefined;
-let activePage = "compare";
+let activePage = "live";
 let runsGeneration = 0;
 let contextBusy = false;
 let sandboxTimer: number | undefined;
@@ -58,9 +59,9 @@ function download(name: string, text: string, type = "application/json"): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 function route(): void {
-  const requested = location.hash.slice(1) || "compare";
+  const requested = location.hash.slice(1) || "live";
   if (requested === "content") { el("content").focus(); return; }
-  const page = ["compare", "repository", "context", "graph", "runs", "settings"].includes(requested) ? requested : "compare";
+  const page = ["live", "compare", "repository", "context", "graph", "runs", "settings"].includes(requested) ? requested : "live";
   const changed = page !== activePage;
   activePage = page;
   document.querySelectorAll<HTMLElement>("[data-view]").forEach(v => { v.hidden = v.dataset.view !== page; });

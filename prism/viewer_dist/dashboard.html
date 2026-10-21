@@ -12,9 +12,10 @@
 <body>
   <a class="skip" href="#content">Skip to workspace</a>
   <aside class="sidebar">
-    <a class="logo" href="#compare"><span class="logo-mark">△</span> PRISM<span class="local">LOCAL</span></a>
+    <a class="logo" href="#live"><span class="logo-mark">△</span> PRISM<span class="local">LOCAL</span></a>
     <div class="nav-caption">WORKSPACE</div>
     <nav aria-label="Workspace">
+      <a href="#live" data-page="live"><span>▶</span> Live</a>
       <a href="#compare" data-page="compare"><span>⇄</span> Compare</a>
       <a href="#repository" data-page="repository"><span>▣</span> Repository</a>
       <a href="#context" data-page="context"><span>⌘</span> Context</a>
@@ -27,7 +28,22 @@
   <div class="workspace">
     <header class="topbar"><div class="repo-label"><span class="repo-icon">▣</span><strong id="project">Connecting…</strong><span class="divider">/</span><span id="branch">Local repository</span></div><div class="top-actions"><span id="connection" class="pill">Connecting</span><label class="theme-label">Theme <select id="theme" aria-label="Color theme"><option value="system">System</option><option value="dark">Dark</option><option value="light">Light</option></select></label></div></header>
     <main id="content" tabindex="-1">
-      <section data-view="compare">
+      <section data-view="live">
+        <div class="page-heading"><div><div class="eyebrow">SAME TASK. TWO RUNS. LIVE.</div><h1>Live comparison.</h1><p>Run one coding task with and without PRISM at the same time. Watch both, then compare the tokens used and whether the result is still correct.</p></div></div>
+        <p id="live-agent" class="live-note">Checking for Claude Code…</p>
+        <form class="panel live-form" onsubmit="return false"><label>Coding task<textarea id="live-task-input" rows="3" placeholder="Describe one concrete change, for example: Add a subtract method to the Money class"></textarea></label>
+          <div class="form-row"><label>Check command (proves the result is correct)<input id="live-check" placeholder="for example: python -m pytest -q"></label><label>Model (optional)<input id="live-model" placeholder="your default"></label><label>Max turns<input id="live-turns" type="number" min="1" max="100" value="30"></label></div>
+          <div class="live-actions"><button id="live-start" class="primary-button" type="button">Start live comparison</button><button id="live-cancel" class="quiet-button" type="button" hidden>Stop both runs</button><span class="muted">Uses the committed code of the repository you opened. Your original files are never changed.</span></div></form>
+        <div id="live-results" hidden>
+          <div id="live-steps" class="live-steps"></div><p id="live-run-status" class="live-note"></p><p class="muted">Task: <span id="live-task"></span></p>
+          <div class="live-grid">
+            <article class="panel live-arm"><header><h2>Without PRISM</h2><span class="pill" id="live-state-without">waiting</span></header><div class="live-tokens" id="live-tokens-without"></div><div class="live-feed" id="live-feed-without" aria-live="off" tabindex="0"></div><div id="live-extra-without"></div></article>
+            <article class="panel live-arm"><header><h2>With PRISM</h2><span class="pill" id="live-state-with">waiting</span></header><div class="live-tokens" id="live-tokens-with"></div><div class="live-feed" id="live-feed-with" aria-live="off" tabindex="0"></div><div id="live-extra-with"></div></article>
+          </div>
+          <div id="live-verdict" class="live-verdict" hidden></div>
+        </div>
+      </section>
+      <section data-view="compare" hidden>
         <div class="page-heading"><div><div class="eyebrow">ONE TASK. TWO VIEWS.</div><h1>Compare code context.</h1><p>The same repository and coding task, with and without PRISM.</p></div><div class="heading-actions"><button id="heading-import" class="primary-button" type="button">Import a run</button><a class="quiet-button" href="#graph">Explore graph ↗</a></div></div>
         <div class="configuration panel"><div class="section-title"><h2>Comparison workspace</h2><span class="pill">Recorded evidence</span></div><p class="muted">Review a measured run, or prepare a task for your selected coding tool. Live execution requires a validated host adapter.</p><div class="form-row"><label>Coding tool<select id="host"><option value="codex">Codex</option><option value="claude">Claude Code</option><option value="antigravity">Antigravity</option></select></label><label>Model<input id="model" placeholder="Exact model used by your host" /></label><label>PRISM delivery<select id="delivery"><option value="hook">Automatic hook</option><option value="mcp">MCP</option><option value="cli">CLI</option><option value="mcphook">MCP + hook</option></select></label></div><label class="task-label">Coding task<textarea id="task" rows="3" placeholder="Describe one concrete change and how correctness will be checked…"></textarea></label><div class="configuration-footer"><span id="host-state" class="muted">Checking host capabilities…</span><div class="actions"><button id="prepare-context" class="quiet-button" type="button">Preview task context</button><button id="start-run" class="primary-button" disabled type="button">Run comparison</button></div></div><div class="notice" id="runner-limit">Live runs are gated by verified isolation, editing permissions and provider counters.</div></div>
         <div id="run-banner" class="run-banner" hidden></div><button id="new-comparison" class="quiet-button" type="button" hidden>New task setup</button>

@@ -7,6 +7,8 @@ All notable changes to PRISM are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Dashboard **Live** page: run one task through Claude Code with and without PRISM at the same time, streamed with live
+  token counters, then an independent check command and a quality verdict (`prism/viewer/live.py`).
 - Delivery parity: CLI and MCP return identical packet text (`tests/integration/test_surface_parity.py`);
   a tool call after the prompt hook shares the hook's session, so delivered code is a reference.
 - MCP default profile is one tool, `prism_task` (`standard` adds status/context/impact).

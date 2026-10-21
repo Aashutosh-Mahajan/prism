@@ -20,6 +20,7 @@ from prism.navigator.api import op_task
 from prism.navigator.freshness import refresh_if_stale
 from prism.navigator.store import IndexStore
 from prism.navigator.task_pack import MAX_BUDGET, MIN_BUDGET
+from prism.viewer.live import LiveRunner
 from prism.writers.activity import quiet_activity
 from prism.writers.json_writer import write_json
 from prism.writers.manifest import load_manifest
@@ -160,6 +161,7 @@ class DashboardService:
         self.root = root.resolve()
         self.cache = self.root / AICONTEXT / "cache" / "dashboard"
         self._lock = threading.Lock()
+        self.live = LiveRunner(self.root, self.cache / "live")
         self._job: dict[str, Any] | None = None
         self._sandbox_job: dict[str, Any] | None = None
         for filename, attribute in (

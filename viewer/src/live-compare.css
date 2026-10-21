@@ -1,0 +1,34 @@
+.live-form textarea,.live-form input{width:100%;background:var(--raised);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:10px 12px}
+.live-form label{display:block;font-size:12px;color:var(--muted);margin-bottom:12px}
+.live-form .form-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+.live-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.live-note{border-left:3px solid var(--accent);background:var(--raised);padding:10px 14px;border-radius:6px;color:var(--muted);font-size:12px;margin:0 0 16px}
+.live-note.warn{border-color:var(--bad)}
+.live-steps{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.live-steps span{font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:4px 12px}
+.live-steps span.on{color:var(--text);border-color:var(--accent);background:var(--raised)}
+.live-steps span.done{color:var(--good);border-color:var(--good)}
+.live-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.live-arm{min-width:0}
+.live-arm header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.live-arm header h2{margin:0}
+.live-tokens{font:600 22px "Bricolage Grotesque Variable",Arial,sans-serif;margin:4px 0 10px}
+.live-tokens small{display:block;font:11px Arial;color:var(--muted)}
+.live-feed{height:340px;overflow:auto;background:var(--page);border:1px solid var(--border);border-radius:8px;padding:10px;font:12px/1.5 "JetBrains Mono",Consolas,monospace}
+.live-feed div{margin:0 0 8px;white-space:pre-wrap;word-break:break-word}
+.live-feed .ev-info{color:var(--muted)}
+.live-feed .ev-tool b{color:var(--accent)}
+.live-feed .ev-result{color:var(--muted);padding-left:12px;border-left:2px solid var(--border)}
+.live-feed .ev-result.bad{color:var(--bad);border-color:var(--bad)}
+.live-arm details{margin-top:10px}
+.live-arm summary{cursor:pointer;color:var(--accent);font-size:12px}
+.live-arm pre{max-height:260px;overflow:auto;background:var(--page);border:1px solid var(--border);border-radius:8px;padding:10px;font:11.5px/1.45 "JetBrains Mono",Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.live-verdict{border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin:16px 0;background:var(--surface)}
+.live-verdict strong{display:block;font:600 20px "Bricolage Grotesque Variable",Arial,sans-serif;margin-bottom:4px}
+.live-verdict.same{border-color:var(--good)}.live-verdict.same strong{color:var(--good)}
+.live-verdict.degraded,.live-verdict.both_failed{border-color:var(--bad)}.live-verdict.degraded strong,.live-verdict.both_failed strong{color:var(--bad)}
+.live-table{width:100%;border-collapse:collapse;margin-top:8px}
+.live-table th,.live-table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px}
+.live-table th{color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.5px;text-transform:uppercase}
+.live-table td.good{color:var(--good)}.live-table td.bad{color:var(--bad)}
+@media (max-width:900px){.live-grid,.live-form .form-row{grid-template-columns:1fr}}
