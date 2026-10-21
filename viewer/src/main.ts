@@ -1,5 +1,6 @@
 // Entry point: wires the App (state + graph + renderer) to its UI modules and boots.
 import "./style.css";
+import "./graph-instrument.css";
 
 import { App, stateFromUrl } from "./app";
 import { bindChrome, renderChrome } from "./chrome";

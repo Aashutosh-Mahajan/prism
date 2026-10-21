@@ -1,5 +1,5 @@
 // Visual encodings: node colour, size, and shape from node attributes, plus legends.
-// Colours come from one spectrum (the "prism"), tuned separately for the dark and light canvas.
+// Restrained categorical colours, tuned separately for the dark and light canvas.
 import type { GNode } from "./types";
 
 export type ColorBy = "area" | "group" | "community" | "risk" | "owner" | "language" | "recency" | "findings" | "kind";
@@ -14,18 +14,18 @@ export const SIZE_BY_LABELS: Record<SizeBy, string> = {
   rank: "Importance", loc: "Lines of code", fan_in: "Fan-in", blast: "Blast radius",
 };
 
-// Twelve hues walked around the spectrum; lighter on dark, deeper on light, for contrast.
+// Twelve distinct muted hues keep categories readable against the neutral workspace.
 const SPECTRUM: Record<Theme, string[]> = {
   dark: [
-    "#7b8cff", "#4cc9f0", "#5ee6a8", "#b5e655", "#ffe066", "#ffa45c",
-    "#ff6b8b", "#f472d0", "#c77dff", "#6ea8ff", "#3dd6c6", "#e0a3ff",
+    "#a1afc2", "#92b6bd", "#a7bb9e", "#babe90", "#d0c69f", "#c8ae91",
+    "#c59b99", "#bb9ea9", "#b3a5c4", "#98a6b2", "#9cbbb1", "#c0b5cb",
   ],
   light: [
-    "#4f5fe6", "#1486c2", "#10906f", "#5b8f1f", "#9c7a00", "#c96412",
-    "#d6453d", "#c33a7f", "#8a47dc", "#2f6fd6", "#0a8a80", "#a24fcb",
+    "#536580", "#426f79", "#526f45", "#6b733b", "#80703c", "#8c6741",
+    "#935751", "#845c70", "#705e8d", "#506a78", "#477567", "#7d6a87",
   ],
 };
-const NEUTRAL_BY_THEME: Record<Theme, string> = { dark: "#7c849a", light: "#8a91a3" };
+const NEUTRAL_BY_THEME: Record<Theme, string> = { dark: "#96968c", light: "#797b70" };
 const HEAT: Record<Theme, [number, number, number][]> = {
   dark: [[111, 211, 176], [240, 212, 106], [255, 160, 90], [239, 110, 132]],
   light: [[16, 144, 111], [176, 140, 0], [214, 100, 20], [205, 50, 70]],
