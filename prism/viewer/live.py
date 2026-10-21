@@ -458,10 +458,28 @@ class ClaudeAgent(Agent):
             return [found]
         candidates: list[str] = []
         appdata = os.environ.get("APPDATA")
-        if appdata:
-            candidates += glob.glob(
-                os.path.join(appdata, "Claude", "claude-code", "*", "*", "claude.exe")
-            )
+        local = os.environ.get("LOCALAPPDATA")
+        # The desktop app keeps its own copy; its folder has moved between app versions.
+        for root, pattern in (
+            (appdata, os.path.join("Claude", "claude-code", "*", "*", "claude.exe")),
+            (local, os.path.join("Claude-Data", "*", "claude-code", "*", "*", "claude.exe")),
+            (
+                local,
+                os.path.join(
+                    "Packages",
+                    "Claude_*",
+                    "LocalCache",
+                    "Roaming",
+                    "Claude",
+                    "claude-code",
+                    "*",
+                    "*",
+                    "claude.exe",
+                ),
+            ),
+        ):
+            if root:
+                candidates += glob.glob(os.path.join(root, pattern))
         candidates += glob.glob(os.path.expanduser("~/.local/bin/claude*"))
         existing = [c for c in candidates if os.path.isfile(c)]
         return [max(existing, key=os.path.getmtime)] if existing else None
