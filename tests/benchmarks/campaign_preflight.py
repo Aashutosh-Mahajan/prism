@@ -176,7 +176,13 @@ def main() -> None:
                 )
                 text = result.stdout
                 logs = sessions(root)
-                deliveries = [d for log in logs if log.digest == hashlib.sha256(sid.encode()).hexdigest()[:16] for d in log.deliveries if d[0] == "hook"]
+                deliveries = [
+                    d
+                    for log in logs
+                    if log.digest == hashlib.sha256(sid.encode()).hexdigest()[:16]
+                    for d in log.deliveries
+                    if d[0] == "hook"
+                ]
                 current = deliveries[0] if deliveries else ("hook", False, "no record")
                 report["hooks"].append(
                     {
