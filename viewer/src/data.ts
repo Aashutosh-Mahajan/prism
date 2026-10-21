@@ -87,44 +87,48 @@ function queryString(q: GraphQuery): string {
 
 export class HttpSource implements DataSource {
   readonly live = true;
+  private readonly project = typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("project");
+  private url(path: string): string {
+    return this.project ? `${path}${path.includes("?") ? "&" : "?"}project=${encodeURIComponent(this.project)}` : path;
+  }
   meta() {
-    return getJson<Meta>("/api/meta");
+    return getJson<Meta>(this.url("/api/meta"));
   }
   graph(q: GraphQuery) {
-    return getJson<GraphPayload>(`/api/graph?${queryString(q)}`);
+    return getJson<GraphPayload>(this.url(`/api/graph?${queryString(q)}`));
   }
   node(id: string) {
-    return getJson<Details>(`/api/node/${encodeURIComponent(id)}`);
+    return getJson<Details>(this.url(`/api/node/${encodeURIComponent(id)}`));
   }
   async search(q: string, level: string) {
-    const r = await getJson<{ hits: SearchHit[] }>(`/api/search?q=${encodeURIComponent(q)}&level=${level}`);
+    const r = await getJson<{ hits: SearchHit[] }>(this.url(`/api/search?q=${encodeURIComponent(q)}&level=${level}`));
     return r.hits;
   }
   path(from: string, to: string, layer: string, level: string) {
     const p = new URLSearchParams({ from, to, layer, level });
-    return getJson<PathResult>(`/api/path?${p}`);
+    return getJson<PathResult>(this.url(`/api/path?${p}`));
   }
   impact(id: string, level: string) {
-    return getJson<ImpactResult>(`/api/impact/${encodeURIComponent(id)}?level=${level}`);
+    return getJson<ImpactResult>(this.url(`/api/impact/${encodeURIComponent(id)}?level=${level}`));
   }
   diff(since: string) {
-    return getJson<{ files: Record<string, string>; changed_ids: string[] }>(`/api/diff?since=${encodeURIComponent(since)}`);
+    return getJson<{ files: Record<string, string>; changed_ids: string[] }>(this.url(`/api/diff?since=${encodeURIComponent(since)}`));
   }
   async layout() {
-    const r = await getJson<{ positions?: Record<string, [number, number]> }>("/api/layout");
+    const r = await getJson<{ positions?: Record<string, [number, number]> }>(this.url("/api/layout"));
     return r.positions ?? {};
   }
   saveLayout(positions: Record<string, [number, number]>) {
-    return postJson("/api/layout", { positions });
+    return postJson(this.url("/api/layout"), { positions });
   }
   async views() {
-    return (await getJson<{ views: Record<string, unknown> }>("/api/views")).views;
+    return (await getJson<{ views: Record<string, unknown> }>(this.url("/api/views"))).views;
   }
   saveView(name: string, state: unknown) {
-    return postJson("/api/views", { name, state });
+    return postJson(this.url("/api/views"), { name, state });
   }
   subscribe(onIndex: (e: IndexEvent) => void, onActivity: (e: ActivityEvent) => void, onStatus: (ok: boolean) => void) {
-    const es = new EventSource("/api/events");
+    const es = new EventSource(this.url("/api/events"));
     es.addEventListener("open", () => onStatus(true));
     es.addEventListener("error", () => onStatus(false));
     es.addEventListener("index", (e) => onIndex(JSON.parse((e as MessageEvent).data)));

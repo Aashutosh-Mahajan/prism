@@ -28,6 +28,8 @@ async function boot(): Promise<void> {
   readPalette();
 
   const source = createSource();
+  const project = new URLSearchParams(location.search).get("project");
+  if (project) ($("dashboard-link") as HTMLAnchorElement).href = `/dashboard.html?project=${encodeURIComponent(project)}#live`;
   const app = new App(source, $("graph"), stateFromUrl(location.search));
   const animator = new Animator(app);
   const list = new NodeList(app);
