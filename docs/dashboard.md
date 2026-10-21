@@ -30,13 +30,17 @@ Choose **1, 2 or 3 projects** to show several panels at once. Each panel has its
 |---|---|
 | Claude Code | Headless (`claude -p --output-format stream-json`). Tokens and cost come from Claude Code's own counters. |
 | Codex | Headless (`codex exec --json`). Tokens come from Codex's counters (cached input is part of input; total is input plus output). Codex reports no cost, so none is shown. The Codex adapter has only been tested against recorded-format stand-ins, not a real Codex install. |
-| Antigravity | Has no headless agent mode. PRISM prepares both folders; you run the task in each in Antigravity and press **Done**. Checks, changes and the quality verdict are real; tokens cannot be measured. |
+| Antigravity | This adapter uses a manual hand-off. PRISM prepares both folders; you run the task in each in Antigravity, confirm both are finished, and press **Done**. Tokens, cost, turns and agent terminal commands are not captured. |
 
 Steps:
 
 1. Add the project on the **Projects** page and index it. It needs a committed Git repository when it is a Git project; uncommitted edits are excluded.
 2. Pick the agent, enter one task and, optionally, a **check command** such as `python -m pytest -q`. It is run in both finished copies and is what proves the result is still correct. Without it the page says quality is *not verified*.
 3. Start. The page prepares the two copies, runs both agents, runs the check, and shows a verdict.
+
+For Antigravity, Start prepares the folders and then waits; it does not launch the agent. Use the launch instructions in the hand-off panel in separate terminals (PowerShell on Windows) so each fresh Antigravity process inherits the correct `PRISM_CONFIG_HOME` and PATH. Run the exact same task and model in both folders, save the results, then confirm both tasks are finished. Done rejects unchanged copies unless you explicitly select the option for a task that intentionally requires no edits. The manual timer measures the hand-off interval, not agent execution time or a PRISM time saving.
+
+The Terminal tab includes PRISM's verification command and its output, separately from captured agent commands. Failed check details open automatically. A missing test folder, missing dependencies or an empty unittest suite cannot establish successful verification; inspect the output before interpreting the result. Verification commands do not count as agent commands.
 
 Reported for each run: total, input (with cached part) and output tokens, the cost the agent reports, time, terminal commands run, turns, lines added and removed, the changed files and each run's check result. The quality verdict is *same*, *degraded*, *better*, *both failed*, *unverified* or *incomplete*. A saving next to a *degraded* verdict is a warning, never a success.
 
@@ -56,6 +60,8 @@ The old Compare-page Run comparison action stays disabled; live runs are on the 
 The next implementation gate in `ui.prd` is a working Codex adapter with enforced isolation, permission probes, fresh histories, automatic delivery proof, complete counters and independent checks. Other hosts require their own validated adapters. Existing repository-specific benchmark scripts are not exposed as a generic runner.
 
 ## What separate sandboxes mean
+
+On Windows, new comparison copies are stored under `~/Documents/PRISM Benchmarks` so Codex's sandbox can start commands there. Set `PRISM_BENCHMARK_HOME` to choose another comparison directory outside the original repository. An explicit `PRISM_CONFIG_HOME` retains the existing config-relative location unless the benchmark override is also set.
 
 Without PRISM and With PRISM need different working directories and new agent histories. They start from the same source commit, task, model and independent checks. Only the With copy receives PRISM's index/integration. Neither agent should read the other solution, evaluator, previous reports or your original repository.
 
