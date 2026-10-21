@@ -28,7 +28,7 @@ from prism.core.models import (
 )
 from prism.core.paths import AICONTEXT
 
-PARSER_VERSION = f"{__version__}+5"
+PARSER_VERSION = f"{__version__}+6"
 
 
 def _encode(pf: ParsedFile) -> str:

@@ -83,6 +83,7 @@ class UrlPattern:
     pattern: str
     view: str
     line: int
+    name: str = ""  # `name="send-otp"`, what tests pass to `reverse()`
 
 
 @dataclass
