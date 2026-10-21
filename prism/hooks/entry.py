@@ -51,7 +51,11 @@ def background_enabled() -> bool:
     return os.environ.get("PRISM_HOOK_SYNC") != "1"
 
 
-_EVENT = {"session-start": "SessionStart", "user-prompt": "UserPromptSubmit", "post-edit": "PostToolUse"}
+_EVENT = {
+    "session-start": "SessionStart",
+    "user-prompt": "UserPromptSubmit",
+    "post-edit": "PostToolUse",
+}
 
 
 def parse_flags(args: list[str]) -> dict[str, str]:
