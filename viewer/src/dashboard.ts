@@ -41,18 +41,23 @@ let runsGeneration = 0;
 let contextBusy = false;
 let sandboxTimer: number | undefined;
 let statusBusy = false;
+let projectEpoch = 0;
+class ProjectSelectionChanged extends Error { constructor() { super("Project selection changed"); } }
 const number = (value: number | null | undefined): string => value == null ? "Unavailable" : value.toLocaleString();
 
 async function api<T>(path: string, body?: unknown): Promise<T> {
+  const epoch = projectEpoch;
   const response = await fetch(`/api/dashboard/${path}`, {
     credentials: "same-origin", headers: { ...(body === undefined ? {} : { "Content-Type": "application/json" }), ...(selectedProject() ? { "X-Prism-Project": selectedProject()! } : {}) },
     method: body === undefined ? "GET" : "POST", body: body === undefined ? undefined : JSON.stringify(body),
   });
   const data = await response.json();
+  if (epoch !== projectEpoch) throw new ProjectSelectionChanged();
   if (!response.ok) throw new Error(data.message ?? data.error ?? `Request failed (${response.status})`);
   return data as T;
 }
 function notify(message: string, error = false): void {
+  if (message.includes("Project selection changed")) return;
   const box = el("notification"); box.textContent = message; box.hidden = false; box.classList.toggle("error", error);
   window.setTimeout(() => { if (box.textContent === message) box.hidden = true; }, 9000);
 }
@@ -72,10 +77,19 @@ function route(): void {
     const selected = v.dataset.page === page; v.classList.toggle("active", selected);
     if (selected) v.setAttribute("aria-current", "page"); else v.removeAttribute("aria-current");
   });
-  if (page === "graph" && !el<HTMLIFrameElement>("graph-frame").getAttribute("src")) el<HTMLIFrameElement>("graph-frame").src = "/";
+  if (page === "graph") syncGraph();
   if (page === "runs") void loadRuns().catch(e => notify(String(e), true));
   if (page === "repository" || page === "graph") void syncStatus();
   if (changed) { window.scrollTo({top: 0}); el("content").focus({preventScroll: true}); }
+}
+function syncGraph(): void {
+  const project = selectedProject();
+  if (!project) return;
+  const frame = el<HTMLIFrameElement>("graph-frame");
+  const url = `/?project=${encodeURIComponent(project)}`;
+  if ((activePage === "graph" || frame.getAttribute("src")) && frame.getAttribute("src") !== url) frame.src = url;
+  const separate = document.querySelector<HTMLAnchorElement>('[data-view="graph"] .page-heading a');
+  if (separate) separate.href = url;
 }
 function theme(): void {
   const choice = el<HTMLSelectElement>("theme").value;
@@ -118,10 +132,12 @@ function renderStatus(s: Status): void {
 async function syncStatus(): Promise<void> {
   if (statusBusy || document.hidden) return;
   statusBusy = true;
+  const epoch = projectEpoch;
   try { renderStatus(await api<Status>("status")); }
-  catch {
+  catch (error) {
+    if (error instanceof ProjectSelectionChanged) return;
     el("connection").textContent = "Disconnected · data may be stale"; el("connection").classList.remove("good");
-  } finally { statusBusy = false; }
+  } finally { statusBusy = false; if (epoch !== projectEpoch) void syncStatus(); }
 }
 function renderSandbox(job: SandboxJob | null): void {
   const box = el("sandbox-status"); box.replaceChildren();
@@ -139,7 +155,7 @@ function pollSandboxes(): void {
   sandboxTimer = window.setTimeout(() => { void api<SandboxJob | null>("sandboxes").then(job => {
     sandboxTimer = undefined; renderSandbox(job);
     if (job?.state === "running") pollSandboxes();
-  }).catch(error => { sandboxTimer = undefined; notify(`Preparation status unavailable: ${error}`, true); }); }, 1500);
+  }).catch(error => { if (error instanceof ProjectSelectionChanged) return; sandboxTimer = undefined; notify(`Preparation status unavailable: ${error}`, true); }); }, 1500);
 }
 function renderJob(job: Job | null): void {
   const box = el("index-job"); box.hidden = !job;
@@ -311,7 +327,7 @@ function pollRefresh(): void {
     renderJob(j);
     if (j.state !== "running") { refreshTimer = undefined; renderStatus(await api<Status>("status")); notify(j.state === "completed" ? "Index refreshed" : `Refresh failed: ${j.error}`, j.state !== "completed"); }
     else pollRefresh();
-  }).catch(e => { refreshTimer = undefined; el<HTMLButtonElement>("refresh-index").disabled = false; notify(`Refresh status unavailable: ${e}. Reload to reconnect.`, true); }); }, 1500);
+  }).catch(e => { if (e instanceof ProjectSelectionChanged) return; refreshTimer = undefined; el<HTMLButtonElement>("refresh-index").disabled = false; notify(`Refresh status unavailable: ${e}. Reload to reconnect.`, true); }); }, 1500);
 }
 function bind(): void {
   window.addEventListener("hashchange", route);
@@ -359,19 +375,28 @@ function bind(): void {
 bind();
 // Switching project re-reads every page for the new project, including the embedded graph.
 onProjectChange(() => {
+  projectEpoch++; runsGeneration++;
+  if (refreshTimer !== undefined) clearTimeout(refreshTimer);
+  if (sandboxTimer !== undefined) clearTimeout(sandboxTimer);
+  refreshTimer = sandboxTimer = undefined;
   packet = null; packetText = ""; current = null;
+  status = null;
+  el("runs-list").replaceChildren();
+  el("run-banner").hidden = true; el("new-comparison").hidden = true;
+  el<HTMLButtonElement>("export-report").disabled = true;
+  document.querySelector(".configuration")!.classList.remove("recorded-configuration");
+  for (const id of ["host", "model", "delivery", "task"]) el<HTMLInputElement>(id).disabled = false;
+  renderArm("without"); renderArm("with"); metrics(); renderJob(null); renderSandbox(null);
   el("context-output").replaceChildren();
-  const frame = el<HTMLIFrameElement>("graph-frame");
-  if (frame.getAttribute("src")) frame.src = `/?project=${selectedProject() ?? ""}&_=${Date.now()}`;
+  syncGraph();
   void syncStatus();
   void api<Host[]>("hosts").then(data => { hosts = data; renderHosts(); }).catch(() => undefined);
   if (activePage === "runs") void loadRuns().catch(e => notify(String(e), true));
 });
-void initProjects().then(() => { initLive(); void syncStatus(); });
+void initProjects().then(() => {
+  initLive(); syncGraph(); void syncStatus();
+  void api<Host[]>("hosts").then(data => { hosts = data; renderHosts(); }).catch(error => notify(`Host detection unavailable: ${error}`, true));
+  void api<SandboxJob | null>("sandboxes").then(job => { renderSandbox(job); if (job?.state === "running") pollSandboxes(); }).catch(error => notify(`Preparation status unavailable: ${error}`, true));
+}).catch(error => notify(`Project setup unavailable: ${error}`, true));
 window.setInterval(() => { void syncStatus(); }, 15000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) void syncStatus(); });
-void api<SandboxJob | null>("sandboxes").then(job => {renderSandbox(job); if (job?.state === "running") pollSandboxes();}).catch(() => { /* Existing status request explains server connection failures. */ });
-void Promise.allSettled([api<Status>("status").then(renderStatus), api<Host[]>("hosts").then(data => { hosts = data; renderHosts(); })]).then(results => {
-  if (results[0].status === "rejected") { el("connection").textContent = "Connection unavailable"; notify(`Could not connect: ${results[0].reason}. Open the authenticated URL printed by prism view.`, true); }
-  if (results[1].status === "rejected") { el("host-state").textContent = "Host detection unavailable"; notify(`Host detection failed: ${results[1].reason}`, true); }
-});
