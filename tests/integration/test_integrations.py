@@ -57,7 +57,8 @@ def test_claude_code_install_contents(tiny_repo: Path) -> None:
     assert post["matcher"] == "Edit|Write|MultiEdit"
     assert post["hooks"][0]["command"] == "prism hook post-edit"
     mcp = json.loads((tiny_repo / ".mcp.json").read_text())
-    assert mcp["mcpServers"]["prism"] == {"command": "prism", "args": ["mcp"]}
+    # Loaded upfront, so the first lookup needs no ToolSearch call.
+    assert mcp["mcpServers"]["prism"] == {"command": "prism", "args": ["mcp"], "alwaysLoad": True}
     claude_md = (tiny_repo / "CLAUDE.md").read_text()
     assert claude_md.startswith("<!-- prism-managed:start -->")
     from prism.instructions import CONSENT

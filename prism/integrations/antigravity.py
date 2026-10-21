@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import copy
 import json
+import shutil
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -46,6 +48,47 @@ HOOK_ENTRY: dict[str, Any] = {
         {"type": "command", "command": "prism hook stop", "timeout": 20},
     ],
 }
+
+
+AGY_TIMEOUT = 30
+USER_MCP_COMMAND = ["mcp", "add", "prism", "prism", "mcp"]
+
+
+def _agy(*args: str) -> subprocess.CompletedProcess[str] | None:
+    agy = shutil.which("agy")
+    if agy is None:
+        return None
+    try:
+        return subprocess.run(
+            [agy, *args], capture_output=True, text=True, timeout=AGY_TIMEOUT, check=False
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
+
+def user_mcp_registered() -> bool | None:
+    """Is a `prism` server in Antigravity's user-level MCP list? None when agy is unavailable."""
+    listed = _agy("mcp", "list")
+    if listed is None or listed.returncode != 0:
+        return None
+    return any(line.split()[:1] == ["prism"] for line in listed.stdout.splitlines())
+
+
+def register_user_mcp() -> bool:
+    """Add `prism mcp` to Antigravity's user-level MCP list (only when the user agreed)."""
+    added = _agy(*USER_MCP_COMMAND)
+    return added is not None and added.returncode == 0
+
+
+def unregister_user_mcp() -> bool:
+    """Remove the user-level `prism` server, only if it is the one `prism init` adds."""
+    listed = _agy("mcp", "list")
+    if listed is None or not any(
+        line.split()[:1] == ["prism"] and "prism mcp" in line for line in listed.stdout.splitlines()
+    ):
+        return False
+    removed = _agy("mcp", "remove", "prism")
+    return removed is not None and removed.returncode == 0
 
 
 def _without_prism_hook(config: dict[str, Any]) -> dict[str, Any]:
@@ -107,7 +150,7 @@ class AntigravityIntegration(Integration):
         return [c for c in changes if not c.is_noop(root)]
 
     def notes(self, root: Path, options: IntegrationOptions) -> list[str]:
-        if not options.mcp:
+        if not options.mcp or user_mcp_registered():
             return []
         entry = json.dumps({"mcpServers": {"prism": MCP_ENTRY}}, indent=2)
         return [

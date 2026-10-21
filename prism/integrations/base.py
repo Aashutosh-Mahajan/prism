@@ -62,6 +62,8 @@ class IntegrationOptions:
     all_skills: bool = False
     # Opt-in: refuse to re-read an unchanged file the agent already has (Claude Code PreToolUse).
     dedupe_reads: bool = False
+    # Opt-in: shorten long Bash output before Claude Code reads it (PostToolUse, failures kept).
+    shorten_output: bool = False
 
 
 class Integration(ABC):
