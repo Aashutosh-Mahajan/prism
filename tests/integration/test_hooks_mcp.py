@@ -181,6 +181,32 @@ def test_mcp_tools_return_structured_results_and_errors(enabled: Path) -> None:
     asyncio.run(scenario())
 
 
+def test_mcp_results_are_sent_once_compactly_with_hints(enabled: Path) -> None:
+    """A dict answer must not reach the model as indented text plus a structured copy."""
+    server = build_server(enabled, "full")
+
+    async def scenario() -> None:
+        tools = {t.name: t for t in await server.list_tools()}
+        assert tools["prism_context"].annotations.read_only_hint is True
+        assert tools["prism_note"].annotations.read_only_hint is False
+        assert all(t.annotations.destructive_hint is False for t in tools.values())
+        result = await server.call_tool("prism_context", {"target": "apply_discount"})
+        assert getattr(result, "structured_content", None) is None
+        text = "".join(b.text for b in result.content if hasattr(b, "text"))
+        assert "\n" not in text and json.loads(text)["target"]["kind"]
+        brief = await server.read_resource("prism://brief")
+        assert "Languages" in "".join(getattr(b, "content", "") for b in brief)
+
+    asyncio.run(scenario())
+
+
+def test_mcp_brief_resource_respects_consent(enabled: Path) -> None:
+    server = build_server(enabled, "standard")
+    registry_path().unlink()
+    brief = asyncio.run(server.read_resource("prism://brief"))
+    assert "Languages" not in "".join(getattr(b, "content", "") for b in brief)
+
+
 def test_mcp_store_reloads_after_update(enabled: Path) -> None:
     tools = PrismTools(enabled)
     assert tools.prism_locate("brand_new_fn").get("error") == "not_found"

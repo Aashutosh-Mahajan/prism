@@ -26,7 +26,9 @@ from prism.navigator.store import IndexStore
 from prism.status import compute_status
 from prism.writers.manifest import load_manifest
 
-INSTRUCTIONS = SHORT
+# Hosts show server instructions with the tool list and use them to decide when to call it.
+# Reuse comes first: code a hook already delivered must not be fetched again.
+INSTRUCTIONS = f"{SHORT} For code you don't have yet, use prism_task, not grep or reads."
 
 
 class PrismTools:
@@ -396,6 +398,96 @@ def enabled_tools(root: Path, profile: str | None = None) -> list[str]:
     return list(LEAN_TOOLS)
 
 
+# The one tool a coding task starts with is listed upfront; the rest stay deferred.
+ALWAYS_LOAD = frozenset({"prism_task"})
+# Tools that only write inside .aicontext/ (never source); every other tool only reads.
+WRITING_TOOLS = frozenset(
+    {
+        "prism_note",
+        "prism_refresh_commit",
+        "prism_audit_record",
+        "prism_audit_update",
+        "prism_audit_report",
+        "prism_decision_record",
+    }
+)
+
+
+def _annotations(name: str) -> Any:
+    """Hints that let a host run read-only lookups without asking the user each time."""
+    try:
+        from mcp.types import ToolAnnotations
+    except ImportError:  # pragma: no cover - SDK before annotations
+        return None
+    writes = name in WRITING_TOOLS
+    return ToolAnnotations.model_validate(
+        {
+            "readOnlyHint": not writes,
+            "destructiveHint": False,
+            "idempotentHint": not writes or name == "prism_audit_update",
+            "openWorldHint": False,
+        }
+    )
+
+
+def compact_result(payload: dict[str, Any]) -> Any:
+    """One compact JSON copy of a tool's answer.
+
+    SDKs serialise a returned dict as indented text *and* again as `structuredContent`; a host
+    that forwards both makes the model pay for the answer more than twice."""
+    import json
+
+    from mcp.types import CallToolResult, TextContent
+
+    return CallToolResult.model_validate(
+        {
+            "content": [
+                TextContent(
+                    type="text",
+                    text=json.dumps(payload, separators=(",", ":"), ensure_ascii=False),
+                )
+            ],
+            "isError": bool(payload.get("error")),
+        }
+    )
+
+
+def _compact(method: Callable[..., dict[str, Any]]) -> Callable[..., Any]:
+    import functools
+
+    @functools.wraps(method)  # keeps the signature and docstring the SDK builds the schema from
+    def handler(*args: Any, **kwargs: Any) -> Any:
+        return compact_result(method(*args, **kwargs))
+
+    handler.__annotations__ = {**method.__annotations__, "return": Any}
+    return handler
+
+
+def _register(server: Any, name: str, handler: Callable[..., Any]) -> None:
+    """Register without a derived output schema (handlers return a finished result)."""
+    options: dict[str, Any] = {"name": name, "structured_output": False}
+    annotations = _annotations(name)
+    if annotations is not None:
+        options["annotations"] = annotations
+    if name in ALWAYS_LOAD:
+        # Claude Code otherwise hides MCP tools behind ToolSearch: one extra model call,
+        # re-sending the whole context, before the first lookup.
+        options["meta"] = {"anthropic/alwaysLoad": True}
+    while True:
+        try:
+            server.tool(**options)(handler)
+            return
+        except TypeError:  # pragma: no cover - older SDK without one of the options
+            if "meta" in options:
+                options.pop("meta")
+            elif "annotations" in options:
+                options.pop("annotations")
+            elif "structured_output" in options:
+                options.pop("structured_output")
+            else:
+                raise
+
+
 def _server_class() -> Any:
     """MCP SDK 2.x `MCPServer`, or 1.x `FastMCP` (same decorator/run API for our use)."""
     try:
@@ -421,48 +513,44 @@ def build_server(root: Path, profile: str | None = None) -> Any:
         format: Literal["compact", "json"] = "compact",
         detail: Literal["full", "brief"] = "full",
     ) -> Any:
-        """Get edit source, contracts, literals, callers and tests in one call.
+        """Start here for any question about or change to this repo's code.
 
-        Compact text matches CLI output; json returns the full packet. Use a
-        shared session id to reuse evidence from CLI/hooks or across reconnects.
-        Read only missing ranges for partial packets. No separate orientation.
+        One call: relevant source with line numbers, every exact match of named strings and
+        values (no grep), callers, tests, and a checked patch for mechanical edits. Earlier
+        code is referenced, not resent. Read only ranges listed as missing.
         """
         from prism.navigator.task_pack import render_task
 
         pack = tools.prism_task(query, budget, repeat, mode, session, detail)
         if format == "json" or pack.get("error"):
-            import json
-
-            from mcp.types import CallToolResult, TextContent
-
-            # Validate wire aliases for both SDK 1.x and 2.x; SDK 2's typed
-            # constructor uses snake_case although the protocol uses camelCase.
-            return CallToolResult.model_validate(
-                {
-                    # One copy only: the host feeds `content` to the model, and a second copy in
-                    # `structuredContent` would be paid for again whenever a host forwards both.
-                    "content": [
-                        TextContent(
-                            type="text",
-                            text=json.dumps(pack, separators=(",", ":"), ensure_ascii=False),
-                        )
-                    ],
-                    "isError": bool(pack.get("error")),
-                }
-            )
+            return compact_result(pack)
         return render_task(pack)
 
     for name in enabled_tools(tools.root, profile):
-        handler = task if name == "prism_task" else getattr(tools, name)
+        # Every handler returns finished text or a ready result: an SDK that derives an
+        # output schema from its annotation would reject the ready result (Python 3.10).
         if name == "prism_task":
-            # The handler returns finished text or a ready result: an SDK that derives an
-            # output schema from its annotation would reject the ready result (Python 3.10).
-            try:
-                server.tool(name=name, structured_output=False)(handler)
-                continue
-            except TypeError:  # pragma: no cover - SDK without structured_output
-                pass
-        server.tool(name=name)(handler)
+            _register(server, name, task)
+        else:
+            _register(server, name, _compact(getattr(tools, name)))
+
+    def brief_resource() -> str:
+        """Compact project brief: layout, commands, conventions and freshness."""
+
+        def read() -> dict[str, Any]:
+            tools._require_consent()
+            return nav.op_brief(tools.root)
+
+        answer = tools.call(read)
+        if "error" in answer:
+            return str(answer.get("message") or answer["error"])
+        return f"{answer['brief']}\n\n{answer['freshness']}".strip()
+
+    # Resources cost nothing until a host reads them, unlike a tool schema sent every turn.
+    if hasattr(server, "resource"):
+        server.resource("prism://brief", name="prism_brief", mime_type="text/markdown")(
+            brief_resource
+        )
     return server
 
 

@@ -13,7 +13,7 @@ SHORT = f"{REUSE} {EVIDENCE} {LOCATED}"
 
 def long_form(mcp: bool) -> str:
     route = (
-        "Transport: native MCP `prism_task` (discover deferred tools once)."
+        "Transport: MCP `prism_task` for code you lack, instead of grep or reads."
         if mcp
         else 'Transport: `prism task "<user request>"`.'
     )
