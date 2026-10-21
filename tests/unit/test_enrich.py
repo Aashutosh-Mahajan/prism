@@ -338,3 +338,52 @@ def test_indirect_tests_follow_call_graph_distance(tmp_path: Path) -> None:
         assert selected[:2] == ["tests/test_rules.py", "tests/test_checkout.py"]
     finally:
         store.close()
+
+
+def make_mixed_numbers_repo(root: Path) -> None:
+    """A rule spelled three ways in one validator, beside unrelated uses of the same number."""
+    write(root, "pyproject.toml", "[project]\nname='x'\n")
+    write(
+        root,
+        "backend/accounts/validators.py",
+        "import re\n\n\ndef validate_registration(reg):\n"
+        '    """Registration number: alphanumeric, 6-20 characters."""\n'
+        "    if not re.match(r'^[A-Z0-9]{6,20}$', reg):\n"
+        "        raise ValueError('Registration must be 6-20 alphanumeric characters')\n"
+        "    return reg\n",
+    )
+    write(root, "backend/medical/views.py", "PAGE_SIZE = 20\nTIMEOUT_SECONDS = 20\n")
+    write(root, "backend/pharmacy/models.py", "def stock(n):\n    return n * 20  # crates of 20\n")
+    index(root)
+
+
+def test_a_number_patch_changes_only_the_requested_rule(tmp_path: Path) -> None:
+    make_mixed_numbers_repo(tmp_path)
+    pack = task(
+        tmp_path,
+        "Increase the accounts registration number maximum length from 20 to 25 characters.",
+    )
+    patch = pack["patch"]
+    # The request names one spelling ("20 characters"); the regex and the message in the same
+    # function state the same rule and change with it.
+    assert patch["sites"] == 3 and patch["files"] == 1
+    text = (tmp_path / patch["path"]).read_text(encoding="utf-8")
+    assert "{6,25}" in text and "6-25 characters" in text and "6-25 alphanumeric" in text
+    assert "PAGE_SIZE" not in text and "crates" not in text  # other 20s are not this rule
+
+
+def test_a_number_change_everywhere_keeps_every_site(tmp_path: Path) -> None:
+    make_mixed_numbers_repo(tmp_path)
+    scoped = task(tmp_path, "Change the registration number length from 20 to 25 characters.")
+    everywhere = task(
+        tmp_path, "Change the registration number length from 20 to 25 characters everywhere."
+    )
+    # Asked for every occurrence, the patch covers every listed site and leaves none out.
+    assert everywhere["patch"]["left_alone"] == 0
+    assert everywhere["patch"]["sites"] >= scoped["patch"]["sites"]
+
+
+def test_a_number_without_a_clear_subject_gets_no_blind_patch(tmp_path: Path) -> None:
+    make_mixed_numbers_repo(tmp_path)
+    pack = task(tmp_path, "Use 25 rather than 20.")
+    assert "patch" not in pack  # a bare number with no subject is never patched blindly
