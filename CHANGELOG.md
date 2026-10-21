@@ -7,6 +7,56 @@ All notable changes to PRISM are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Locate and explain requests ("Locate…", "Explain how…", "Where is…") get a ranked **Locations**
+  list (symbol, file, lines, signature, first docstring line) built from name search with code
+  matches as agreement, and are ranked on their subject rather than framing words such as
+  "return the source file and symbol names". A clear list now lets the hook answer: on the 15
+  ArogyaTrack benchmark tasks the hook delivers on 15 (was 10), and every read-only packet holds
+  all expected names in 433–762 tokens; the retrieval eval is unchanged.
+- Checked patches for number changes are scoped to the rule the request describes: sites whose
+  line or enclosing function shares the request's subject, every spelling of that rule inside a
+  small function (a docstring, a regex `{6,20}`, a message), and the folder the request names.
+  "Everywhere" / "throughout" keeps every site; a bare number with no subject gets no patch. On
+  the ArogyaTrack benchmark, 6 of 7 edit tasks are solved by applying the patch alone (each passes
+  its independent check); before, a value change patched every matching number in the repository
+  (303 sites in 71 files for one task).
+- Edit packets say how to verify the change in this checkout: a cached probe checks whether the
+  test command can start (Django or pytest importable by the `python` on PATH, `node_modules`,
+  `go`); when it cannot, `Verify:` says so and the closing line names the check that can.
+- Kebab-case names in a request (`record-dose`, `create-prescription`) are searched exactly, like
+  quoted text, so URL paths and CSS classes get exhaustive site lists.
+- `prism hook shorten-output` (`prism init --shorten-output`, Claude Code, opt-in): long Bash
+  output is shortened through `updatedToolOutput`, failures kept and the full output saved.
+- Antigravity: `prism init` offers to add the MCP server with `agy mcp add`, and
+  `uninstall-integration` offers to remove it; never under `--yes`.
+- `prism init` installs hook + MCP by default (`--no-mcp` opts out).
+- Benchmarks: `tests/benchmarks/campaign_hard_tasks.json`, five multi-file and cross-stack
+  ArogyaTrack tasks with independent checks; `multihost` gains `--task-set`, `--arms`,
+  `--baseline-from` and quota detection (a refused session is retried, never counted).
+- MCP is tuned to be called rather than bypassed: `prism_task` is loaded upfront in Claude Code
+  (`alwaysLoad` in the tool metadata and in `.mcp.json`), and the tool description and server
+  instructions tell agents to use it instead of grep or file reads for code they do not have yet.
+- Packet closing lines end the task instead of inviting more searching: medium matches say to
+  check the listed locations and search at most once; a checked patch is offered whenever one
+  exists, whatever the ranking confidence.
+- Task packets add a search channel: when nothing in the request anchors the answer, a symbol
+  whose name or docstring clearly leads metadata search is offered (below the best lexical match)
+  even if no single line matched enough words. Paraphrased requests located 50% → 62.5%, all
+  retrieval cases 79% → 83%, anchored cases unchanged; on 40 replayed PRISM commits, recall of
+  changed existing files 24% → 28% and token precision 26% → 28% (mean packet 652 → 674 tokens).
+- MCP: every tool answer is sent once as compact JSON instead of indented text plus a
+  `structuredContent` copy (a `prism_impact` answer: about 5,600 → 2,450 characters); tools carry
+  read-only / non-destructive annotations; the brief is a `prism://brief` resource.
+- `prism doctor --session` names the agent (Claude Code, Codex, Antigravity, Gemini, Cursor)
+  recognised from the hook payload, so per-agent comparisons are not mixed.
+- Tests that drive an app through its HTTP API are linked to the route handlers they request
+  (`client.post("/api/v1/auth/login/")` matches the route `/auth/login/` mounted under a prefix;
+  `reverse("send-otp")` matches the Django URL name), and a test named after a module prefers the
+  module in its own app. On ArogyaTrack: route handlers with a known test 0 → 18, symbols 23 → 41.
+- `tests/benchmarks/multihost.py`: one parallel native benchmark for Codex, Claude Code and
+  Antigravity across no PRISM, CLI, MCP, hook and hook + MCP, with a live token counter (`watch`)
+  and usage normalised to fresh input, cache read, cache write and output.
+
 - Delivery parity: CLI and MCP return identical packet text (`tests/integration/test_surface_parity.py`);
   a tool call after the prompt hook shares the hook's session, so delivered code is a reference.
 - MCP default profile is one tool, `prism_task` (`standard` adds status/context/impact).
@@ -39,6 +89,12 @@ All notable changes to PRISM are documented here. The format follows
   name overrides, hook-delivery records for every runner.
 
 ### Fixed
+- The import-line pattern used to rank code held literal backspace characters where `\b`
+  word boundaries belonged, so it never matched and import lines were never demoted.
+- The graph viewer no longer answers `index_stale` while an update replaces the index under a
+  read: retryable reads wait briefly for the writer (about 1.5 s at most).
+- Antigravity documentation: instructions live in `AGENTS.md`, hooks in `.agents/hooks.json`
+  (`PreInvocation`, `Stop`), MCP in `~/.gemini/config/mcp_config.json`.
 - Read dedupe remembers successful returned ranges rather than attempted reads, expires old
   coverage without extending it on new reads, and resets after compaction/resume.
 - Test selection follows caller distance, includes unmapped fallback tests and discloses missing

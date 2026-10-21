@@ -28,10 +28,12 @@ Enable PRISM in this repository. Shows every change first and asks before making
 |---|---|---|
 | `--agent` | `auto` | `claude-code`, `cursor`, `codex`, `gemini`, `antigravity`, `generic`, `auto` or `none` |
 | `--hooks / --no-hooks` | ask | Install agent hooks (brief at session start, the code a request needs added to the prompt, update after edits) |
-| `--mcp / --no-mcp` | ask | Register the MCP server |
+| `--mcp / --no-mcp` | ask (yes) | Register the MCP server; hook + MCP is the default install |
 | `--git-hooks / --no-git-hooks` | ask | Install git `post-commit`, `post-merge`, `post-checkout` hooks |
 | `--scan / --no-scan` | ask | Run the initial scan |
-| `--yes`, `-y` | | Skip prompts (for scripts) |
+| `--shorten-output` | off | Claude Code: shorten long command output before it is read (failures kept) |
+| `--dedupe-reads` | off | Claude Code: refuse to re-read an unchanged file already in context |
+| `--yes`, `-y` | | Skip prompts (for scripts); never changes user-level agent settings |
 
 Running `init` twice changes nothing. Existing config files are merged, never overwritten, and
 backed up to `.aicontext/cache/backups/` before modification.
@@ -79,7 +81,9 @@ consent, freshness, artifact integrity, MCP SDK, git, parsers and the viewer bun
 Was PRISM used in one agent session, and if not, why not: whether the prompt hook fired (and why
 it stayed silent), how many `prism task` / `prism_task` calls the agent made, which hook config
 files exist, and a one-line verdict. Reads the local work log, so it works for sessions in which
-the hooks ran.
+the hooks ran. The session line names the agent (`claude-code`, `codex`, `antigravity`, `gemini`,
+`cursor`) recognised from the hook payload, so runs on different agents are not mixed up when
+comparing them.
 
 ### `prism filter -- <command>`
 

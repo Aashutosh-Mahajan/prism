@@ -30,7 +30,7 @@ asks), some only an instruction file and MCP.
 | **Codex** | managed block in `AGENTS.md` | `.codex/config.toml` | `.codex/hooks.json`: SessionStart, UserPromptSubmit, PostToolUse | |
 | **Gemini CLI** | managed block in `GEMINI.md` | `.gemini/settings.json` | same file: SessionStart, BeforeAgent, AfterTool | |
 | **Cursor** | always-on rule `.cursor/rules/prism.mdc` | `.cursor/mcp.json` | `.cursor/hooks.json`: sessionStart, afterFileEdit | on-request rules for audit, refresh, decisions |
-| **Antigravity** (experimental) | `.agent/rules/prism.md` | printed for you to add (user-level file) | none documented | `.agents/skills/prism-context/` |
+| **Antigravity** (experimental) | managed block in `AGENTS.md` | user-level, added by `agy mcp add` when you agree | `.agents/hooks.json`: PreInvocation, Stop | `.agents/skills/prism-context/` |
 | **Generic** | managed block in `AGENTS.md` | | | |
 | **Git hooks** (any agent, optional) | | | `post-commit`, `post-merge`, `post-checkout` run `prism update --quiet` | |
 
@@ -86,7 +86,10 @@ Hooks added to `.claude/settings.json`:
 ```
 
 Plain stdout from `SessionStart` and `UserPromptSubmit` hooks is added to the conversation.
-MCP entry in `.mcp.json`: `{ "mcpServers": { "prism": { "command": "prism", "args": ["mcp"] } } }`.
+MCP entry in `.mcp.json`: `{ "mcpServers": { "prism": { "command": "prism", "args": ["mcp"], "alwaysLoad": true } } }`.
+`alwaysLoad` keeps `prism_task` listed from the first turn: without it Claude Code hides MCP tools
+behind its tool search, and every first lookup costs an extra model call that re-sends the whole
+context (measured at 0.6–0.8 extra calls per session).
 The managed `CLAUDE.md` block (about 100 tokens) tells the agent to start with `prism task`, and
 never to run `prism init`, `scan`, `enable` or `install --global` unless you ask.
 
@@ -129,11 +132,22 @@ the agent calls `prism_task` (or `prism task`) itself.
 
 ## Antigravity
 
-Experimental. Antigravity reads workspace rules from `.agent/rules/` and skills from
-`.agents/skills/`, so PRISM installs a short rule and the `prism-context` skill. Its MCP servers
-are configured in a user-level file (`~/.gemini/antigravity/mcp_config.json`), which PRISM never
-edits on its own; `prism init` prints the entry to add. No hooks are documented, so freshness
-relies on the working-tree check every answer starts with.
+Experimental. A rule under `.agents/rules/` is only loaded unconditionally when it declares
+`trigger: always_on`, so the instruction block goes into `AGENTS.md`, which Antigravity always
+reads (an older `.agent/rules/prism.md` written by PRISM is removed). The `prism-context` skill
+goes in `.agents/skills/`. `.agents/hooks.json` gets two hooks:
+
+- `PreInvocation` (`prism hook pre-invocation`) runs before every model call. It reads the newest
+  request from the transcript and injects the packet once per request as a `userMessage` (an
+  `ephemeralMessage` would be dropped after the first model call), so the agent does not have to
+  remember to ask.
+- `Stop` (`prism hook stop`): the finish-time check below.
+
+MCP servers are configured in a user-level file (`~/.gemini/config/mcp_config.json`), which PRISM
+never edits on its own. When `agy` is installed, `prism init` asks whether to add it for you with
+`agy mcp add prism prism mcp` (never under `--yes`), and `prism uninstall-integration` offers to
+remove that entry again; otherwise it prints the entry to add. Without it the agent still gets
+the packet from the hook, but cannot call `prism_task` for follow-up lookups.
 
 ## Any other agent
 
@@ -150,6 +164,19 @@ structured JSON, and reports problems as structured errors (`not_enabled`, `inde
 Most agents send every tool's schema to the model on every turn, so the default **lean** profile
 exposes only what a coding task needs. `prism mcp --profile full` (or `PRISM_MCP_PROFILE=full`)
 adds the rest.
+
+Every answer is sent once, as compact JSON (or the packet text for `prism_task`), never as
+indented text plus a second `structuredContent` copy that a host may forward too. Each tool
+carries MCP annotations: lookups are `readOnlyHint`, so a host can run them without asking, and
+the few tools that write (only inside `.aicontext/`) say so; none is destructive or reaches the
+network. The compact brief is also a resource, `prism://brief`, which costs nothing until a host
+reads it. `prism_task` also declares `_meta["anthropic/alwaysLoad"]`, so a host that defers MCP tools still lists
+it upfront, and the server instructions say when to call it: for code the agent does not have yet,
+never again for code a hook already delivered.
+
+The default install is the prompt hook together with MCP: the hook puts the first answer in the
+request, and `prism_task` serves every follow-up within the same session, so code already sent is
+referenced, not repeated.
 
 | Tool | Profile | Input | Returns |
 |---|---|---|---|
@@ -224,6 +251,12 @@ to `.aicontext/cache/hook.log`), and do nothing if PRISM is missing, not enabled
   is still in the code, it sends the agent back **once** with the remaining lines, otherwise it says
   nothing and costs nothing. It never loops (`stop_hook_active` is honoured) and protects the result
   rather than shortening the session. Verified against Codex 0.162 and documented for Claude Code.
+- **Shortened command output** (`prism hook shorten-output`; Claude Code `PostToolUse` on `Bash`;
+  install with `prism init --shorten-output`, off by default): long test, build and git output is
+  replaced, through `updatedToolOutput` in Bash's own output shape, by what `prism filter` keeps.
+  Failure lines and their context are never dropped, the full output is saved and its path shown
+  last, and output the filter cannot shorten by at least 20 lines is left alone.
+  `PRISM_SHORTEN_OUTPUT=0` switches it off.
 - **Read dedupe** (`prism hook dedupe-read`; Claude Code `PreToolUse` on `Read`; install with
   `prism init --dedupe-reads`, off by default): refuses a re-read of an unchanged range the agent
   already has, with a reason saying so. It only ever **denies**; it never approves a call, so it cannot widen
