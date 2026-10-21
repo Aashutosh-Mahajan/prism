@@ -5,7 +5,9 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import os
 import subprocess
+import sys
 import time
 import uuid
 import zipfile
@@ -93,7 +95,15 @@ def prepare_pair(root: Path, task: str) -> dict[str, Any]:
                     raise UserError("Agent instruction files must be UTF-8") from exc
             files[path.as_posix()] = data
     ident = uuid.uuid4().hex
-    parent = (config_home() / "dashboard-benchmarks").resolve()
+    # Windows' Codex sandbox denies process startup beneath the user's .config
+    # directory. Keep ordinary agent workspaces outside that protected location.
+    override = os.environ.get("PRISM_BENCHMARK_HOME")
+    if override:
+        parent = Path(override).expanduser().resolve()
+    elif sys.platform == "win32" and not os.environ.get("PRISM_CONFIG_HOME"):
+        parent = (Path.home() / "Documents" / "PRISM Benchmarks").resolve()
+    else:
+        parent = (config_home() / "dashboard-benchmarks").resolve()
     if parent.is_relative_to(root):
         raise UserError(
             "PRISM_CONFIG_HOME must be outside the original repository for sandbox preparation"
