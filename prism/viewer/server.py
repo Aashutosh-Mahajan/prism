@@ -170,6 +170,8 @@ class Runtime:
             self._watcher.start()
 
     def close(self) -> None:
+        if self.dashboard.live.running():
+            self.dashboard.live.cancel()
         if self._watcher is not None:
             self._watcher.stop.set()
 
@@ -402,7 +404,12 @@ def make_handler(
                 elif path == "/api/dashboard/live/cancel":
                     self._json(200, ctx.dashboard.live.cancel())
                 elif path == "/api/dashboard/live/finish":
-                    self._json(200, ctx.dashboard.live.finish_manual())
+                    self._json(
+                        200,
+                        ctx.dashboard.live.finish_manual(
+                            allow_unchanged=body.get("allow_unchanged") is True
+                        ),
+                    )
                 elif path == "/api/layout":
                     self._json(200, ctx.backend.save_layout(body))
                 elif path == "/api/views":
