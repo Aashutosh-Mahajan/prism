@@ -23,7 +23,32 @@ TRUSTED = frozenset(["high", "medium"])
 CODE = frozenset(["function", "method", "class"])
 # Verbs and glue that tie unrelated names together; sharing one says nothing about delegation.
 GENERIC = frozenset(
-    ["get", "set", "run", "make", "create", "new", "init", "build", "handle", "process", "exec", "execute", "call", "apply", "to", "from", "with", "is", "has", "do", "of", "the", "for", "self"]
+    [
+        "get",
+        "set",
+        "run",
+        "make",
+        "create",
+        "new",
+        "init",
+        "build",
+        "handle",
+        "process",
+        "exec",
+        "execute",
+        "call",
+        "apply",
+        "to",
+        "from",
+        "with",
+        "is",
+        "has",
+        "do",
+        "of",
+        "the",
+        "for",
+        "self",
+    ]
 )
 
 
