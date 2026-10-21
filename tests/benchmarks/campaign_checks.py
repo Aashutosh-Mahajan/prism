@@ -68,6 +68,9 @@ def check(root: Path, name: str) -> None:
     if name in confirmation:
         check_confirmation(root, name)
         return
+    if name in HARD_CHECKS:
+        check_hard(root, name)
+        return
     if name == "registration_colon":
         namespace = pure_definitions(root / "backend/accounts/validators.py")
         validator = namespace["validate_medical_registration"]
@@ -299,6 +302,49 @@ def check_confirmation(root: Path, name: str) -> None:
         import importlib
 
         assert getattr(importlib.import_module(module), new) == value
+
+
+HARD_CHECKS = {"refill_threshold", "dose_endpoint", "upcoming_window"}
+
+
+def _function_source(path: Path, name: str) -> str:
+    """The source of one function or method, found by name anywhere in the module."""
+    text = path.read_text(encoding="utf-8-sig")
+    for node in ast.walk(ast.parse(text)):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == name:
+            return ast.get_source_segment(text, node) or ""
+    raise AssertionError(f"{name} not found in {path}")
+
+
+def check_hard(root: Path, name: str) -> None:
+    """Multi-file and cross-stack edits; functions touching Django models are checked by source."""
+    adherence = root / "backend/adherence"
+    if name == "refill_threshold":
+        check = _function_source(adherence / "services.py", "check_refill_needed")
+        assert re.search(r">=\s*75(\.0)?\b", check) and not re.search(r"\b80\b", check), check
+        assert re.search(
+            r"<\s*80(\.0)?\b", _function_source(adherence / "services.py", "calculate_adherence")
+        )
+        task = _function_source(adherence / "tasks.py", "send_refill_reminders")
+        email = _function_source(adherence / "tasks.py", "_send_refill_email")
+        assert "75%" in task and "80%" not in task
+        assert "75%" in email and "80%" not in email
+        flag = (adherence / "tasks.py").read_text(encoding="utf-8-sig")
+        assert "adherence < 80%" in flag  # the low-adherence rule is a different rule
+    elif name == "dose_endpoint":
+        urls = (adherence / "urls.py").read_text(encoding="utf-8-sig")
+        assert "'log-dose/'" in urls or '"log-dose/"' in urls
+        assert "record-dose" not in urls and "name='record_dose_taken'" in urls
+        assert "def record_dose_taken" in (adherence / "views.py").read_text(encoding="utf-8-sig")
+        for client in ("frontend/lib/api.ts", "mobile_app/lib/providers/patient_provider.dart"):
+            text = (root / client).read_text(encoding="utf-8-sig")
+            assert "/adherence/log-dose/" in text and "record-dose" not in text, client
+    elif name == "upcoming_window":
+        view = _function_source(adherence / "views.py", "get_upcoming_doses")
+        service = _function_source(adherence / "services.py", "get_upcoming_doses")
+        assert re.search(r"get\(\s*['\"]hours['\"]\s*,\s*48\s*\)", view), view
+        assert re.search(r"hours_ahead\s*:\s*int\s*=\s*48\b", service), service
+        assert "query_params" in view  # the `hours` override is kept
 
 
 if __name__ == "__main__":
