@@ -5,7 +5,7 @@ import { call, change, fmt, mk, money, onProjectChange, q, say, secs, selectedPr
 // Live paired runs. Each panel runs one project and one agent twice at once (without and with PRISM) and
 // streams messages, terminal commands and token counters. Several panels show several projects together.
 
-interface LiveEvent { kind: "info" | "text" | "tool" | "result" | "terminal_start" | "terminal_end"; text?: string; name?: string; ok?: boolean; id?: string; command?: string; output?: string; t: number }
+interface LiveEvent { kind: "info" | "text" | "tool" | "result" | "terminal_start" | "terminal_end"; text?: string; name?: string; ok?: boolean; id?: string; command?: string; output?: string; phase?: string; t: number }
 type Usage = { input_tokens: number; cache_creation_tokens: number; cache_read_tokens: number; output_tokens: number; input_total: number; total_tokens: number };
 interface Check { ran: boolean; passed: boolean; exit_code: number | null; output: string; seconds: number }
 interface ArmState {
@@ -19,8 +19,9 @@ interface Verdict {
 }
 type Arms = Record<"without" | "with", ArmState>;
 interface LiveRun {
-  id: string; state: string; agent: string; agent_name: string; manual: boolean; task: string; check_command: string; error: string | null;
+  id: string; state: string; agent: string; agent_name: string; manual: boolean; task: string; check_command: string; model?: string; error: string | null;
   preparation: { arms: Record<"without" | "with", string> } | null; arms: Arms; verdict: Verdict | null; started: number; finished: number | null;
+  manual_launch?: Record<"without" | "with", string>;
 }
 interface AgentInfo { id: string; name: string; mode: "live" | "manual"; found: boolean; version: string | null; logged_in: boolean | null }
 interface Row {
@@ -45,6 +46,7 @@ class Feed {
     if (event.kind === "terminal_start") {
       const block = mk("div", undefined, "term-block"); const line = mk("div", undefined, "term-cmd");
       const status = mk("span", "running…", "term-status"); const out = mk("pre", "", "term-out"); out.hidden = true;
+      if (event.phase === "verification") block.append(mk("div", "VERIFICATION COMMAND", "instrument-label"));
       line.append(mk("b", "$ "), mk("span", event.command ?? ""), status); block.append(line, out); this.el.append(block);
       this.blocks.set(event.id ?? "", { status, out });
     } else if (event.kind === "terminal_end") {
@@ -73,8 +75,8 @@ function metricsTable(run: { arms: Arms; check_command: string; manual?: boolean
   row("  of which cached", fmt(a.usage?.cache_read_tokens), fmt(b.usage?.cache_read_tokens));
   row("Output tokens", fmt(a.usage?.output_tokens), fmt(b.usage?.output_tokens), change(v.output_saving_pct), v.output_saving_pct);
   row("Cost reported by the agent", money(a.cost_usd), money(b.cost_usd), change(v.cost_saving_pct), v.cost_saving_pct);
-  row("Time", secs(a.duration_seconds), secs(b.duration_seconds), change(v.time_saving_pct), v.time_saving_pct);
-  row("Terminal commands run", fmt(a.commands_run), fmt(b.commands_run), change(v.commands_saving_pct), v.commands_saving_pct);
+  row(run.manual ? "Manual hand-off time" : "Time", secs(a.duration_seconds), secs(b.duration_seconds), run.manual ? "n/a" : change(v.time_saving_pct), run.manual ? null : v.time_saving_pct);
+  row("Agent terminal commands", run.manual ? "Not captured" : fmt(a.commands_run), run.manual ? "Not captured" : fmt(b.commands_run), run.manual ? "n/a" : change(v.commands_saving_pct), run.manual ? null : v.commands_saving_pct);
   row("Agent turns", fmt(a.turns), fmt(b.turns));
   row("Lines changed", `+${a.lines_added} −${a.lines_removed}`, `+${b.lines_added} −${b.lines_removed}`, v.identical_patch ? "identical changes" : "different changes");
   if (run.check_command) row("Check passed", a.check?.passed ? "yes" : "NO", b.check?.passed ? "yes" : "NO", "", a.check?.passed && b.check?.passed ? 1 : -1);
@@ -86,26 +88,29 @@ function verdictBox(box: HTMLElement, run: { arms: Arms; check_command: string; 
   box.hidden = false; const v = run.verdict;
   const saving = v.token_saving_pct == null ? "Tokens could not be measured for this run." : `PRISM used ${change(v.token_saving_pct)} tokens${v.time_saving_pct == null ? "" : ` and ${change(v.time_saving_pct)} time`}.`;
   const text: Record<string, [string, string]> = {
-    same: ["Same quality, fewer resources", `The independent check passed in both runs. ${saving}`],
+    same: ["Both checks passed", `The configured check passed in both copies. ${saving}`],
     degraded: ["Quality dropped with PRISM", `The check passed without PRISM but failed with it. ${saving} A saving does not count when the result is worse.`],
     better: ["PRISM passed where the baseline failed", `${saving} One run is one example, not proof.`],
-    both_failed: ["Both solutions failed the check", "Neither result is correct, so no saving is meaningful."],
+    both_failed: ["Both checks failed", "Review the check output below. A missing test, dependency, or code failure can cause this result; successful solutions have not been verified."],
     unverified: ["Quality not verified", `No check command was given, so nothing proves the output is still correct. ${saving} Add a test command to prove quality.`],
     incomplete: ["A run did not finish", "No comparison is shown because at least one agent failed or was stopped."],
   };
   const [title, body] = text[v.quality] ?? ["Result", ""];
   box.className = `live-verdict ${v.quality}`;
   const parts: HTMLElement[] = [mk("strong", title), mk("p", body)];
+  if (run.manual) parts.push(mk("p", "Manual Antigravity run: PRISM does not capture agent tokens, cost, turns, or terminal commands. The Terminal tab shows PRISM's verification command. Time measures the manual hand-off interval.", "muted"));
+  if (run.manual && !run.arms.without.files_changed.length && !run.arms.with.files_changed.length) parts.push(mk("p", "No source changes were recorded in either copy. For a coding task, finish the task in both Antigravity folders before checking the results.", "live-note warn"));
+  if (run.check_command) parts.push(mk("pre", run.check_command, "verification-command"));
   if (v.quality !== "incomplete") parts.push(metricsTable(run, v), mk("p", "One paired run is one example. It shows what happened on this task, not a typical saving.", "muted"));
   box.append(...parts);
 }
 function armDetails(arm: ArmState): HTMLElement[] {
   const out: HTMLElement[] = [];
   if (arm.error) out.push(mk("p", `Problem: ${arm.error}`, "live-note warn"));
-  const detail = (title: string, text: string): void => { if (!text) return; const d = mk("details"); d.append(mk("summary", title), mk("pre", text)); out.push(d); };
+  const detail = (title: string, text: string, open = false): void => { if (!text) return; const d = mk("details") as HTMLDetailsElement; d.open = open; d.append(mk("summary", title), mk("pre", text)); out.push(d); };
   detail("Final answer", arm.final_text);
   detail(`Code changes (${arm.files_changed.length} file${arm.files_changed.length === 1 ? "" : "s"}, +${arm.lines_added} −${arm.lines_removed})`, arm.patch);
-  if (arm.check) detail(`Check: ${arm.check.passed ? "passed" : "FAILED"}`, arm.check.output);
+  if (arm.check) detail(`Check: ${arm.check.passed ? "passed" : "FAILED"} · exit ${arm.check.exit_code ?? "unavailable"}`, arm.check.output || "The command produced no output.", !arm.check.passed);
   return out;
 }
 
@@ -114,6 +119,9 @@ function armDetails(arm: ArmState): HTMLElement[] {
 class Panel {
   readonly el = mk("section", undefined, "panel live-panel");
   private projectId: string; private agent = "claude"; private run: LiveRun | null = null; private timer: number | undefined;
+  private destroyed = false;
+  private revision = 0;
+  private starting = false;
   private offsets = { without: 0, with: 0 };
   private feeds = {} as Record<"without" | "with", { activity: Feed; terminal: Feed }>;
   private ui = {} as Record<string, HTMLElement>;
@@ -125,7 +133,7 @@ class Panel {
     const ui = this.ui;
     const bar = mk("div", undefined, "live-bar");
     ui.project = this.field("select"); ui.agent = this.field("select");
-    (ui.project as HTMLSelectElement).addEventListener("change", () => { this.stopPolling(); this.projectId = (ui.project as HTMLSelectElement).value; this.reset(); void this.load(); this.changed(); });
+    (ui.project as HTMLSelectElement).addEventListener("change", () => { this.setProject((ui.project as HTMLSelectElement).value); panels.forEach(panel => panel.fillSelects()); });
     (ui.agent as HTMLSelectElement).addEventListener("change", () => { this.agent = (ui.agent as HTMLSelectElement).value; this.agentNote(); this.changed(); });
     const label = (text: string, input: HTMLElement): HTMLElement => { const l = mk("label", undefined, "live-field"); l.append(mk("span", text), input); return l; };
     bar.append(label("Project", ui.project), label("Coding agent", ui.agent));
@@ -134,7 +142,7 @@ class Panel {
     ui.model = this.field("input"); (ui.model as HTMLInputElement).placeholder = "agent default";
     ui.turns = this.field("input"); (ui.turns as HTMLInputElement).type = "number"; (ui.turns as HTMLInputElement).value = "30";
     const options = mk("details", undefined, "live-options"); const grid = mk("div", undefined, "live-grid2");
-    grid.append(label("Model (optional)", ui.model), label("Max turns", ui.turns)); options.append(mk("summary", "More options"), grid);
+    grid.append(label("Model (optional)", ui.model), label("Max turns (Claude Code)", ui.turns)); options.append(mk("summary", "More options"), grid);
     ui.agentNote = mk("p", undefined, "live-note");
     ui.start = this.field("button", "primary-button", "Start comparison ↗"); (ui.start as HTMLButtonElement).type = "button";
     ui.stop = this.field("button", "quiet-button", "Stop both runs"); (ui.stop as HTMLButtonElement).type = "button"; ui.stop.hidden = true;
@@ -144,7 +152,8 @@ class Panel {
     const form = mk("div", undefined, "live-form");
     const fields = mk("div", undefined, "live-setup");
     const setupHeading = mk("div", undefined, "setup-heading");
-    setupHeading.append(mk("h2", "Set the conditions."), mk("span", "INPUT / CONFIGURATION", "instrument-label"));
+    ui.graph = mk("a", "Project graph ↗", "instrument-label"); (ui.graph as HTMLAnchorElement).target = "_blank"; (ui.graph as HTMLAnchorElement).rel = "noopener";
+    setupHeading.append(mk("h2", "Set the conditions."), ui.graph);
     fields.append(setupHeading, bar, label("Task brief", ui.task), label("Verification command", ui.check), options, ui.agentNote, actions);
     const monitor = mk("aside", undefined, "run-monitor");
     ui.monitor = monitor;
@@ -189,8 +198,9 @@ class Panel {
     return card;
   }
   fillSelects(): void {
+    (this.ui.graph as HTMLAnchorElement).href = `/?project=${encodeURIComponent(this.projectId)}`;
     const projectSelect = this.ui.project as HTMLSelectElement; const agentSelect = this.ui.agent as HTMLSelectElement;
-    projectSelect.replaceChildren(...allProjects().map(p => { const o = document.createElement("option"); o.value = p.id; o.textContent = `${p.name}${p.state === "ready" ? "" : ` (${p.state.replace("_", " ")})`}`; return o; }));
+    projectSelect.replaceChildren(...allProjects().map(p => { const o = document.createElement("option"); o.value = p.id; o.textContent = `${p.name}${p.state === "ready" ? "" : ` (${p.state.replace("_", " ")})`}`; o.disabled = p.state !== "ready" || panels.some(panel => panel !== this && panel.config.project === p.id); return o; }));
     if (allProjects().some(p => p.id === this.projectId)) projectSelect.value = this.projectId;
     agentSelect.replaceChildren(...(agents.length ? agents : [{ id: "claude", name: "Claude Code", mode: "live", found: true, version: null, logged_in: null } as AgentInfo]).map(a => {
       const o = document.createElement("option"); o.value = a.id; o.textContent = `${a.name}${a.mode === "manual" ? " (manual hand-off)" : a.found ? (a.logged_in === false ? " (not logged in)" : "") : " (not installed)"}`; return o;
@@ -207,44 +217,63 @@ class Panel {
     else note.textContent = `${info.name} ${info.version ?? ""} is ready. Each run spends real tokens from your plan.`;
   }
   private reset(): void {
+    this.revision++;
     this.run = null; this.offsets = { without: 0, with: 0 };
     for (const arm of ARMS) { this.feeds[arm].activity.reset(); this.feeds[arm].terminal.reset(); }
     this.ui.results.hidden = true;
+    for (const field of ["agent", "task", "check", "model", "turns", "start"]) (this.ui[field] as HTMLInputElement).disabled = false;
+    this.ui.stop.hidden = true;
     this.ui.monitor.dataset.active = "false";
     this.ui.monitorState.textContent = "Standby";
     this.ui.monitorHint.textContent = "Configure a task to begin.";
   }
   private stopPolling(): void { if (this.timer !== undefined) { clearTimeout(this.timer); this.timer = undefined; } }
-  destroy(): void { this.stopPolling(); }
+  destroy(): void { this.destroyed = true; this.revision++; this.stopPolling(); }
   get summary(): { project: string; run: LiveRun | null } { return { project: allProjects().find(p => p.id === this.projectId)?.name ?? "project", run: this.run }; }
   get config(): { project: string; agent: string } { return { project: this.projectId, agent: this.agent }; }
   setAgent(agent: string): void { this.agent = agent; this.fillSelects(); }
+  setProject(projectId: string): void { if (projectId === this.projectId || this.starting) return; if (!allProjects().some(project => project.id === projectId && project.state === "ready")) return; this.stopPolling(); this.projectId = projectId; this.reset(); this.fillSelects(); void this.load(); this.changed(); }
 
   private async load(): Promise<void> {
-    try { const run = await call<LiveRun | null>(`live?without=0&with=0`, undefined, this.projectId); this.render(run, true); if (run && ACTIVE.includes(run.state)) this.poll(); }
-    catch { /* The project may not be indexed yet. */ }
+    const revision = this.revision;
+    try { const project = this.projectId; const run = await call<LiveRun | null>(`live?without=0&with=0`, undefined, project); if (this.destroyed || revision !== this.revision) return;
+      if (run) { this.agent = run.agent; this.fillSelects(); (this.ui.task as HTMLTextAreaElement).value = run.task; (this.ui.check as HTMLInputElement).value = run.check_command; (this.ui.model as HTMLInputElement).value = run.model ?? ""; }
+      this.render(run, true); if (run && ACTIVE.includes(run.state)) this.poll(); }
+    catch (error) { if (!this.destroyed && revision === this.revision) say(`Could not load this project's live run: ${error}`, true); }
   }
   private poll(): void {
+    if (this.destroyed) return;
     this.stopPolling();
     const project = this.projectId;
+    const revision = this.revision;
     this.timer = window.setTimeout(() => {
       void call<LiveRun | null>(`live?without=${this.offsets.without}&with=${this.offsets.with}`, undefined, project).then(run => {
-        this.timer = undefined; if (project !== this.projectId) return;
+        if (this.destroyed || revision !== this.revision) return; this.timer = undefined;
         this.render(run); if (run && ACTIVE.includes(run.state)) this.poll();
-      }).catch(error => { this.timer = undefined; say(`Live status unavailable: ${error}`, true); });
+      }).catch(error => { if (this.destroyed || revision !== this.revision) return; this.timer = undefined; say(`Live status unavailable: ${error}. Reconnecting…`, true); this.poll(); });
     }, 800);
   }
   private async start(): Promise<void> {
+    if (this.starting || this.destroyed) return;
     const task = (this.ui.task as HTMLTextAreaElement).value.trim();
     if (!task) { say("Describe one coding task first.", true); return; }
+    const revision = ++this.revision;
+    this.stopPolling();
+    const project = this.projectId;
+    const selectionAtStart = selectedProject();
+    this.starting = true;
+    (this.ui.project as HTMLSelectElement).disabled = true;
+    for (const field of ["agent", "task", "check", "model", "turns"]) (this.ui[field] as HTMLInputElement).disabled = true;
     (this.ui.start as HTMLButtonElement).disabled = true;
     try {
       const run = await call<LiveRun>("live", {
         task, agent: this.agent, check_command: (this.ui.check as HTMLInputElement).value.trim(), model: (this.ui.model as HTMLInputElement).value.trim(),
         max_turns: Number((this.ui.turns as HTMLInputElement).value || 30),
-      }, this.projectId);
+      }, project);
+      if (this.destroyed || revision !== this.revision) { say("The comparison started in the background. Reopen its project to follow it."); return; }
       this.render(run, true); this.poll();
-    } catch (error) { say(error instanceof Error ? error.message : String(error), true); (this.ui.start as HTMLButtonElement).disabled = false; }
+    } catch (error) { if (!this.destroyed && revision === this.revision) { say(error instanceof Error ? error.message : String(error), true); (this.ui.start as HTMLButtonElement).disabled = false; for (const field of ["agent", "task", "check", "model", "turns"]) (this.ui[field] as HTMLInputElement).disabled = false; } }
+    finally { this.starting = false; if (!this.destroyed) { (this.ui.project as HTMLSelectElement).disabled = false; const chosen = selectedProject(); if (panels.length === 1 && chosen && chosen !== selectionAtStart) this.setProject(chosen); } }
   }
   private render(run: LiveRun | null, fresh = false): void {
     this.run = run; this.ui.results.hidden = run === null; this.changed();
@@ -255,6 +284,7 @@ class Panel {
     const labels = ["1  Prepare two copies", run.manual ? "2  You run the task" : "2  Run both agents", "3  Check both results", "4  Compare"];
     this.ui.steps.replaceChildren(...labels.map((label, i) => mk("span", label, run.state === "completed" || i < index ? "done" : i === index ? "on" : "")));
     const active = ACTIVE.includes(run.state);
+    for (const field of ["agent", "task", "check", "model", "turns"]) (this.ui[field] as HTMLInputElement).disabled = active;
     this.ui.monitor.dataset.active = String(active);
     this.ui.monitorState.textContent = run.state.replaceAll("_", " ");
     this.ui.monitorHint.textContent = active ? "Following both sandbox runs." : "Review the measured results below.";
@@ -269,17 +299,30 @@ class Panel {
       this.ui[`${arm}-state`].textContent = state.state;
       const usage = state.usage;
       this.ui[`${arm}-tokens`].replaceChildren(document.createTextNode(usage ? `${fmt(usage.total_tokens)} tokens` : run.manual ? "not measurable" : "waiting…"),
-        mk("small", usage ? `${state.usage_final ? "final" : "so far"} · input ${fmt(usage.input_total)} (cached ${fmt(usage.cache_read_tokens)}) · output ${fmt(usage.output_tokens)} · ${state.commands_run} command${state.commands_run === 1 ? "" : "s"}` : "Token counts appear as the agent works"));
+        mk("small", usage ? `${state.usage_final ? "final" : "so far"} · input ${fmt(usage.input_total)} (cached ${fmt(usage.cache_read_tokens)}) · output ${fmt(usage.output_tokens)} · ${state.commands_run} command${state.commands_run === 1 ? "" : "s"}` : run.manual ? "Antigravity does not provide token counters to this dashboard." : "Token counts appear as the agent works"));
+      this.feeds[arm].terminal.el.dataset.manual = String(run.manual);
       this.ui[`${arm}-extra`].replaceChildren(...armDetails(state));
     }
     this.tick(); verdictBox(this.ui.verdict, run);
   }
   private manualBox(run: LiveRun): void {
-    const box = this.ui.manual; box.hidden = run.state !== "awaiting_manual" || !run.preparation; box.replaceChildren();
-    if (box.hidden || !run.preparation) return;
+    const box = this.ui.manual;
+    if (run.state !== "awaiting_manual" || !run.preparation) { box.hidden = true; box.replaceChildren(); delete box.dataset.run; return; }
+    // Polling must preserve checkbox state, keyboard focus, and expanded launch instructions.
+    if (!box.hidden && box.dataset.run === run.id) return;
+    box.hidden = false; box.dataset.run = run.id; box.replaceChildren();
     const done = mk("button", "Done: check and compare", "primary-button") as HTMLButtonElement; done.type = "button";
-    done.addEventListener("click", () => { done.disabled = true; void call("live/finish", {}, this.projectId).then(() => this.poll()).catch(e => { done.disabled = false; say(String(e), true); }); });
-    box.append(mk("p", "Open each folder in Antigravity and give it this exact task:", "muted"), mk("pre", run.task), mk("p", `Without PRISM: ${run.preparation.arms.without}`, "muted"), mk("p", `With PRISM: ${run.preparation.arms.with}`, "muted"), done);
+    const confirmations: HTMLInputElement[] = [];
+    const confirm = (text: string): HTMLElement => { const label = mk("label", undefined, "manual-confirm"); const input = document.createElement("input"); input.type = "checkbox"; confirmations.push(input); label.append(input, mk("span", text)); return label; };
+    const without = confirm("I finished the task in the Without PRISM folder."); const withPrism = confirm("I finished the task in the With PRISM folder."); const unchanged = confirm("This task intentionally requires no source changes (optional).");
+    const update = (): void => { done.disabled = !confirmations[0].checked || !confirmations[1].checked; }; confirmations.forEach(input => input.addEventListener("change", update)); update();
+    done.addEventListener("click", () => { done.disabled = true; void call("live/finish", { allow_unchanged: confirmations[2].checked }, this.projectId).then(() => this.poll()).catch(e => { update(); say(String(e), true); }); });
+    box.append(mk("h3", "Action required: run the task in Antigravity"), mk("p", "PRISM has prepared the folders. It does not open or run Antigravity automatically. Open each folder in a separate fresh conversation, use the same model and task, and save both solutions before continuing.", "muted"), mk("pre", run.task), mk("p", `Without PRISM: ${run.preparation.arms.without}`, "muted"), mk("p", `With PRISM: ${run.preparation.arms.with}`, "muted"), without, withPrism, unchanged, done);
+    if (run.manual_launch) {
+      const launch = mk("details"); launch.append(mk("summary", "Launch Antigravity with the correct PRISM environment"), mk("p", "Use a separate terminal for each command block (PowerShell on Windows). The With session needs its own consent configuration and PRISM on PATH. If antigravity is not recognized, launch its executable from that same terminal. Use a fresh app process so it inherits this environment.", "muted"));
+      for (const arm of ARMS) launch.append(mk("h4", TITLES[arm]), mk("pre", run.manual_launch[arm]));
+      box.insertBefore(launch, without);
+    }
   }
   tick(): void {
     if (!this.run) return;
@@ -294,6 +337,7 @@ class Panel {
 // --- the Live page: one to three panels ------------------------------------------------------
 
 let panels: Panel[] = [];
+let desiredCount = 1;
 function overview(): void {
   const box = q("live-overview"); box.replaceChildren();
   const rows = panels.map(p => p.summary).filter(s => s.run);
@@ -305,30 +349,42 @@ function overview(): void {
     r.append(mk("td", project), mk("td", run.agent_name), mk("td", run.state), mk("td", v ? change(v.token_saving_pct) : "…", v?.token_saving_pct != null && v.token_saving_pct >= 0 ? "good" : ""), mk("td", v ? change(v.time_saving_pct) : "…"), mk("td", v ? v.quality.replace("_", " ") : "…"));
     table.append(r);
   }
-  box.append(mk("h3", "All projects at a glance"), table);
+  box.append(mk("h3", "All projects at a glance"), mk("p", "Each row compares that project's own baseline and PRISM run. Cross-project comparisons require matching tasks, models and checks.", "muted"), table);
 }
 function layout(count: number): void {
-  const wrap = q("live-panels"); const saved = panels.map(p => p.config);
+  count = Math.min(3, Math.max(1, Math.floor(count) || 1));
+  desiredCount = count;
+  const wrap = q("live-panels");
+  const projects = allProjects().filter(project => project.state === "ready");
+  const usedProjects = new Set<string>();
+  panels = panels.filter(panel => { const id = panel.config.project; if (!projects.some(project => project.id === id) || usedProjects.has(id)) { panel.destroy(); return false; } usedProjects.add(id); return true; });
+  count = Math.min(count, projects.length);
   while (panels.length > count) panels.pop()!.destroy();
-  const projects = allProjects();
   while (panels.length < count) {
     const used = new Set(panels.map(p => p.config.project));
-    const free = projects.find(p => p.state === "ready" && !used.has(p.id)) ?? projects.find(p => p.id === selectedProject()) ?? projects[0];
-    const panel = new Panel(free?.id ?? "", overview); panels.push(panel);
-    const wanted = saved[panels.length - 1]; if (wanted) panel.setAgent(wanted.agent);
+    const free = (panels.length === 0 ? projects.find(p => p.id === selectedProject()) : undefined) ?? projects.find(p => p.state === "ready" && !used.has(p.id)) ?? projects[0];
+    const panel = new Panel(free!.id, overview); panels.push(panel);
   }
-  wrap.className = `live-panels n${count}`; wrap.replaceChildren(...panels.map(p => p.el));
-  document.querySelectorAll<HTMLElement>("[data-live-count]").forEach(b => { const selected = Number(b.dataset.liveCount) === count; b.classList.toggle("on", selected); b.setAttribute("aria-pressed", String(selected)); b.setAttribute("aria-label", `${b.dataset.liveCount} project${b.dataset.liveCount === "1" ? "" : "s"}`); });
-  try { localStorage.setItem("prism-live-count", String(count)); } catch { /* Optional. */ }
+  panels.forEach(panel => panel.fillSelects());
+  wrap.className = `live-panels n${Math.max(1, count)}`; wrap.replaceChildren(...panels.map(p => p.el));
+  if (!count) wrap.append(mk("p", "Add and index a project on the Projects page to begin a live comparison.", "panel muted"));
+  document.querySelectorAll<HTMLButtonElement>("[data-live-count]").forEach(b => { const selected = Number(b.dataset.liveCount) === count; b.disabled = Number(b.dataset.liveCount) > projects.length; b.title = b.disabled ? `Requires ${b.dataset.liveCount} indexed projects` : ""; b.classList.toggle("on", selected); b.setAttribute("aria-pressed", String(selected)); b.setAttribute("aria-label", `${b.dataset.liveCount} project${b.dataset.liveCount === "1" ? "" : "s"}`); });
+  try { localStorage.setItem("prism-live-count", String(desiredCount)); } catch { /* Optional. */ }
   overview();
 }
 
 // --- Compare page: history of finished runs ---------------------------------------------------
 
+let historyGeneration = 0;
 async function history(): Promise<void> {
   const box = q("compare-history"); const detail = q("compare-detail");
+  const generation = ++historyGeneration;
+  const project = selectedProject();
+  detail.replaceChildren();
+  box.replaceChildren(mk("p", "Loading this project's comparisons…", "muted"));
   try {
-    const rows = await call<Row[]>("live/history");
+    const rows = await call<Row[]>("live/history", undefined, project);
+    if (generation !== historyGeneration || project !== selectedProject()) return;
     box.replaceChildren();
     if (!rows.length) { box.append(mk("p", "No live comparisons for this project yet. Run one on the Live page and it appears here.", "muted")); detail.replaceChildren(); return; }
     const table = mk("table", undefined, "live-table"); const head = mk("tr");
@@ -338,12 +394,12 @@ async function history(): Promise<void> {
       r.append(mk("td", new Date(row.started * 1000).toLocaleString()), mk("td", row.agent_name), mk("td", row.task.length > 70 ? `${row.task.slice(0, 70)}…` : row.task),
         mk("td", v ? `${fmt(row.without.usage?.total_tokens)} → ${fmt(row.with.usage?.total_tokens)} (${change(v.token_saving_pct)})` : row.state, v?.token_saving_pct != null && v.token_saving_pct >= 0 ? "good" : ""),
         mk("td", v ? `${secs(row.without.duration_seconds)} → ${secs(row.with.duration_seconds)}` : ""), mk("td", v ? `${row.without.commands_run} → ${row.with.commands_run}` : ""), mk("td", v ? v.quality.replace("_", " ") : row.state));
-      const open = (): void => { void call<LiveRun>(`live/runs/${row.id}`).then(run => showDetail(detail, run)).catch(e => say(String(e), true)); };
+      const open = (): void => { const requested = ++historyGeneration; void call<LiveRun>(`live/runs/${row.id}`, undefined, project).then(run => { if (requested === historyGeneration && project === selectedProject()) showDetail(detail, run); }).catch(e => { if (requested === historyGeneration) say(String(e), true); }); };
       r.addEventListener("click", open); r.addEventListener("keydown", e => { if (e.key === "Enter") open(); });
       table.append(r);
     }
     box.append(table);
-  } catch (error) { box.replaceChildren(mk("p", `Could not load history: ${error}`, "live-note warn")); }
+  } catch (error) { if (generation === historyGeneration && project === selectedProject()) box.replaceChildren(mk("p", `Could not load history: ${error}`, "live-note warn")); }
 }
 function showDetail(detail: HTMLElement, run: LiveRun): void {
   detail.replaceChildren(mk("h3", `${run.agent_name}: ${run.task}`));
@@ -365,13 +421,12 @@ export function initLive(): void {
     layout(count);
   };
   document.querySelectorAll<HTMLElement>("[data-live-count]").forEach(b => b.addEventListener("click", () => layout(Number(b.dataset.liveCount))));
-  onProjects(() => panels.forEach(p => p.fillSelects()));
-  onProjectChange(() => { void history(); });
+  onProjects(() => layout(desiredCount));
+  onProjectChange(id => { if (id && panels.length === 1) panels[0].setProject(id); void history(); });
   window.addEventListener("hashchange", () => { if (location.hash === "#compare") void history(); });
   window.setInterval(() => panels.forEach(p => p.tick()), 500);
   void call<{ agents: AgentInfo[] }>("live/status", undefined, null).then(status => { agents = status.agents; panels.forEach(p => p.fillSelects()); }).catch(() => undefined);
-  const ready = (): void => { if (allProjects().length) start(); else window.setTimeout(ready, 150); };
-  ready();
+  start();
   if (location.hash === "#compare") void history();
 }
 

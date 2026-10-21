@@ -39,6 +39,10 @@
 .live-panels.n2 .live-feed,.live-panels.n3 .live-feed{height:220px}
 .live-feed:empty::before{content:"Nothing yet";color:var(--muted)}
 .terminal-feed:empty::before{content:"No terminal commands yet"}
+.terminal-feed[data-manual=true]:empty::before{content:"Antigravity commands are not captured in manual mode. PRISM's verification command and output appear here after both tasks are finished."}
+.manual-confirm{display:flex;align-items:flex-start;gap:10px;margin:12px 0;font-size:11px;line-height:1.7}
+.manual-confirm input{width:16px;height:16px;flex:none;margin:2px 0 0;accent-color:var(--accent)}
+.verification-command{white-space:pre-wrap;overflow-wrap:anywhere;font:10px/1.8 "JetBrains Mono",monospace;border:1px solid var(--border);padding:12px}
 .live-feed>div{margin:0 0 8px;white-space:pre-wrap;word-break:break-word}
 .live-feed .ev-info{color:var(--muted)}
 .live-feed .ev-tool b{color:var(--accent)}
