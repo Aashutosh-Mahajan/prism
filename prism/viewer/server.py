@@ -26,10 +26,11 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit
 
-from prism.core.errors import PrismError
+from prism.core.errors import NotFoundError, PrismError, UserError
 from prism.core.paths import AICONTEXT, manifest_path
 from prism.viewer.api import ViewerBackend
 from prism.viewer.dashboard import DashboardService
+from prism.viewer.projects import ProjectManager
 from prism.writers.activity import activity_path
 from prism.writers.json_writer import write_json
 
@@ -38,6 +39,7 @@ MAX_BODY = 5 * 1024 * 1024
 POLL_SECONDS = 0.4
 HEARTBEAT_SECONDS = 15.0
 COOKIE = "prism_token"
+PROJECT_COOKIE = "prism_project"
 CSP = (
     "default-src 'self'; script-src 'self' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; "
     "img-src 'self' data:; connect-src 'self'; font-src 'self' data:; frame-ancestors 'none'; base-uri 'none'"
@@ -144,10 +146,37 @@ class Watcher(threading.Thread):
                         self.hub.publish("activity", json.loads(line))
 
 
+class Runtime:
+    """Everything one project needs: graph backend, dashboard services and its own event stream."""
+
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self.backend = ViewerBackend(root)
+        self.dashboard = DashboardService(root)
+        self.hub = EventHub()
+        self._watcher: Watcher | None = None
+        self._lock = threading.Lock()
+
+    def ensure_watcher(self) -> None:
+        """Start the index/activity watcher once the project has an index."""
+        with self._lock:
+            if self._watcher is not None or not manifest_path(self.root).is_file():
+                return
+            try:
+                self.backend.model()
+            except PrismError:
+                return
+            self._watcher = Watcher(self.root, self.backend, self.hub)
+            self._watcher.start()
+
+    def close(self) -> None:
+        if self._watcher is not None:
+            self._watcher.stop.set()
+
+
 def make_handler(
-    backend: ViewerBackend, hub: EventHub, token: str, port_ref: list[int]
+    manager: ProjectManager, token: str, port_ref: list[int]
 ) -> type[BaseHTTPRequestHandler]:
-    dashboard = DashboardService(backend.root)
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "prism-viewer"
@@ -196,12 +225,66 @@ def make_handler(
             if self.command != "HEAD":
                 self.wfile.write(body)
 
-        def _json(self, status: int, data: Any) -> None:
+        def _json(self, status: int, data: Any, extra: dict[str, str] | None = None) -> None:
             self._send(
                 status,
                 json.dumps(data, ensure_ascii=False).encode("utf-8"),
                 "application/json; charset=utf-8",
+                extra,
             )
+
+        def _cookie(self, name: str) -> str | None:
+            for part in (self.headers.get("Cookie") or "").split(";"):
+                key, _, value = part.strip().partition("=")
+                if key == name:
+                    return value
+            return None
+
+        def _selected(self, query: dict[str, str]) -> str | None:
+            return (
+                self.headers.get("X-Prism-Project")
+                or query.get("project")
+                or self._cookie(f"{PROJECT_COOKIE}_{port_ref[0]}")
+            )
+
+        def _ctx(self, query: dict[str, str]) -> Runtime:
+            """The project this request is about: header, then query, then the saved choice."""
+            explicit = self.headers.get("X-Prism-Project") or query.get("project")
+            try:
+                runtime: Runtime = manager.get(self._selected(query))
+            except NotFoundError:
+                if explicit:
+                    raise
+                runtime = manager.get(None)  # a stale cookie for a removed project
+            runtime.ensure_watcher()
+            return runtime
+
+        def _project_post(
+            self, path: str, body: Any
+        ) -> tuple[int, Any, dict[str, str] | None] | None:
+            if not path.startswith("/api/dashboard/projects"):
+                return None
+            if not isinstance(body, dict):
+                raise UserError("Expected a JSON object")
+            if path == "/api/dashboard/projects":
+                if body.get("git_url"):
+                    return 202, manager.add_git(body.get("git_url")), None
+                return 201, manager.add_path(body.get("path")), None
+            ident = body.get("id")
+            if not isinstance(ident, str):
+                raise UserError("Missing project id")
+            if path == "/api/dashboard/projects/index":
+                return 202, manager.index(ident), None
+            if path == "/api/dashboard/projects/remove":
+                manager.remove(ident)
+                return 200, {"removed": ident}, None
+            if path == "/api/dashboard/projects/select":
+                record = manager.record(ident)
+                cookie = (
+                    f"{PROJECT_COOKIE}_{port_ref[0]}={ident}; HttpOnly; SameSite=Strict; Path=/"
+                )
+                return 200, record, {"Set-Cookie": cookie}
+            return None
 
         def _error(self, exc: Exception) -> None:
             if isinstance(exc, ValueError):
@@ -257,7 +340,7 @@ def make_handler(
                 return
             try:
                 if path == "/api/events":
-                    self._events()
+                    self._events(self._ctx(query))
                     return
                 if path.startswith("/api/"):
                     self._json(200, self._api_get(path, query))
@@ -272,7 +355,7 @@ def make_handler(
             gated = self._gate()
             if gated is None:
                 return
-            path, _ = gated
+            path, query = gated
             origin = self.headers.get("Origin")
             if (
                 path.startswith("/api/dashboard/")
@@ -301,22 +384,29 @@ def make_handler(
                 return
             try:
                 body = json.loads(self.rfile.read(length) or b"{}")
+                projects = self._project_post(path, body)
+                if projects is not None:
+                    self._json(projects[0], projects[1], projects[2])
+                    return
+                ctx = self._ctx(query)
                 if path == "/api/dashboard/context":
-                    self._json(200, dashboard.preview(body))
+                    self._json(200, ctx.dashboard.preview(body))
                 elif path == "/api/dashboard/refresh":
-                    self._json(202, dashboard.refresh())
+                    self._json(202, ctx.dashboard.refresh())
                 elif path == "/api/dashboard/runs":
-                    self._json(201, dashboard.import_run(body))
+                    self._json(201, ctx.dashboard.import_run(body))
                 elif path == "/api/dashboard/sandboxes":
-                    self._json(202, dashboard.prepare_sandboxes(body))
+                    self._json(202, ctx.dashboard.prepare_sandboxes(body))
                 elif path == "/api/dashboard/live":
-                    self._json(202, dashboard.live.start(body))
+                    self._json(202, ctx.dashboard.live.start(body))
                 elif path == "/api/dashboard/live/cancel":
-                    self._json(200, dashboard.live.cancel())
+                    self._json(200, ctx.dashboard.live.cancel())
+                elif path == "/api/dashboard/live/finish":
+                    self._json(200, ctx.dashboard.live.finish_manual())
                 elif path == "/api/layout":
-                    self._json(200, backend.save_layout(body))
+                    self._json(200, ctx.backend.save_layout(body))
                 elif path == "/api/views":
-                    self._json(200, backend.save_view(body))
+                    self._json(200, ctx.backend.save_view(body))
                 else:
                     self._json(404, {"error": "not_found"})
             except ValueError:
@@ -337,40 +427,53 @@ def make_handler(
                     time.sleep(0.05)
 
         def _api_get_once(self, path: str, q: dict[str, str]) -> Any:
+            if path == "/api/dashboard/projects":
+                return {
+                    "projects": manager.projects(),
+                    "selected": self._selected(q) or manager.default_id,
+                    "default": manager.default_id,
+                }
+            ctx = self._ctx(q)
             if path == "/api/dashboard/status":
-                return dashboard.status()
+                return ctx.dashboard.status()
             if path == "/api/dashboard/hosts":
-                return dashboard.hosts()
+                return ctx.dashboard.hosts()
             if path == "/api/dashboard/job":
-                return dashboard.job()
+                return ctx.dashboard.job()
             if path == "/api/dashboard/sandboxes":
-                return dashboard.sandbox_job()
+                return ctx.dashboard.sandbox_job()
+            if path == "/api/dashboard/live/history":
+                return ctx.dashboard.live.history()
+            if path.startswith("/api/dashboard/live/runs/"):
+                return ctx.dashboard.live.saved_run(path.rsplit("/", 1)[-1])
             if path == "/api/dashboard/live/status":
-                return dashboard.live.status()
+                return ctx.dashboard.live.status()
             if path == "/api/dashboard/live":
-                return dashboard.live.snapshot(_offset(q.get("without")), _offset(q.get("with")))
+                return ctx.dashboard.live.snapshot(
+                    _offset(q.get("without")), _offset(q.get("with"))
+                )
             if path == "/api/dashboard/runs":
-                return dashboard.runs()
+                return ctx.dashboard.runs()
             if path.startswith("/api/dashboard/runs/"):
-                return dashboard.run(path.rsplit("/", 1)[-1])
+                return ctx.dashboard.run(path.rsplit("/", 1)[-1])
             if path == "/api/meta":
-                return backend.meta()
+                return ctx.backend.meta()
             if path == "/api/graph":
-                return backend.graph(q)
+                return ctx.backend.graph(q)
             if path.startswith("/api/node/"):
-                return backend.node(path[len("/api/node/") :])
+                return ctx.backend.node(path[len("/api/node/") :])
             if path == "/api/search":
-                return backend.search(q)
+                return ctx.backend.search(q)
             if path == "/api/path":
-                return backend.path(q)
+                return ctx.backend.path(q)
             if path.startswith("/api/impact/"):
-                return backend.impact(path[len("/api/impact/") :], q)
+                return ctx.backend.impact(path[len("/api/impact/") :], q)
             if path == "/api/diff":
-                return backend.diff(q)
+                return ctx.backend.diff(q)
             if path == "/api/layout":
-                return backend.get_layout()
+                return ctx.backend.get_layout()
             if path == "/api/views":
-                return backend.list_views()
+                return ctx.backend.list_views()
             from prism.core.errors import NotFoundError
 
             raise NotFoundError(f"no endpoint {path}")
@@ -396,8 +499,8 @@ def make_handler(
                 ctype += "; charset=utf-8"
             self._send(200, target.read_bytes(), ctype)
 
-        def _events(self) -> None:
-            q = hub.subscribe()
+        def _events(self, ctx: Runtime) -> None:
+            q = ctx.hub.subscribe()
             try:
                 self.send_response(200)
                 self.send_header("Content-Type", "text/event-stream")
@@ -416,7 +519,7 @@ def make_handler(
             except (BrokenPipeError, ConnectionResetError, OSError):
                 pass
             finally:
-                hub.unsubscribe(q)
+                ctx.hub.unsubscribe(q)
 
     return Handler
 
@@ -429,16 +532,17 @@ class ViewerServer:
     def __init__(self, root: Path, port: int = 0, token: str | None = None) -> None:
         self.root = root.resolve()
         self.token = token or secrets.token_urlsafe(24)
-        self.backend = ViewerBackend(self.root)
+        self.manager = ProjectManager(self.root, Runtime)
+        first: Runtime = self.manager.get(None)
+        self.backend = first.backend
         self.backend.model()  # fail fast if there is no index
-        self.hub = EventHub()
+        self.hub = first.hub
         self._port_ref = [0]
-        handler = make_handler(self.backend, self.hub, self.token, self._port_ref)
+        handler = make_handler(self.manager, self.token, self._port_ref)
         self.httpd = ThreadingHTTPServer(("127.0.0.1", port), handler)
         self.httpd.daemon_threads = True
         self.port = int(self.httpd.server_address[1])
         self._port_ref[0] = self.port
-        self.watcher = Watcher(self.root, self.backend, self.hub)
         self._thread: threading.Thread | None = None
 
     def url(self, focus: str | None = None, depth: int | None = None) -> str:
@@ -456,7 +560,7 @@ class ViewerServer:
         return self.root / AICONTEXT / "cache" / "viewer.json"
 
     def start(self) -> None:
-        self.watcher.start()
+        self.manager.get(None).ensure_watcher()
         self._thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
         self._thread.start()
         write_json(
@@ -465,7 +569,7 @@ class ViewerServer:
         )
 
     def serve_forever(self) -> None:
-        self.watcher.start()
+        self.manager.get(None).ensure_watcher()
         write_json(
             self._runtime_file(),
             {"port": self.port, "pid": os.getpid(), "token": self.token, "started": time.time()},
@@ -476,7 +580,8 @@ class ViewerServer:
             self.shutdown()
 
     def shutdown(self) -> None:
-        self.watcher.stop.set()
+        for runtime in self.manager.runtimes():
+            runtime.close()
         self.httpd.shutdown()
         self.httpd.server_close()
         with contextlib.suppress(OSError):

@@ -7,8 +7,11 @@ All notable changes to PRISM are documented here. The format follows
 ## [Unreleased]
 
 ### Added
-- Dashboard **Live** page: run one task through Claude Code with and without PRISM at the same time, streamed with live
-  token counters, then an independent check command and a quality verdict (`prism/viewer/live.py`).
+- Dashboard **Live** page and **Projects** page: add several projects (a local folder or an https git URL), pick Claude Code,
+  Codex or Antigravity (manual hand-off), and run one task with and without PRISM at the same time in two separate copies, with live
+  messages, terminal commands, token counters, time and an independent check that proves whether quality stayed the same. Up to three
+  projects can be shown together; Graph, Compare and the other pages follow the selected project; finished runs are kept as history
+  (`prism/viewer/live.py`, `prism/viewer/projects.py`).
 - Delivery parity: CLI and MCP return identical packet text (`tests/integration/test_surface_parity.py`);
   a tool call after the prompt hook shares the hook's session, so delivered code is a reference.
 - MCP default profile is one tool, `prism_task` (`standard` adds status/context/impact).

@@ -14,26 +14,44 @@ The local workspace includes:
 
 Light, dark and system themes are available. Assets and fonts are bundled locally. No source edits or model calls occur when opening the dashboard, exploring the graph or retrieving context.
 
-## Live comparison (Claude Code)
+## Projects
 
-The **Live** page runs one task through Claude Code twice at the same time: once in a plain copy of the repository (Without PRISM) and once in an identical copy that has PRISM's index and Claude Code hooks (With PRISM). You see each agent's messages, tool calls and token counter as they happen.
+The **Projects** page lists the projects the dashboard can show. Add a project by typing the full path of a folder on this computer, or by giving an `https://` git URL, which is downloaded into PRISM's own folder and indexed automatically. Adding a folder changes nothing; **Index** (two-step confirmation) creates `.aicontext/` inside it and adds it to its `.gitignore`, exactly like `prism init`. Removing a project only forgets it. The list is kept in the user config folder (`dashboard-projects.json`).
 
-1. Open the repository with `prism view --root <repository>`. It needs a committed Git repository; uncommitted edits are excluded.
-2. Enter one task. Optionally enter a **check command**, such as `python -m pytest -q`. It is run in both finished copies and is what proves the result is still correct. Without it the page says quality is *not verified*.
+The project chosen in the top bar is used by the Repository, Context, Graph, Compare, Runs and Settings pages. The server remembers the choice in a cookie so the embedded graph follows it. API calls can name a project with the `X-Prism-Project` header or a `project=` query parameter.
+
+## Live comparison
+
+The **Live** page runs one task through a coding agent twice at the same time: once in a plain copy of the project (Without PRISM) and once in an identical copy that has PRISM's index and the agent's PRISM integration (With PRISM). You see each agent's messages, every terminal command and its output, a live token counter and a timer.
+
+Choose **1, 2 or 3 projects** to show several panels at once. Each panel has its own project, agent and task, and an overview table compares them. A project can run one comparison at a time.
+
+| Agent | How it runs |
+|---|---|
+| Claude Code | Headless (`claude -p --output-format stream-json`). Tokens and cost come from Claude Code's own counters. |
+| Codex | Headless (`codex exec --json`). Tokens come from Codex's counters (cached input is part of input; total is input plus output). Codex reports no cost, so none is shown. The Codex adapter has only been tested against recorded-format stand-ins, not a real Codex install. |
+| Antigravity | Has no headless agent mode. PRISM prepares both folders; you run the task in each in Antigravity and press **Done**. Checks, changes and the quality verdict are real; tokens cannot be measured. |
+
+Steps:
+
+1. Add the project on the **Projects** page and index it. It needs a committed Git repository when it is a Git project; uncommitted edits are excluded.
+2. Pick the agent, enter one task and, optionally, a **check command** such as `python -m pytest -q`. It is run in both finished copies and is what proves the result is still correct. Without it the page says quality is *not verified*.
 3. Start. The page prepares the two copies, runs both agents, runs the check, and shows a verdict.
 
-What it reports, from Claude Code's own usage counters: total, input (including cached reads and cache writes) and output tokens, the cost Claude Code reports, turns, time, the files each run changed, and each run's check result. The quality verdict is one of *same*, *degraded*, *better*, *both failed*, *unverified* or *incomplete*. A token saving next to a *degraded* verdict is shown as a warning, never as a success.
+Reported for each run: total, input (with cached part) and output tokens, the cost the agent reports, time, terminal commands run, turns, lines added and removed, the changed files and each run's check result. The quality verdict is *same*, *degraded*, *better*, *both failed*, *unverified* or *incomplete*. A saving next to a *degraded* verdict is a warning, never a success.
+
+Finished runs are saved under `.aicontext/cache/dashboard/live/runs/` and listed, per project, on the **Compare** page with full detail, including the terminal commands that were run.
 
 Requirements and limits:
 
-- Claude Code must be installed and logged in (`claude auth login`). The page finds it on PATH or in the desktop app's folder; set `PRISM_CLAUDE_BIN` to override. Every run spends real tokens from your plan.
-- Both agents use `--setting-sources project`, no MCP servers and the same permission rules (file edits in their own folder, plus Python, pytest, npm test and prism commands). Only the With copy has PRISM on `PATH` and its hooks installed.
+- The agent must be installed and logged in (`claude auth login` for Claude Code). Executables are found on PATH, or set `PRISM_CLAUDE_BIN` / `PRISM_CODEX_BIN`. Every run spends real tokens from your plan.
+- Claude Code runs with `--setting-sources project`, no MCP servers and the same permission rules in both copies (file edits in its own folder, plus Python, pytest, npm test and prism commands). Codex runs with its `workspace-write` sandbox. Only the With copy has PRISM on `PATH` and its integration installed.
 - Folder copies are not an operating-system sandbox. One paired run is one example, not a typical saving.
-- Runs are saved to `.aicontext/cache/dashboard/live/last-run.json`; a server restart marks an unfinished run *interrupted* and does not rerun it.
+- A server restart marks an unfinished run *interrupted* and does not rerun it.
 
 ## Current execution limit
 
-Managed execution of other hosts (Codex, Antigravity) is not implemented. On the Compare page the Run comparison action is disabled; live Claude Code runs are on the Live page and explains the missing validated isolation/provider adapter. Installation detection alone is not proof of authentication, hooks, permissions or usable counters. No live token-saving claim is made.
+The old Compare-page Run comparison action stays disabled; live runs are on the Live page and explains the missing validated isolation/provider adapter. Installation detection alone is not proof of authentication, hooks, permissions or usable counters. No live token-saving claim is made.
 
 The next implementation gate in `ui.prd` is a working Codex adapter with enforced isolation, permission probes, fresh histories, automatic delivery proof, complete counters and independent checks. Other hosts require their own validated adapters. Existing repository-specific benchmark scripts are not exposed as a generic runner.
 

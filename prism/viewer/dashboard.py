@@ -6,7 +6,6 @@ import hashlib
 import json
 import math
 import re
-import shutil
 import subprocess
 import threading
 import time
@@ -225,21 +224,29 @@ class DashboardService:
         }
 
     def hosts(self) -> list[dict[str, Any]]:
-        return [
-            {
-                "id": ident,
-                "name": name,
-                "installed": bool(shutil.which(executable)),
-                "managed": False,
-                "reason": "Managed execution requires a validated isolation and provider-usage adapter. Use your installed host for manual work or import recorded evidence.",
-                "handoff": True,
-            }
-            for ident, name, executable in (
-                ("codex", "Codex", "codex"),
-                ("claude", "Claude Code", "claude"),
-                ("antigravity", "Antigravity", "antigravity"),
+        rows = []
+        for agent in self.live.agents():
+            live = agent["mode"] == "live"
+            ready = agent["found"] and agent["logged_in"] is not False
+            if not agent["found"]:
+                reason = "Not found on this computer. Install it to run live comparisons."
+            elif live and agent["logged_in"] is False:
+                reason = "Installed but not logged in. Log in once, then reload."
+            elif live:
+                reason = "Ready. Live with/without PRISM runs are on the Live page."
+            else:
+                reason = "Has no headless agent mode. PRISM prepares both folders; you run the task in each, then compare."
+            rows.append(
+                {
+                    "id": agent["id"],
+                    "name": agent["name"],
+                    "installed": agent["found"],
+                    "managed": bool(live and ready),
+                    "reason": reason,
+                    "handoff": True,
+                }
             )
-        ]
+        return rows
 
     def preview(self, body: Any) -> dict[str, Any]:
         if not isinstance(body, dict):

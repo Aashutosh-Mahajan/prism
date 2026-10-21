@@ -43,6 +43,12 @@ emit(
             "content": [
                 {"type": "text", "text": f"Working on: {task.strip()[:60]}"},
                 {"type": "tool_use", "name": "Edit", "input": {"file_path": "src/shop/money.py"}},
+                {
+                    "type": "tool_use",
+                    "id": "toolu_1",
+                    "name": "Bash",
+                    "input": {"command": "python -m pytest -q"},
+                },
             ],
             "usage": usage,
         },
@@ -59,7 +65,22 @@ if os.environ.get("FAKE_CLAUDE_BREAK") != arm:
 emit(
     {
         "type": "user",
-        "message": {"content": [{"type": "tool_result", "content": "edited", "is_error": False}]},
+        "message": {
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": "toolu_x",
+                    "content": "edited",
+                    "is_error": False,
+                },
+                {
+                    "type": "tool_result",
+                    "tool_use_id": "toolu_1",
+                    "content": "2 passed",
+                    "is_error": False,
+                },
+            ]
+        },
     }
 )
 emit(

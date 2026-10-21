@@ -12,7 +12,7 @@ import pytest
 
 from prism.core.errors import UserError
 from prism.lifecycle import apply_init, plan_init, scan
-from prism.viewer.live import LiveRunner, compare, usage_totals
+from prism.viewer.live import ACTIVE, LiveRunner, _empty_arm, compare, usage_totals
 
 FAKE = Path(__file__).parents[1] / "fixtures/fake_claude.py"
 CHECK = (
@@ -41,14 +41,14 @@ def wait(runner: LiveRunner) -> dict:
     deadline = time.monotonic() + 180
     while time.monotonic() < deadline:
         snapshot = runner.snapshot()
-        if snapshot and snapshot["state"] not in ("preparing", "running", "checking"):
+        if snapshot and snapshot["state"] not in ACTIVE:
             return snapshot
         time.sleep(0.3)
     raise AssertionError("live run did not finish")
 
 
 def runner_for(root: Path) -> LiveRunner:
-    return LiveRunner(root, root / ".aicontext/cache/live", [sys.executable, str(FAKE)])
+    return LiveRunner(root, root / ".aicontext/cache/live", {"claude": [sys.executable, str(FAKE)]})
 
 
 def test_usage_totals_count_cached_input_as_processed() -> None:
@@ -127,10 +127,10 @@ def test_validation_and_missing_agent(root: Path, monkeypatch: pytest.MonkeyPatc
     monkeypatch.setattr("prism.viewer.live.shutil.which", lambda *a, **k: None)
     monkeypatch.setattr("prism.viewer.live.glob.glob", lambda *a, **k: [])
     with pytest.raises(UserError, match="not found"):
-        LiveRunner(root, root / "cache").start({"task": "x"})
+        LiveRunner(root, root / "cache").start({"task": "x", "agent": "claude"})
 
 
 def test_compare_never_invents_numbers_for_an_incomplete_run() -> None:
-    arm = {"state": "failed", "usage": None, "cost_usd": None, "check": None, "patch": ""}
+    arm = {**_empty_arm(), "state": "failed"}
     result = compare({"without": dict(arm), "with": dict(arm)}, True)
     assert result["quality"] == "incomplete" and result["token_saving_pct"] is None

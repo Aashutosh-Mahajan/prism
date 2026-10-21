@@ -2,7 +2,9 @@ import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource/jetbrains-mono/400.css";
 import "./dashboard.css";
 import "./dashboard-polish.css";
-import "./live-compare";
+import { initLive } from "./live-compare";
+import { initProjects } from "./projects";
+import { onProjectChange, selectedProject } from "./shared";
 
 type Usage = Record<string, number>;
 interface Configuration { repository: string; source_commit: string; task: string; host: string; model: string; reasoning: string; delivery: string }
@@ -42,7 +44,7 @@ const number = (value: number | null | undefined): string => value == null ? "Un
 
 async function api<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`/api/dashboard/${path}`, {
-    credentials: "same-origin", headers: body === undefined ? {} : { "Content-Type": "application/json" },
+    credentials: "same-origin", headers: { ...(body === undefined ? {} : { "Content-Type": "application/json" }), ...(selectedProject() ? { "X-Prism-Project": selectedProject()! } : {}) },
     method: body === undefined ? "GET" : "POST", body: body === undefined ? undefined : JSON.stringify(body),
   });
   const data = await response.json();
@@ -61,7 +63,7 @@ function download(name: string, text: string, type = "application/json"): void {
 function route(): void {
   const requested = location.hash.slice(1) || "live";
   if (requested === "content") { el("content").focus(); return; }
-  const page = ["live", "compare", "repository", "context", "graph", "runs", "settings"].includes(requested) ? requested : "live";
+  const page = ["live", "projects", "compare", "repository", "context", "graph", "runs", "settings"].includes(requested) ? requested : "live";
   const changed = page !== activePage;
   activePage = page;
   document.querySelectorAll<HTMLElement>("[data-view]").forEach(v => { v.hidden = v.dataset.view !== page; });
@@ -348,6 +350,17 @@ function bind(): void {
   metrics();
 }
 bind();
+// Switching project re-reads every page for the new project, including the embedded graph.
+onProjectChange(() => {
+  packet = null; packetText = ""; current = null;
+  el("context-output").replaceChildren();
+  const frame = el<HTMLIFrameElement>("graph-frame");
+  if (frame.getAttribute("src")) frame.src = `/?project=${selectedProject() ?? ""}&_=${Date.now()}`;
+  void syncStatus();
+  void api<Host[]>("hosts").then(data => { hosts = data; renderHosts(); }).catch(() => undefined);
+  if (activePage === "runs") void loadRuns().catch(e => notify(String(e), true));
+});
+void initProjects().then(() => { initLive(); void syncStatus(); });
 window.setInterval(() => { void syncStatus(); }, 15000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) void syncStatus(); });
 void api<SandboxJob | null>("sandboxes").then(job => {renderSandbox(job); if (job?.state === "running") pollSandboxes();}).catch(() => { /* Existing status request explains server connection failures. */ });
