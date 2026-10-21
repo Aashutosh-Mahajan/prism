@@ -10,7 +10,15 @@ import contextlib
 import os
 import sys
 
-HOOKS = ("session-start", "user-prompt", "post-edit", "pre-invocation", "stop", "dedupe-read")
+HOOKS = (
+    "session-start",
+    "user-prompt",
+    "post-edit",
+    "pre-invocation",
+    "stop",
+    "dedupe-read",
+    "shorten-output",
+)
 
 
 def use_utf8() -> None:
@@ -51,7 +59,11 @@ def background_enabled() -> bool:
     return os.environ.get("PRISM_HOOK_SYNC") != "1"
 
 
-_EVENT = {"session-start": "SessionStart", "user-prompt": "UserPromptSubmit", "post-edit": "PostToolUse"}
+_EVENT = {
+    "session-start": "SessionStart",
+    "user-prompt": "UserPromptSubmit",
+    "post-edit": "PostToolUse",
+}
 
 
 def parse_flags(args: list[str]) -> dict[str, str]:
@@ -134,6 +146,13 @@ def run_hook(name: str, args: list[str] | None = None, *, embedded: bool = False
             from prism.hooks.dedupe import decide
 
             text = decide(raw)
+            if text:
+                sys.stdout.write(text + chr(10))
+            return
+        elif name == "shorten-output":
+            from prism.hooks.output import shorten_output
+
+            text = shorten_output(raw)
             if text:
                 sys.stdout.write(text + chr(10))
             return

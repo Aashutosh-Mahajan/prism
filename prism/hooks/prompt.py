@@ -152,7 +152,7 @@ def _retrieve(
         pack = adaptive_task(store, prompt, cap=packet_budget, seen=trial_seen, session=session)
         speaks_for_overview = bool(pack.get("overview")) and _overview_allowed(root)
         if pack["confidence"] == "low" or not (
-            pack["blocks"] or pack.get("literals") or speaks_for_overview
+            pack["blocks"] or pack.get("literals") or pack.get("locations") or speaks_for_overview
         ):
             return ""
         result = f"{HEADER}\n{render_task(pack)}"
@@ -188,10 +188,18 @@ def user_prompt(
         prompt = request_text(str(payload.get("prompt") or payload.get("user_prompt") or ""))[
             :MAX_PROMPT_CHARS
         ]
-        from prism.hooks.runner import session_of
-        from prism.writers.worklog import record_delivery, record_request
+        from prism.hooks.runner import host_of, session_of
+        from prism.writers.worklog import record_delivery as _record_delivery
+        from prism.writers.worklog import record_request
 
         session = session_of(payload)
+        host = host_of(payload)
+
+        def record_delivery(
+            root: Any, session: str | None, via: str, ok: bool, why: str = ""
+        ) -> None:
+            _record_delivery(root, session, via, ok, why, host=host)
+
         if not should_retrieve(prompt):
             record_delivery(root, session, "hook", False, "not a request about the code")
             return ""

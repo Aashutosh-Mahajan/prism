@@ -169,6 +169,42 @@ def session_of(payload: dict[str, Any]) -> str | None:
     return None
 
 
+_HOST_DIRS = (
+    ("/.claude/", "claude-code"),
+    ("/.codex/", "codex"),
+    ("/.gemini/antigravity/", "antigravity"),
+    ("/.gemini/", "gemini"),
+    ("/.cursor/", "cursor"),
+)
+
+
+def host_of(payload: dict[str, Any]) -> str:
+    """Which agent sent this hook payload, from its shape: the hosts install the same command.
+
+    Knowing the host is what lets a report compare Codex, Claude Code and Antigravity sessions
+    instead of mixing them. Unrecognised payloads say `unknown` rather than guess."""
+    explicit = payload.get("host")
+    if isinstance(explicit, str) and explicit:
+        return explicit
+    if "workspacePaths" in payload or "conversationId" in payload:
+        return "antigravity"
+    transcript = payload.get("transcript_path") or payload.get("transcriptPath")
+    if isinstance(transcript, str):
+        path = transcript.replace("\\", "/").lower()
+        for marker, host in _HOST_DIRS:
+            if marker in path:
+                return host
+    if "cursor_version" in payload or "conversation_id" in payload:
+        return "cursor"
+    if payload.get("hook_event_name") in ("BeforeAgent", "AfterTool"):
+        return "gemini"
+    if "permission_mode" in payload:
+        return "claude-code"
+    if "turn_id" in payload:
+        return "codex"
+    return "unknown"
+
+
 def _first_line(text: Any) -> str:
     """The first meaningful line of new text: enough to find where an edit landed."""
     if not isinstance(text, str):

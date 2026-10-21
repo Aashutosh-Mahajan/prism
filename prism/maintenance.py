@@ -408,7 +408,8 @@ def session_report(root: Path, session: str) -> list[Check]:
     add(
         "session",
         "ok",
-        f"{log.digest}: {len(log.requests)} request(s), {len(log.edits)} file(s) edited",
+        f"{log.digest}: {len(log.requests)} request(s), {len(log.edits)} file(s) edited"
+        + (f", agent {log.host}" if log.host else ""),
     )
 
     hook = [d for d in log.deliveries if d[0] == "hook"]
