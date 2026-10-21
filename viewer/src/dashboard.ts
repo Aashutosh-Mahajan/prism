@@ -5,6 +5,7 @@ import "./dashboard-polish.css";
 import { initLive } from "./live-compare";
 import { initProjects } from "./projects";
 import { onProjectChange, selectedProject } from "./shared";
+import "./dashboard-instrument.css";
 
 type Usage = Record<string, number>;
 interface Configuration { repository: string; source_commit: string; task: string; host: string; model: string; reasoning: string; delivery: string }
@@ -89,6 +90,12 @@ function renderStatus(s: Status): void {
   status = s; el("project").textContent = s.project; el("branch").textContent = s.branch || "No Git branch";
   el("revision").textContent = `INDEX ${s.index_revision.slice(0, 12)}`;
   el("connection").textContent = "Local connection"; el("connection").classList.add("good");
+  el("telemetry-files").textContent = typeof s.stats.files === "number" ? number(s.stats.files) : "—";
+  el("telemetry-symbols").textContent = typeof s.stats.symbols === "number" ? number(s.stats.symbols) : "—";
+  el("telemetry-freshness").textContent = s.fresh ? "Up to date" : "Refresh required";
+  document.querySelector(".telemetry-index")?.classList.toggle("stale", !s.fresh);
+  el("telemetry-commit").textContent = s.commit?.slice(0, 8) || "No commit";
+  el("telemetry-branch").textContent = s.branch || "No Git branch";
   document.title = `${s.project} · PRISM workspace`;
   const stats = el("repo-stats"); stats.replaceChildren();
   for (const [label, value] of [["Indexed files", s.stats.files], ["Symbols", s.stats.symbols], ["Call edges", s.stats.call_edges], ["Parse errors", s.stats.parse_errors]]) {
@@ -310,7 +317,7 @@ function bind(): void {
   window.addEventListener("hashchange", route);
   document.querySelector<HTMLAnchorElement>(".skip")!.addEventListener("click", event => { event.preventDefault(); el("content").focus(); });
   el("theme").addEventListener("change", theme); matchMedia("(prefers-color-scheme: light)").addEventListener("change", theme);
-  try { const saved = localStorage.getItem("prism-dashboard-theme"); el<HTMLSelectElement>("theme").value = saved && ["system", "light", "dark"].includes(saved) ? saved : "system"; } catch { /* Optional persistence. */ }
+  try { const saved = localStorage.getItem("prism-dashboard-theme"); el<HTMLSelectElement>("theme").value = saved && ["system", "light", "dark"].includes(saved) ? saved : "dark"; } catch { el<HTMLSelectElement>("theme").value = "dark"; }
   theme(); route();
   el("host").addEventListener("change", () => { el<HTMLInputElement>("model").value = ""; hostState(); });
   el("prepare-context").addEventListener("click", () => {

@@ -136,13 +136,34 @@ class Panel {
     const options = mk("details", undefined, "live-options"); const grid = mk("div", undefined, "live-grid2");
     grid.append(label("Model (optional)", ui.model), label("Max turns", ui.turns)); options.append(mk("summary", "More options"), grid);
     ui.agentNote = mk("p", undefined, "live-note");
-    ui.start = this.field("button", "primary-button", "Start live comparison"); (ui.start as HTMLButtonElement).type = "button";
+    ui.start = this.field("button", "primary-button", "Start comparison ↗"); (ui.start as HTMLButtonElement).type = "button";
     ui.stop = this.field("button", "quiet-button", "Stop both runs"); (ui.stop as HTMLButtonElement).type = "button"; ui.stop.hidden = true;
     (ui.start as HTMLButtonElement).addEventListener("click", () => { void this.start(); });
     (ui.stop as HTMLButtonElement).addEventListener("click", () => { void call("live/cancel", {}, this.projectId).catch(e => say(String(e), true)); });
     const actions = mk("div", undefined, "live-actions"); actions.append(ui.start, ui.stop);
     const form = mk("div", undefined, "live-form");
-    form.append(bar, label("Coding task", ui.task), label("Check command (proves the result is still correct)", ui.check), options, ui.agentNote, actions);
+    const fields = mk("div", undefined, "live-setup");
+    const setupHeading = mk("div", undefined, "setup-heading");
+    setupHeading.append(mk("h2", "Set the conditions."), mk("span", "INPUT / CONFIGURATION", "instrument-label"));
+    fields.append(setupHeading, bar, label("Task brief", ui.task), label("Verification command", ui.check), options, ui.agentNote, actions);
+    const monitor = mk("aside", undefined, "run-monitor");
+    ui.monitor = monitor;
+    ui.monitorState = mk("strong", "Standby", "monitor-state");
+    const dial = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    dial.setAttribute("viewBox", "0 0 160 160"); dial.setAttribute("class", "instrument-dial"); dial.setAttribute("aria-hidden", "true");
+    for (let i = 0; i < 40; i++) {
+      const tick = document.createElementNS(dial.namespaceURI, "line");
+      tick.setAttribute("x1", "80"); tick.setAttribute("y1", i % 5 === 0 ? "16" : "22"); tick.setAttribute("x2", "80"); tick.setAttribute("y2", "32");
+      tick.setAttribute("transform", `rotate(${i * 7.2 - 140} 80 80)`); tick.setAttribute("opacity", String(.18 + (i / 40) * .82)); dial.append(tick);
+    }
+    const center = document.createElementNS(dial.namespaceURI, "circle"); center.setAttribute("cx", "80"); center.setAttribute("cy", "80"); center.setAttribute("r", "12"); dial.append(center);
+    ui.monitorHint = mk("p", "Configure a task to begin.", "monitor-hint");
+    const protocol = mk("div", undefined, "monitor-protocol");
+    for (const [n, title, detail] of [["01", "Prepare", "Two matching source copies"], ["02", "Execute", "Same task, with & without context"], ["03", "Verify", "Check results. Compare usage."]]) {
+      const row = mk("div"); const text = mk("div"); text.append(mk("strong", title), mk("span", detail)); row.append(mk("span", n, "protocol-number"), text); protocol.append(row);
+    }
+    monitor.append(mk("span", "EXECUTION / STATUS", "instrument-label"), dial, ui.monitorState, ui.monitorHint, protocol);
+    form.append(fields, monitor);
     ui.results = mk("div"); ui.results.hidden = true;
     ui.steps = mk("div", undefined, "live-steps"); ui.status = mk("p", undefined, "live-note"); ui.manual = mk("div", undefined, "live-manual"); ui.manual.hidden = true;
     const grid2 = mk("div", undefined, "live-arms");
@@ -189,6 +210,9 @@ class Panel {
     this.run = null; this.offsets = { without: 0, with: 0 };
     for (const arm of ARMS) { this.feeds[arm].activity.reset(); this.feeds[arm].terminal.reset(); }
     this.ui.results.hidden = true;
+    this.ui.monitor.dataset.active = "false";
+    this.ui.monitorState.textContent = "Standby";
+    this.ui.monitorHint.textContent = "Configure a task to begin.";
   }
   private stopPolling(): void { if (this.timer !== undefined) { clearTimeout(this.timer); this.timer = undefined; } }
   destroy(): void { this.stopPolling(); }
@@ -231,6 +255,9 @@ class Panel {
     const labels = ["1  Prepare two copies", run.manual ? "2  You run the task" : "2  Run both agents", "3  Check both results", "4  Compare"];
     this.ui.steps.replaceChildren(...labels.map((label, i) => mk("span", label, run.state === "completed" || i < index ? "done" : i === index ? "on" : "")));
     const active = ACTIVE.includes(run.state);
+    this.ui.monitor.dataset.active = String(active);
+    this.ui.monitorState.textContent = run.state.replaceAll("_", " ");
+    this.ui.monitorHint.textContent = active ? "Following both sandbox runs." : "Review the measured results below.";
     (this.ui.start as HTMLButtonElement).disabled = active; this.ui.stop.hidden = !active;
     const messages: Record<string, string> = { preparing: "Copying the project twice and building PRISM's index for the With copy…", running: "Both agents are working at the same time.", checking: "Running your check command in both results…", awaiting_manual: "Waiting for you to run the task in both folders.", completed: "Finished." };
     this.ui.status.textContent = run.error ?? messages[run.state] ?? `Run ${run.state}.`; this.ui.status.className = run.error ? "live-note warn" : "live-note";
@@ -291,7 +318,7 @@ function layout(count: number): void {
     const wanted = saved[panels.length - 1]; if (wanted) panel.setAgent(wanted.agent);
   }
   wrap.className = `live-panels n${count}`; wrap.replaceChildren(...panels.map(p => p.el));
-  document.querySelectorAll<HTMLElement>("[data-live-count]").forEach(b => b.classList.toggle("on", Number(b.dataset.liveCount) === count));
+  document.querySelectorAll<HTMLElement>("[data-live-count]").forEach(b => { const selected = Number(b.dataset.liveCount) === count; b.classList.toggle("on", selected); b.setAttribute("aria-pressed", String(selected)); b.setAttribute("aria-label", `${b.dataset.liveCount} project${b.dataset.liveCount === "1" ? "" : "s"}`); });
   try { localStorage.setItem("prism-live-count", String(count)); } catch { /* Optional. */ }
   overview();
 }

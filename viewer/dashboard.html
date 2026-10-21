@@ -11,25 +11,31 @@
   <a class="skip" href="#content">Skip to workspace</a>
   <aside class="sidebar">
     <a class="logo" href="#live"><span class="logo-mark">△</span> PRISM<span class="local">LOCAL</span></a>
-    <div class="nav-caption">WORKSPACE</div>
+    <div class="nav-caption">CONTROL / WORKSPACE</div>
     <nav aria-label="Workspace">
-      <a href="#live" data-page="live"><span>▶</span> Live</a>
-      <a href="#projects" data-page="projects"><span>▤</span> Projects</a>
-      <a href="#compare" data-page="compare"><span>⇄</span> Compare</a>
-      <a href="#repository" data-page="repository"><span>▣</span> Repository</a>
-      <a href="#context" data-page="context"><span>⌘</span> Context</a>
-      <a href="#graph" data-page="graph"><span>⋈</span> Graph</a>
-      <a href="#runs" data-page="runs"><span>◷</span> Runs</a>
-      <a href="#settings" data-page="settings" class="mobile-settings"><span>⚙</span> Settings</a>
+      <a href="#live" data-page="live"><span>01</span> Live comparison</a>
+      <a href="#projects" data-page="projects"><span>02</span> Projects</a>
+      <a href="#compare" data-page="compare"><span>03</span> Compare results</a>
+      <a href="#repository" data-page="repository"><span>04</span> Repository</a>
+      <a href="#context" data-page="context"><span>05</span> Context</a>
+      <a href="#graph" data-page="graph"><span>06</span> Code graph</a>
+      <a href="#runs" data-page="runs"><span>07</span> Recorded runs</a>
+      <a href="#settings" data-page="settings" class="mobile-settings"><span>08</span> Integrations</a>
     </nav>
-    <div class="side-bottom"><div class="side-note">Relevant code context,<br>before your agent edits.</div><span class="local-state"><i></i> On your machine</span></div>
+    <div class="side-bottom"><div class="side-emblem" aria-hidden="true">△</div><div class="side-note">YOUR CODE.<br>YOUR CONTEXT.<br>YOUR MACHINE.</div><span class="local-state"><i></i> LOCAL FIRST</span></div>
   </aside>
   <div class="workspace">
     <header class="topbar"><div class="repo-label"><span class="repo-icon">▣</span><strong id="project">Connecting…</strong><span class="divider">/</span><span id="branch">Local repository</span></div><div class="top-actions"><label class="theme-label project-switch">Project <select id="project-switch" aria-label="Project"></select></label><span id="connection" class="pill">Connecting</span><label class="theme-label">Theme <select id="theme" aria-label="Color theme"><option value="system">System</option><option value="dark">Dark</option><option value="light">Light</option></select></label></div></header>
     <main id="content" tabindex="-1">
       <section data-view="live">
-        <div class="page-heading"><div><div class="eyebrow">SAME TASK. TWO SANDBOXES. LIVE.</div><h1>Live comparison.</h1><p>Pick a project, a coding agent and a task. The agent runs twice at the same time, once without PRISM and once with it, in two separate copies of your project. Watch the messages, terminal commands, tokens and time as they happen.</p></div>
-          <div class="live-count" role="group" aria-label="Projects shown at once"><span>Show</span><button type="button" data-live-count="1" class="on">1 project</button><button type="button" data-live-count="2">2 projects</button><button type="button" data-live-count="3">3 projects</button></div></div>
+        <div class="page-heading live-heading"><div><div class="eyebrow"><span class="signal-dot"></span> EXPERIMENT / 01 — LIVE COMPARISON</div><h1>Every token<br><span>counts.</span></h1><p>One task. Two isolated agents. Measure the difference<br class="desktop-break"> the right context makes.</p></div><div class="hero-index"><span>THE PRISM WORKSPACE</span><span class="hero-glyph" aria-hidden="true">△</span><a href="#graph">EXPLORE YOUR CODE ↗</a></div></div>
+        <div class="telemetry-grid" aria-label="Selected repository metrics">
+          <div class="telemetry-cell"><span class="instrument-label">01 / INDEXED FILES</span><strong id="telemetry-files">—</strong><span class="instrument-caption">Source coverage</span></div>
+          <div class="telemetry-cell"><span class="instrument-label">02 / CODE SYMBOLS</span><strong id="telemetry-symbols">—</strong><span class="instrument-caption">Connected context</span></div>
+          <div class="telemetry-cell telemetry-index"><span class="instrument-label">03 / INDEX STATUS</span><div class="index-bars" aria-hidden="true"></div><strong id="telemetry-freshness">Connecting</strong></div>
+          <div class="telemetry-cell"><span class="instrument-label">04 / SOURCE REVISION</span><strong class="revision-value" id="telemetry-commit">—</strong><span class="instrument-caption" id="telemetry-branch">Reading repository</span></div>
+        </div>
+        <div class="workspace-section-label"><div><span class="signal-dot"></span> COMPARISON BENCH <span class="section-caption">/ configure your experiment</span></div><div class="live-count" role="group" aria-label="Projects shown at once"><span>PROJECTS</span><button type="button" data-live-count="1" class="on" aria-pressed="true">01</button><button type="button" data-live-count="2" aria-pressed="false">02</button><button type="button" data-live-count="3" aria-pressed="false">03</button></div></div>
         <div id="live-overview" class="panel" hidden></div>
         <div id="live-panels" class="live-panels n1"></div>
       </section>
