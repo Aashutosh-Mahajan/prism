@@ -17,6 +17,7 @@ import glob
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -581,6 +582,7 @@ class LiveRunner:
         self._run: dict[str, Any] | None = None
         self._cancel = threading.Event()
         self._finish_manual = threading.Event()
+        self._manual_before: dict[str, dict[str, bytes] | None] = {}
         self._processes: dict[str, subprocess.Popen[str]] = {}
         self._status_cache: tuple[float, list[dict[str, Any]]] | None = None
         try:
@@ -686,6 +688,11 @@ class LiveRunner:
                 "verdict": None,
             }
             run = self._run
+            try:
+                write_json(self.cache / "last-run.json", run)
+            except OSError as exc:
+                self._run = None
+                raise UserError(f"Could not save the comparison before starting: {exc}") from exc
         threading.Thread(
             target=self._execute, args=(run, agent, base, turns, minutes * 60), daemon=True
         ).start()
@@ -698,11 +705,28 @@ class LiveRunner:
             _kill(process)
         return self.snapshot() or {}
 
-    def finish_manual(self) -> dict[str, Any]:
+    def finish_manual(self, allow_unchanged: bool = False) -> dict[str, Any]:
         """Antigravity hand-off: both folders have been worked on; check and compare them."""
         with self._lock:
             if not self._run or self._run["state"] != "awaiting_manual":
                 raise UserError("Nothing is waiting for a manual result")
+            if not allow_unchanged:
+                directories = self._run["preparation"]["arms"]
+                unchanged = [
+                    arm
+                    for arm in ARMS
+                    if self._manual_before.get(arm) is not None
+                    and _snapshot(Path(directories[arm])) == self._manual_before[arm]
+                ]
+                if unchanged:
+                    names = ", ".join(
+                        "Without PRISM" if a == "without" else "With PRISM" for a in unchanged
+                    )
+                    raise UserError(
+                        f"No source changes detected in {names}. Open each folder in Antigravity "
+                        "and finish the task first. For a task that intentionally needs no edits, "
+                        "select the no-source-changes option."
+                    )
         self._finish_manual.set()
         return self.snapshot() or {}
 
@@ -770,6 +794,7 @@ class LiveRunner:
     def _update(self, run: dict[str, Any], **values: Any) -> None:
         with self._lock:
             run.update(values)
+            write_json(self.cache / "last-run.json", run)
 
     def _finish(self, run: dict[str, Any], state: str, error: str | None = None) -> None:
         with self._lock:
@@ -780,6 +805,29 @@ class LiveRunner:
             write_json(self.cache / "runs" / f"{run['id']}.json", copy)
 
     def _execute(
+        self,
+        run: dict[str, Any],
+        agent: Agent,
+        base: list[str] | None,
+        max_turns: int,
+        timeout: float,
+    ) -> None:
+        try:
+            self._execute_inner(run, agent, base, max_turns, timeout)
+        except Exception as exc:
+            # An unexpected diff, filesystem or verifier error must not leave an
+            # active comparison stuck forever in one of several project panels.
+            try:
+                self._finish(run, "failed", f"Comparison failed: {exc}")
+            except OSError:
+                with self._lock:
+                    run.update(
+                        state="failed",
+                        error=f"Comparison failed and its result could not be saved: {exc}",
+                        finished=time.time(),
+                    )
+
+    def _execute_inner(
         self,
         run: dict[str, Any],
         agent: Agent,
@@ -807,6 +855,18 @@ class LiveRunner:
         dirs = {"without": Path(preparation["arms"]["without"]), "with": with_dir}
         before = {arm: _snapshot(path) for arm, path in dirs.items()}
         if agent.manual:
+            self._manual_before = before
+            self._update(
+                run,
+                manual_launch={
+                    arm: self._manual_launch(
+                        dirs[arm],
+                        directory / ("config" if arm == "with" else "config-empty"),
+                        arm == "with",
+                    )
+                    for arm in ARMS
+                },
+            )
             self._manual(run, dirs)
         else:
             assert base is not None
@@ -832,8 +892,35 @@ class LiveRunner:
             return
         self._update(run, state="checking")
         for arm in ARMS:
+            if self._cancel.is_set():
+                self._finish(run, "cancelled")
+                return
             patch, changed, added, removed = _changes(before[arm], dirs[arm])
-            check = self._check(run["check_command"], dirs[arm]) if run["check_command"] else None
+            check = None
+            if run["check_command"]:
+                check_id = f"verification-{arm}"
+                self._push(
+                    run,
+                    arm,
+                    {
+                        "kind": "terminal_start",
+                        "id": check_id,
+                        "command": run["check_command"],
+                        "phase": "verification",
+                    },
+                )
+                check = self._check(run["check_command"], dirs[arm])
+                self._push(
+                    run,
+                    arm,
+                    {
+                        "kind": "terminal_end",
+                        "id": check_id,
+                        "ok": check["passed"],
+                        "output": check["output"],
+                        "phase": "verification",
+                    },
+                )
             with self._lock:
                 run["arms"][arm].update(
                     patch=patch,
@@ -842,10 +929,42 @@ class LiveRunner:
                     lines_removed=removed,
                     check=check,
                 )
+        if self._cancel.is_set():
+            self._finish(run, "cancelled")
+            return
         with self._lock:
             run["verdict"] = compare(run["arms"], bool(run["check_command"]))
+            if agent.manual:
+                # The hand-off interval is human workflow time, not measured agent execution.
+                run["verdict"]["time_saving_pct"] = None
+                run["verdict"]["commands_saving_pct"] = None
         failed = [a for a in ARMS if run["arms"][a]["state"] != "completed"]
         self._finish(run, "failed" if failed else "completed")
+
+    def _manual_launch(self, directory: Path, config_home: Path, with_prism: bool) -> str:
+        """Launch instructions carry the same consent and PATH setup as managed runs."""
+        env = self._env(config_home, with_prism)
+        if os.name == "nt":
+
+            def quote(value: str) -> str:
+                return "'" + value.replace("'", "''") + "'"
+
+            return "\n".join(
+                [
+                    f"$env:PRISM_CONFIG_HOME = {quote(str(config_home))}",
+                    f"$env:PATH = {quote(env['PATH'])}",
+                    f"Set-Location -LiteralPath {quote(str(directory))}",
+                    "antigravity .",
+                ]
+            )
+        return "\n".join(
+            [
+                f"export PRISM_CONFIG_HOME={shlex.quote(str(config_home))}",
+                f"export PATH={shlex.quote(env['PATH'])}",
+                f"cd -- {shlex.quote(str(directory))}",
+                "antigravity .",
+            ]
+        )
 
     def _manual(self, run: dict[str, Any], dirs: dict[str, Path]) -> None:
         """Antigravity: wait for the person to do the task in both folders, then carry on."""
@@ -853,6 +972,7 @@ class LiveRunner:
             run["state"] = "awaiting_manual"
             for arm in ARMS:
                 run["arms"][arm]["state"] = "manual"
+                run["arms"][arm]["started"] = time.time()
                 run["arms"][arm]["events"].append(
                     {
                         "kind": "info",
@@ -864,7 +984,9 @@ class LiveRunner:
         with self._lock:
             for arm in ARMS:
                 if run["arms"][arm]["state"] == "manual":
-                    run["arms"][arm]["state"] = "completed"
+                    state = run["arms"][arm]
+                    state.update(state="completed", finished=time.time())
+                    state["duration_seconds"] = state["finished"] - state["started"]
 
     def _install_integration(self, with_dir: Path, config_home: Path, agent: Agent) -> None:
         """Real `prism init` for the agent in the With copy only: hooks, no MCP, no git hooks."""
@@ -907,26 +1029,41 @@ class LiveRunner:
         env = dict(os.environ)
         env["PATH"] = os.pathsep.join([str(Path(sys.executable).parent), env.get("PATH", "")])
         started = time.monotonic()
+        process: subprocess.Popen[str] | None = None
+        key = f"verification-{threading.get_ident()}"
         try:
-            process = subprocess.run(
+            process = subprocess.Popen(
                 command,
                 shell=True,
                 cwd=directory,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
-                timeout=300,
                 env=env,
             )
+            self._processes[key] = process
+            if self._cancel.is_set():
+                _kill(process)
+            stdout, stderr = process.communicate(timeout=300)
+            output = stdout + stderr
+            empty_suite = bool(re.search(r"\bRan 0 tests?\b", output))
+            if empty_suite:
+                output = (
+                    "Verification did not discover any tests; quality is not verified.\n" + output
+                )
             return {
                 "ran": True,
-                "passed": process.returncode == 0,
+                "passed": process.returncode == 0 and not empty_suite,
                 "exit_code": process.returncode,
-                "output": (process.stdout + process.stderr)[-4000:],
+                "output": output[-4000:],
                 "seconds": time.monotonic() - started,
             }
         except subprocess.TimeoutExpired:
+            if process is not None:
+                _kill(process)
+                process.communicate(timeout=10)
             return {
                 "ran": True,
                 "passed": False,
@@ -942,6 +1079,8 @@ class LiveRunner:
                 "output": str(exc),
                 "seconds": 0.0,
             }
+        finally:
+            self._processes.pop(key, None)
 
     def _push(self, run: dict[str, Any], arm: str, event: dict[str, Any]) -> None:
         with self._lock:
@@ -949,7 +1088,7 @@ class LiveRunner:
             if len(events) < MAX_EVENTS:
                 event["t"] = round(time.time() - run["started"], 2)
                 events.append(event)
-            if event.get("kind") == "terminal_start":
+            if event.get("kind") == "terminal_start" and event.get("phase") != "verification":
                 run["arms"][arm]["commands_run"] += 1
 
     def _run_arm(

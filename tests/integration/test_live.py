@@ -134,3 +134,13 @@ def test_compare_never_invents_numbers_for_an_incomplete_run() -> None:
     arm = {**_empty_arm(), "state": "failed"}
     result = compare({"without": dict(arm), "with": dict(arm)}, True)
     assert result["quality"] == "incomplete" and result["token_saving_pct"] is None
+
+
+def test_empty_unittest_suite_is_not_a_successful_verification(tmp_path: Path) -> None:
+    tests = tmp_path / "tests"
+    tests.mkdir()
+    runner = LiveRunner(tmp_path, tmp_path / "cache")
+    result = runner._check(f'"{sys.executable}" -m unittest discover -s tests -v', tmp_path)
+    assert result["ran"] and result["exit_code"] in (0, 5)
+    assert not result["passed"]
+    assert "did not discover any tests" in result["output"]
