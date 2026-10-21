@@ -46,8 +46,10 @@ def read(name: str) -> str:
     from prism.integrations.common import skill_files, skill_text
 
     # Contracts cover the progressively loaded references as well as the entry point.
-    return skill_text(name) + "\n" + "\n".join(
-        text for relative, text in skill_files(name) if relative != "SKILL.md"
+    return (
+        skill_text(name)
+        + "\n"
+        + "\n".join(text for relative, text in skill_files(name) if relative != "SKILL.md")
     )
 
 
