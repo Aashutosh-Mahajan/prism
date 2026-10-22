@@ -300,8 +300,10 @@ def test_two_prepared_copies_pin_commit_preserve_original_and_only_index_with(ro
     baseline = Path(preparation["arms"]["without"])
     indexed = Path(preparation["arms"]["with"])
     assert original.read_bytes() == before
-    assert (baseline / "src/shop/money.py").read_bytes() == committed
-    assert (indexed / "src/shop/money.py").read_bytes() == committed
+    copied = (baseline / "src/shop/money.py").read_bytes()
+    # git may apply the platform line ending when it writes the archive
+    assert copied.replace(b"\r\n", b"\n") == committed.replace(b"\r\n", b"\n")
+    assert (indexed / "src/shop/money.py").read_bytes() == copied
     assert baseline.parent == indexed.parent and not baseline.is_relative_to(root)
     assert not (baseline / ".aicontext").exists()
     assert (indexed / ".aicontext/manifest.json").exists()

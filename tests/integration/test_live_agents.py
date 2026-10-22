@@ -1,3 +1,4 @@
+# ruff: noqa: F811
 """Agents beyond the first: terminal commands, Codex counters, Antigravity hand-off and history."""
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ SUBTRACT = (
 )
 
 
-def test_claude_terminal_commands_are_streamed_and_counted(root: Path) -> None:  # noqa: F811
+def test_claude_terminal_commands_are_streamed_and_counted(root: Path) -> None:
     runner = runner_for(root)
     runner.start({"task": "Add a subtract method to Money", "check_command": CHECK})
     snapshot = wait(runner)
@@ -39,7 +40,7 @@ def test_claude_terminal_commands_are_streamed_and_counted(root: Path) -> None: 
     assert snapshot["verdict"]["commands_saving_pct"] == pytest.approx(0.0)
 
 
-def test_codex_run_counts_cached_input_inside_input(root: Path) -> None:  # noqa: F811
+def test_codex_run_counts_cached_input_inside_input(root: Path) -> None:
     runner = LiveRunner(
         root, root / ".aicontext/cache/live", {"codex": [sys.executable, str(FAKE_CODEX)]}
     )
@@ -59,8 +60,9 @@ def test_codex_run_counts_cached_input_inside_input(root: Path) -> None:  # noqa
     assert "terminal_start" in kinds and "terminal_end" in kinds and "text" in kinds
 
 
-def test_antigravity_without_agy_is_a_manual_handoff_with_real_checks(  # noqa: F811
-    root: Path, monkeypatch: pytest.MonkeyPatch
+def test_antigravity_without_agy_is_a_manual_handoff_with_real_checks(
+    root: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(AGENTS["antigravity"], "find", lambda: None)
     runner = runner_for(root)
@@ -104,8 +106,9 @@ def test_antigravity_without_agy_is_a_manual_handoff_with_real_checks(  # noqa: 
         runner.finish_manual()
 
 
-def test_manual_read_only_task_requires_explicit_unchanged_override(  # noqa: F811
-    root: Path, monkeypatch: pytest.MonkeyPatch
+def test_manual_read_only_task_requires_explicit_unchanged_override(
+    root: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(AGENTS["antigravity"], "find", lambda: None)
     runner = runner_for(root)
@@ -125,7 +128,7 @@ def test_manual_read_only_task_requires_explicit_unchanged_override(  # noqa: F8
     assert all(a["usage"] is None for a in done["arms"].values())
 
 
-def test_finished_runs_are_kept_in_history(root: Path) -> None:  # noqa: F811
+def test_finished_runs_are_kept_in_history(root: Path) -> None:
     runner = runner_for(root)
     runner.start({"task": "Add a subtract method", "check_command": CHECK})
     finished = wait(runner)
@@ -137,3 +140,22 @@ def test_finished_runs_are_kept_in_history(root: Path) -> None:  # noqa: F811
     assert again.history()[0]["id"] == finished["id"]
     with pytest.raises(UserError):
         runner.saved_run("../x")
+
+
+def test_repeats_run_the_pair_again_and_summarise(root: Path) -> None:
+    runner = runner_for(root)
+    first = runner.start({"task": "Add a subtract method", "check_command": CHECK, "repeats": 2})
+    assert first["batch"]["index"] == 1 and first["batch"]["total"] == 2
+    deadline = time.monotonic() + 240
+    snapshot = wait(runner)
+    while time.monotonic() < deadline and not (
+        snapshot["batch"]["index"] == 2 and snapshot["state"] == "completed"
+    ):
+        time.sleep(0.5)
+        snapshot = wait(runner)
+    assert snapshot["batch"]["index"] == 2
+    summary = snapshot["batch"]["summary"]
+    assert summary["done"] == 2 and summary["total"] == 2 and summary["same_quality"] == 2
+    assert snapshot["verdict"]["no_changes"] is False
+    with pytest.raises(UserError):
+        runner.start({"task": "x", "repeats": 9})

@@ -12,6 +12,7 @@ Folder copies are not an OS sandbox; the agent is limited to its own folder only
 
 from __future__ import annotations
 
+import contextlib
 import difflib
 import glob
 import hashlib
@@ -20,6 +21,7 @@ import os
 import re
 import shlex
 import shutil
+import statistics
 import subprocess
 import sys
 import threading
@@ -99,6 +101,33 @@ def _only_prism_hooks(path: Path) -> bool:
 _PACKAGE_ROOT = Path(__file__).resolve().parents[2].as_posix()
 
 
+def _spread(values: list[float]) -> dict[str, float] | None:
+    if not values:
+        return None
+    return {
+        "median": round(statistics.median(values), 1),
+        "min": round(min(values), 1),
+        "max": round(max(values), 1),
+    }
+
+
+def batch_summary(verdicts: list[dict[str, Any]], total: int) -> dict[str, Any]:
+    """Median and range over the paired runs of one batch. Runs that could not be measured are
+    left out of that figure, never counted as zero."""
+
+    def values(key: str) -> list[float]:
+        return [float(v[key]) for v in verdicts if isinstance(v.get(key), (int, float))]
+
+    return {
+        "done": len(verdicts),
+        "total": total,
+        "token_saving_pct": _spread(values("token_saving_pct")),
+        "time_saving_pct": _spread(values("time_saving_pct")),
+        "wins": sum(1 for x in values("token_saving_pct") if x > 0),
+        "same_quality": sum(1 for v in verdicts if v.get("quality") == "same"),
+    }
+
+
 def _prism_shim(directory: Path) -> Path:
     """A `prism` command that runs this interpreter and this checkout, found from any shell.
 
@@ -108,12 +137,16 @@ def _prism_shim(directory: Path) -> Path:
     python = Path(sys.executable).as_posix()
     root = Path(__file__).resolve().parents[2].as_posix()
     posix = (
-        "#!/bin/sh" + chr(10)
-        + f'PYTHONPATH="{root}${{PYTHONPATH:+:$PYTHONPATH}}" exec "{python}" -m prism "$@"' + chr(10)
+        "#!/bin/sh"
+        + chr(10)
+        + f'PYTHONPATH="{root}${{PYTHONPATH:+:$PYTHONPATH}}" exec "{python}" -m prism "$@"'
+        + chr(10)
     )
-    windows = chr(13).join(
-        ["@echo off", f'set "PYTHONPATH={root};%PYTHONPATH%"', f'"{python}" -m prism %*', ""]
-    ).replace(chr(13), chr(13) + chr(10))
+    windows = (
+        chr(13)
+        .join(["@echo off", f'set "PYTHONPATH={root};%PYTHONPATH%"', f'"{python}" -m prism %*', ""])
+        .replace(chr(13), chr(13) + chr(10))
+    )
     (directory / "prism").write_bytes(posix.encode())
     (directory / "prism").chmod(0o755)
     (directory / "prism.cmd").write_bytes(windows.encode())
@@ -268,6 +301,7 @@ def compare(arms: dict[str, dict[str, Any]], check_given: bool) -> dict[str, Any
         return value if finished else None
 
     return {
+        "no_changes": finished and not without["files_changed"] and not with_["files_changed"],
         "quality": quality,
         "token_saving_pct": when(pct(usage("total_tokens"))),
         "input_saving_pct": when(pct(usage("input_total"))),
@@ -554,7 +588,9 @@ class AntigravityStream:
                 params: dict[str, Any] = raw_params if isinstance(raw_params, dict) else {}
                 error = info.get("error")
                 if name == "run_command":
-                    command = _clip(str(params.get("CommandLine") or params.get("command") or ""), 600)
+                    command = _clip(
+                        str(params.get("CommandLine") or params.get("command") or ""), 600
+                    )
                     if state == "ACTIVE":
                         self._shell.add(index)
                         update.events.append(
@@ -565,7 +601,9 @@ class AntigravityStream:
                             update.events.append(
                                 {"kind": "terminal_start", "id": str(index), "command": command}
                             )
-                        output = error.get("message") if isinstance(error, dict) else info.get("output")
+                        output = (
+                            error.get("message") if isinstance(error, dict) else info.get("output")
+                        )
                         update.events.append(
                             {
                                 "kind": "terminal_end",
@@ -604,7 +642,9 @@ class AntigravityStream:
             denied = result.get("denied_actions")
             self.denied = bool(isinstance(denied, list) and denied)
             if isinstance(denied, list) and denied:
-                names = ", ".join(sorted({str(d.get("action")) for d in denied if isinstance(d, dict)}))
+                names = ", ".join(
+                    sorted({str(d.get("action")) for d in denied if isinstance(d, dict)})
+                )
                 update.events.append(
                     {
                         "kind": "info",
@@ -869,6 +909,8 @@ class LiveRunner:
         self._finish_manual = threading.Event()
         self._manual_before: dict[str, dict[str, bytes] | None] = {}
         self._processes: dict[str, subprocess.Popen[str]] = {}
+        self._pending: dict[str, Any] | None = None  # the rest of a repeated batch
+        self._batches: dict[str, list[dict[str, Any]]] = {}
         self._status_cache: tuple[float, list[dict[str, Any]]] | None = None
         try:
             saved = json.loads((cache / "last-run.json").read_text(encoding="utf-8"))
@@ -928,9 +970,12 @@ class LiveRunner:
 
     # --- control --------------------------------------------------------------------------
 
-    def start(self, body: Any) -> dict[str, Any]:
+    def start(self, body: Any, _batch: dict[str, Any] | None = None) -> dict[str, Any]:
         if not isinstance(body, dict):
             raise UserError("Expected a JSON object")
+        repeats = body.get("repeats", 1)
+        if type(repeats) is not int or not 1 <= repeats <= 5:
+            raise UserError("Repeats must be between 1 and 5")
         task = body.get("task")
         if not isinstance(task, str) or not task.strip() or len(task) > 12000:
             raise UserError("Enter a task between 1 and 12000 characters")
@@ -955,9 +1000,19 @@ class LiveRunner:
             raise UserError(
                 f"{agent.name} was not found on this computer. Install it and log in, then try again"
             )
+        if self.is_manual(agent):
+            repeats = 1  # a hand-off needs a person each time
+        batch = _batch
+        if batch is None and repeats > 1:
+            batch = {"id": uuid.uuid4().hex, "index": 1, "total": repeats}
         with self._lock:
             if self._run and self._run["state"] in ACTIVE:
                 raise UserError("A live comparison is already running for this project")
+            self._pending = (
+                {"body": body, "batch": batch}
+                if batch and batch["index"] < batch["total"]
+                else None
+            )
             self._cancel.clear()
             self._finish_manual.clear()
             self._run = {
@@ -975,6 +1030,7 @@ class LiveRunner:
                 "preparation": None,
                 "arms": {arm: _empty_arm() for arm in ARMS},
                 "verdict": None,
+                "batch": batch,
             }
             run = self._run
             try:
@@ -988,6 +1044,7 @@ class LiveRunner:
         return self.snapshot() or {}
 
     def cancel(self) -> dict[str, Any]:
+        self._pending = None
         self._cancel.set()
         self._finish_manual.set()
         for process in list(self._processes.values()):
@@ -1086,12 +1143,38 @@ class LiveRunner:
             write_json(self.cache / "last-run.json", run)
 
     def _finish(self, run: dict[str, Any], state: str, error: str | None = None) -> None:
+        """Save the result first and only then show the run as finished, so anything that waits
+        for the final state can read the saved run."""
         with self._lock:
-            run.update(state=state, error=error, finished=time.time())
             copy: dict[str, Any] = json.loads(json.dumps(run))
+        copy.update(state=state, error=error, finished=time.time())
+        batch = run.get("batch")
+        if batch:
+            if copy.get("verdict") is not None and state == "completed":
+                self._batches.setdefault(batch["id"], []).append(copy["verdict"])
+            copy["batch"] = {
+                **batch,
+                "summary": batch_summary(self._batches.get(batch["id"], []), batch["total"]),
+            }
         write_json(self.cache / "last-run.json", copy)
-        if run.get("verdict") is not None:
+        if copy.get("verdict") is not None:
             write_json(self.cache / "runs" / f"{run['id']}.json", copy)
+        with self._lock:
+            run.update(state=state, error=error, finished=copy["finished"])
+            if batch:
+                run["batch"] = copy["batch"]
+        pending = self._pending
+        if pending and batch and pending["batch"]["id"] == batch["id"]:
+            self._pending = None
+            if state == "completed" and not self._cancel.is_set():
+                follow = {**pending["batch"], "index": batch["index"] + 1}
+                threading.Thread(
+                    target=self._continue_batch, args=(pending["body"], follow), daemon=True
+                ).start()
+
+    def _continue_batch(self, body: dict[str, Any], batch: dict[str, Any]) -> None:
+        with contextlib.suppress(UserError):
+            self.start(body, batch)
 
     def _execute(
         self,
@@ -1311,13 +1394,22 @@ class LiveRunner:
         missing: list[str] = []
         if agent.init_agent == "claude-code":
             mcp = with_dir / ".mcp.json"
-            if not mcp.is_file() or '"prism"' not in mcp.read_text(encoding="utf-8", errors="replace"):
+            if not mcp.is_file() or '"prism"' not in mcp.read_text(
+                encoding="utf-8", errors="replace"
+            ):
                 missing.append("MCP server (.mcp.json)")
             settings = with_dir / ".claude" / "settings.json"
-            if not settings.is_file() or "prism" not in settings.read_text(encoding="utf-8", errors="replace"):
+            if not settings.is_file() or "prism" not in settings.read_text(
+                encoding="utf-8", errors="replace"
+            ):
                 missing.append("hooks (.claude/settings.json)")
         probe = subprocess.run(
-            ["prism", "--version"], capture_output=True, text=True, env=env, timeout=60, shell=os.name == "nt"
+            ["prism", "--version"],
+            capture_output=True,
+            text=True,
+            env=env,
+            timeout=60,
+            shell=os.name == "nt",
         )
         if probe.returncode:
             missing.append("`prism` command on the agent's PATH")
@@ -1447,7 +1539,8 @@ class LiveRunner:
                 except OSError:
                     pass
             threading.Thread(
-                target=lambda stream_=stderr: stderr_tail.extend(stream_.readlines()[-20:]), daemon=True
+                target=lambda stream_=stderr: stderr_tail.extend(stream_.readlines()[-20:]),
+                daemon=True,
             ).start()
             watchdog = threading.Timer(timeout, lambda proc=process: _kill(proc))
             watchdog.start()

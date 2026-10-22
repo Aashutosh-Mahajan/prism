@@ -15,13 +15,18 @@ interface ArmState {
 }
 interface Verdict {
   quality: string; token_saving_pct: number | null; input_saving_pct: number | null; output_saving_pct: number | null; cost_saving_pct: number | null;
-  time_saving_pct: number | null; commands_saving_pct: number | null; identical_patch: boolean;
+  time_saving_pct: number | null; commands_saving_pct: number | null; identical_patch: boolean; no_changes?: boolean;
+}
+interface Spread { median: number; min: number; max: number }
+interface Batch {
+  id: string; index: number; total: number;
+  summary?: { done: number; total: number; token_saving_pct: Spread | null; time_saving_pct: Spread | null; wins: number; same_quality: number };
 }
 type Arms = Record<"without" | "with", ArmState>;
 interface LiveRun {
   id: string; state: string; agent: string; agent_name: string; manual: boolean; task: string; check_command: string; model?: string; error: string | null;
   preparation: { arms: Record<"without" | "with", string> } | null; arms: Arms; verdict: Verdict | null; started: number; finished: number | null;
-  manual_launch?: Record<"without" | "with", string>;
+  manual_launch?: Record<"without" | "with", string>; batch?: Batch | null;
 }
 interface AgentInfo { id: string; name: string; mode: "live" | "manual"; found: boolean; version: string | null; logged_in: boolean | null }
 interface Row {
@@ -82,7 +87,8 @@ function metricsTable(run: { arms: Arms; check_command: string; manual?: boolean
   if (run.check_command) row("Check passed", a.check?.passed ? "yes" : "NO", b.check?.passed ? "yes" : "NO", "", a.check?.passed && b.check?.passed ? 1 : -1);
   return table;
 }
-function verdictBox(box: HTMLElement, run: { arms: Arms; check_command: string; verdict: Verdict | null; state: string; manual?: boolean }): void {
+function spread(x: Spread | null | undefined): string { return x ? `${change(x.median)} (range ${change(x.min)} to ${change(x.max)})`.replace(/PRISM used /g, "") : "not measured"; }
+function verdictBox(box: HTMLElement, run: { arms: Arms; check_command: string; verdict: Verdict | null; state: string; manual?: boolean; batch?: Batch | null }): void {
   box.replaceChildren();
   if (!run.verdict || ACTIVE.includes(run.state)) { box.hidden = true; return; }
   box.hidden = false; const v = run.verdict;
@@ -100,6 +106,12 @@ function verdictBox(box: HTMLElement, run: { arms: Arms; check_command: string; 
   const parts: HTMLElement[] = [mk("strong", title), mk("p", body)];
   if (run.manual) parts.push(mk("p", "Manual Antigravity run: PRISM does not capture agent tokens, cost, turns, or terminal commands. The Terminal tab shows PRISM's verification command. Time measures the manual hand-off interval.", "muted"));
   if (run.manual && !run.arms.without.files_changed.length && !run.arms.with.files_changed.length) parts.push(mk("p", "No source changes were recorded in either copy. For a coding task, finish the task in both Antigravity folders before checking the results.", "live-note warn"));
+  if (v.no_changes && !run.manual) parts.push(mk("p", "Neither copy changed any file, so these numbers compare two runs that did no work. Check the Activity tab for what the agents did.", "live-note warn"));
+  const batch = run.batch;
+  if (batch && batch.summary && batch.summary.done > 0) {
+    const b = batch.summary;
+    parts.push(mk("p", `Batch of ${b.total}: ${b.done} finished. Median tokens ${spread(b.token_saving_pct)}; median time ${spread(b.time_saving_pct)}. PRISM used fewer tokens in ${b.wins} of ${b.done}; quality matched in ${b.same_quality} of ${b.done}.`, "live-note"));
+  } else if (batch) parts.push(mk("p", `Run ${batch.index} of ${batch.total} in this batch.`, "muted"));
   if (run.check_command) parts.push(mk("pre", run.check_command, "verification-command"));
   if (v.quality !== "incomplete") parts.push(metricsTable(run, v), mk("p", "One paired run is one example. It shows what happened on this task, not a typical saving.", "muted"));
   box.append(...parts);
@@ -141,8 +153,9 @@ class Panel {
     ui.check = this.field("input"); (ui.check as HTMLInputElement).placeholder = "for example: python -m pytest -q";
     ui.model = this.field("input"); (ui.model as HTMLInputElement).placeholder = "agent default";
     ui.turns = this.field("input"); (ui.turns as HTMLInputElement).type = "number"; (ui.turns as HTMLInputElement).value = "30";
+    ui.repeats = this.field("input"); (ui.repeats as HTMLInputElement).type = "number"; (ui.repeats as HTMLInputElement).min = "1"; (ui.repeats as HTMLInputElement).max = "5"; (ui.repeats as HTMLInputElement).value = "1";
     const options = mk("details", undefined, "live-options"); const grid = mk("div", undefined, "live-grid2");
-    grid.append(label("Model (optional)", ui.model), label("Max turns (Claude Code)", ui.turns)); options.append(mk("summary", "More options"), grid);
+    grid.append(label("Model (optional)", ui.model), label("Max turns (Claude Code)", ui.turns), label("Repeat the pair (1 to 5, uses real tokens each time)", ui.repeats)); options.append(mk("summary", "More options"), grid);
     ui.agentNote = mk("p", undefined, "live-note");
     ui.start = this.field("button", "primary-button", "Start comparison ↗"); (ui.start as HTMLButtonElement).type = "button";
     ui.stop = this.field("button", "quiet-button", "Stop both runs"); (ui.stop as HTMLButtonElement).type = "button"; ui.stop.hidden = true;
@@ -238,9 +251,11 @@ class Panel {
     const revision = this.revision;
     try { const project = this.projectId; const run = await call<LiveRun | null>(`live?without=0&with=0`, undefined, project); if (this.destroyed || revision !== this.revision) return;
       if (run) { this.agent = run.agent; this.fillSelects(); (this.ui.task as HTMLTextAreaElement).value = run.task; (this.ui.check as HTMLInputElement).value = run.check_command; (this.ui.model as HTMLInputElement).value = run.model ?? ""; }
-      this.render(run, true); if (run && ACTIVE.includes(run.state)) this.poll(); }
+      this.runId = run?.id ?? ""; this.render(run, true); if (this.more(run)) this.poll(); }
     catch (error) { if (!this.destroyed && revision === this.revision) say(`Could not load this project's live run: ${error}`, true); }
   }
+  private runId = "";
+  private more(run: LiveRun | null): boolean { return !!run && (ACTIVE.includes(run.state) || (run.state === "completed" && !!run.batch && run.batch.index < run.batch.total)); }
   private poll(): void {
     if (this.destroyed) return;
     this.stopPolling();
@@ -249,7 +264,8 @@ class Panel {
     this.timer = window.setTimeout(() => {
       void call<LiveRun | null>(`live?without=${this.offsets.without}&with=${this.offsets.with}`, undefined, project).then(run => {
         if (this.destroyed || revision !== this.revision) return; this.timer = undefined;
-        this.render(run); if (run && ACTIVE.includes(run.state)) this.poll();
+        const fresh = !!run && this.runId !== run.id; this.runId = run?.id ?? "";
+        this.render(run, fresh); if (this.more(run)) this.poll();
       }).catch(error => { if (this.destroyed || revision !== this.revision) return; this.timer = undefined; say(`Live status unavailable: ${error}. Reconnecting…`, true); this.poll(); });
     }, 800);
   }
@@ -263,16 +279,16 @@ class Panel {
     const selectionAtStart = selectedProject();
     this.starting = true;
     (this.ui.project as HTMLSelectElement).disabled = true;
-    for (const field of ["agent", "task", "check", "model", "turns"]) (this.ui[field] as HTMLInputElement).disabled = true;
+    for (const field of ["agent", "task", "check", "model", "turns", "repeats"]) (this.ui[field] as HTMLInputElement).disabled = true;
     (this.ui.start as HTMLButtonElement).disabled = true;
     try {
       const run = await call<LiveRun>("live", {
         task, agent: this.agent, check_command: (this.ui.check as HTMLInputElement).value.trim(), model: (this.ui.model as HTMLInputElement).value.trim(),
-        max_turns: Number((this.ui.turns as HTMLInputElement).value || 30),
+        max_turns: Number((this.ui.turns as HTMLInputElement).value || 30), repeats: Number((this.ui.repeats as HTMLInputElement).value || 1),
       }, project);
       if (this.destroyed || revision !== this.revision) { say("The comparison started in the background. Reopen its project to follow it."); return; }
       this.render(run, true); this.poll();
-    } catch (error) { if (!this.destroyed && revision === this.revision) { say(error instanceof Error ? error.message : String(error), true); (this.ui.start as HTMLButtonElement).disabled = false; for (const field of ["agent", "task", "check", "model", "turns"]) (this.ui[field] as HTMLInputElement).disabled = false; } }
+    } catch (error) { if (!this.destroyed && revision === this.revision) { say(error instanceof Error ? error.message : String(error), true); (this.ui.start as HTMLButtonElement).disabled = false; for (const field of ["agent", "task", "check", "model", "turns", "repeats"]) (this.ui[field] as HTMLInputElement).disabled = false; } }
     finally { this.starting = false; if (!this.destroyed) { (this.ui.project as HTMLSelectElement).disabled = false; const chosen = selectedProject(); if (panels.length === 1 && chosen && chosen !== selectionAtStart) this.setProject(chosen); } }
   }
   private render(run: LiveRun | null, fresh = false): void {
@@ -284,7 +300,7 @@ class Panel {
     const labels = ["1  Prepare two copies", run.manual ? "2  You run the task" : "2  Run both agents", "3  Check both results", "4  Compare"];
     this.ui.steps.replaceChildren(...labels.map((label, i) => mk("span", label, run.state === "completed" || i < index ? "done" : i === index ? "on" : "")));
     const active = ACTIVE.includes(run.state);
-    for (const field of ["agent", "task", "check", "model", "turns"]) (this.ui[field] as HTMLInputElement).disabled = active;
+    for (const field of ["agent", "task", "check", "model", "turns", "repeats"]) (this.ui[field] as HTMLInputElement).disabled = active;
     this.ui.monitor.dataset.active = String(active);
     this.ui.monitorState.textContent = run.state.replaceAll("_", " ");
     this.ui.monitorHint.textContent = active ? "Following both sandbox runs." : "Review the measured results below.";
