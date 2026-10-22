@@ -5,8 +5,8 @@ agent's PRISM integration. Both runs happen at once; their messages, terminal co
 counters are streamed to the dashboard, and an optional check command is run in each finished copy to see
 whether the result is still correct.
 
-Agents: Claude Code and Codex run headless. Antigravity has no headless agent mode, so it is a manual
-hand-off: PRISM prepares both folders, you run the prompt in each, then PRISM checks and compares them.
+Agents: Claude Code, Codex and Antigravity (`agy -p`) all run headless. Antigravity cannot ask for
+permission in print mode, so it reads, searches and edits files but its shell commands are denied.
 Folder copies are not an OS sandbox; the agent is limited to its own folder only by the agent's own rules.
 """
 
@@ -63,6 +63,30 @@ _SHELL_TOOLS = ("Bash", "PowerShell")
 
 
 # --- helpers ------------------------------------------------------------------------------
+
+
+_PACKAGE_ROOT = Path(__file__).resolve().parents[2].as_posix()
+
+
+def _prism_shim(directory: Path) -> Path:
+    """A `prism` command that runs this interpreter and this checkout, found from any shell.
+
+    The interpreter's own folder is not where pip puts `prism.exe` (that is `Scripts`), and an
+    agent's Bash tool needs an extensionless script, so the With copy gets small shims instead."""
+    directory.mkdir(parents=True, exist_ok=True)
+    python = Path(sys.executable).as_posix()
+    root = Path(__file__).resolve().parents[2].as_posix()
+    posix = (
+        "#!/bin/sh" + chr(10)
+        + f'PYTHONPATH="{root}${{PYTHONPATH:+:$PYTHONPATH}}" exec "{python}" -m prism "$@"' + chr(10)
+    )
+    windows = chr(13).join(
+        ["@echo off", f'set "PYTHONPATH={root};%PYTHONPATH%"', f'"{python}" -m prism %*', ""]
+    ).replace(chr(13), chr(13) + chr(10))
+    (directory / "prism").write_bytes(posix.encode())
+    (directory / "prism").chmod(0o755)
+    (directory / "prism.cmd").write_bytes(windows.encode())
+    return directory
 
 
 def _kill(process: subprocess.Popen[str]) -> None:
@@ -421,12 +445,119 @@ class CodexStream:
         return update
 
 
+class AntigravityStream:
+    """`agy -p --output-format stream-json`: step updates, then one result with total usage."""
+
+    def __init__(self) -> None:
+        self._text: dict[int, str] = {}
+        self._usage: dict[int, dict[str, Any]] = {}
+        self._shell: set[int] = set()
+
+    def _totals(self) -> dict[str, int] | None:
+        if not self._usage:
+            return None
+        return usage_totals(
+            {
+                "input_tokens": sum(int(u.get("input_tokens") or 0) for u in self._usage.values()),
+                "cache_read_input_tokens": sum(
+                    int(u.get("cache_read_tokens") or 0) for u in self._usage.values()
+                ),
+                "output_tokens": sum(int(u.get("output_tokens") or 0) for u in self._usage.values()),
+            }
+        )
+
+    def feed(self, message: dict[str, Any]) -> Update:
+        update = Update()
+        kind = message.get("event")
+        if kind == "init":
+            init = message.get("init") if isinstance(message.get("init"), dict) else {}
+            mode = init.get("permission_mode") or "default"
+            update.events.append({"kind": "info", "text": f"Started Antigravity session · {mode}"})
+        elif kind == "step_update" and isinstance(message.get("step_update"), dict):
+            step = message["step_update"]
+            index = int(step.get("step_index") or 0)
+            state, step_type = step.get("state"), step.get("step_type")
+            if step_type == "agent_response":
+                if isinstance(step.get("text_delta"), str):
+                    self._text[index] = self._text.get(index, "") + step["text_delta"]
+                if state == "DONE":
+                    if isinstance(step.get("usage"), dict):
+                        self._usage[index] = step["usage"]
+                        update.usage = self._totals()
+                    text = self._text.pop(index, "").strip()
+                    if text:
+                        update.events.append({"kind": "text", "text": _clip(text)})
+            elif step_type == "tool":
+                name = str(step.get("tool_name") or "tool")
+                raw = step.get("tool_info")
+                info: dict[str, Any] = raw if isinstance(raw, dict) else {}
+                raw_params = info.get("parameters")
+                params: dict[str, Any] = raw_params if isinstance(raw_params, dict) else {}
+                error = info.get("error")
+                if name == "run_command":
+                    command = _clip(str(params.get("CommandLine") or params.get("command") or ""), 600)
+                    if state == "ACTIVE":
+                        self._shell.add(index)
+                        update.events.append(
+                            {"kind": "terminal_start", "id": str(index), "command": command}
+                        )
+                    elif state in ("DONE", "ERROR"):
+                        if index not in self._shell:
+                            update.events.append(
+                                {"kind": "terminal_start", "id": str(index), "command": command}
+                            )
+                        output = error.get("message") if isinstance(error, dict) else info.get("output")
+                        update.events.append(
+                            {
+                                "kind": "terminal_end",
+                                "id": str(index),
+                                "output": _clip(output or "", MAX_OUTPUT),
+                                "ok": state == "DONE",
+                            }
+                        )
+                elif state == "ACTIVE":
+                    summary = ""
+                    for key in ("Path", "AbsolutePath", "TargetFile", "Query", "Pattern", "Url"):
+                        if isinstance(params.get(key), str) and params[key]:
+                            summary = _clip(params[key], 300)
+                            break
+                    update.events.append({"kind": "tool", "name": name, "text": summary})
+                elif state == "ERROR":
+                    text = error.get("message") if isinstance(error, dict) else name
+                    update.events.append({"kind": "result", "ok": False, "text": _clip(text, 600)})
+        elif kind == "result" and isinstance(message.get("result"), dict):
+            result = message["result"]
+            raw_usage = result.get("usage")
+            if isinstance(raw_usage, dict):
+                self._usage = {0: raw_usage}
+                update.usage = self._totals()
+                update.final = True
+            turns = result.get("num_turns")
+            update.turns = turns if isinstance(turns, int) else None
+            update.text = _clip(result.get("response") or "", 4000)
+            update.done = True
+            denied = result.get("denied_actions")
+            if isinstance(denied, list) and denied:
+                names = ", ".join(sorted({str(d.get("action")) for d in denied if isinstance(d, dict)}))
+                update.events.append(
+                    {
+                        "kind": "info",
+                        "text": f"Antigravity's headless mode cannot ask permission, so it denied: {names}. "
+                        "File reads, searches and edits still work.",
+                    }
+                )
+            if result.get("status") != "SUCCESS":
+                update.failed = _clip(result.get("error") or "Antigravity reported an error", 500)
+        return update
+
+
 @dataclass
 class Agent:
     id: str
     name: str
     manual: bool = False
     init_agent: str = ""
+    stdin_prompt: bool = True  # False: the task is part of the command line
 
     def find(self) -> list[str] | None:
         return None
@@ -435,10 +566,12 @@ class Agent:
         """The agent's version text and whether it is logged in (None when it cannot tell)."""
         return None, None
 
-    def command(self, base: list[str], model: str, turns: int, directory: Path) -> list[str]:
+    def command(
+        self, base: list[str], model: str, turns: int, directory: Path, task: str = ""
+    ) -> list[str]:
         raise NotImplementedError
 
-    def stream(self) -> ClaudeStream | CodexStream:
+    def stream(self) -> ClaudeStream | CodexStream | AntigravityStream:
         raise NotImplementedError
 
 
@@ -498,7 +631,11 @@ class ClaudeAgent(Agent):
                 pass
         return version, logged
 
-    def command(self, base: list[str], model: str, turns: int, directory: Path) -> list[str]:
+    def command(
+        self, base: list[str], model: str, turns: int, directory: Path, task: str = ""
+    ) -> list[str]:
+        mcp = directory / ".mcp.json"  # only the With PRISM copy has one
+        tools = CLAUDE_TOOLS + (" mcp__prism" if mcp.is_file() else "")
         command = [
             *base,
             "-p",
@@ -510,9 +647,10 @@ class ClaudeAgent(Agent):
             "--permission-mode",
             "acceptEdits",
             "--allowedTools",
-            CLAUDE_TOOLS,
+            tools,
             "--setting-sources",
             "project",
+            *(["--mcp-config", str(mcp)] if mcp.is_file() else []),
             "--strict-mcp-config",
             "--no-session-persistence",
         ]
@@ -536,7 +674,9 @@ class CodexAgent(Agent):
         status = _run_text([*base, "login", "status"])
         return version, (status.returncode == 0) if status else None
 
-    def command(self, base: list[str], model: str, turns: int, directory: Path) -> list[str]:
+    def command(
+        self, base: list[str], model: str, turns: int, directory: Path, task: str = ""
+    ) -> list[str]:
         command = [
             *base,
             "exec",
@@ -547,6 +687,26 @@ class CodexAgent(Agent):
             "--cd",
             str(directory),
         ]
+        if os.name == "nt":
+            # The elevated Windows sandbox re-checks ACLs on every run and fails while the Codex app
+            # holds its runtime open ("setup refresh had errors"); the restricted-token one does not.
+            command += ["-c", 'windows.sandbox="unelevated"']
+        if (directory / ".codex").is_dir():
+            # Codex reads project .codex/ only for a trusted project, so the With copy trusts itself
+            # and PRISM's MCP server is also given on the command line, which needs no trust.
+            key = str(directory).lower() if os.name == "nt" else str(directory)
+            command += [
+                "-c",
+                f"projects.'{key}'.trust_level=\"trusted\"",
+                "-c",
+                f"mcp_servers.prism.command={json.dumps(Path(sys.executable).as_posix())}",
+                "-c",
+                'mcp_servers.prism.args=["-m", "prism", "mcp"]',
+                "-c",
+                f"mcp_servers.prism.env.PYTHONPATH={json.dumps(_PACKAGE_ROOT)}",
+                "-c",
+                "mcp_servers.prism.startup_timeout_sec=20",
+            ]
         return command + (["-m", model] if model else []) + ["-"]
 
     def stream(self) -> CodexStream:
@@ -554,16 +714,48 @@ class CodexAgent(Agent):
 
 
 class AntigravityAgent(Agent):
+    """The Antigravity CLI (`agy`) in print mode.
+
+    Headless runs honor the user's saved permission rules and cannot prompt, so file reads,
+    searches and edits work and shell commands are denied. Both arms get the same limits."""
+
     def find(self) -> list[str] | None:
-        found = shutil.which("antigravity")
-        return [found] if found else None
+        override = os.environ.get("PRISM_AGY_BIN")
+        if override:
+            return [override]
+        found = shutil.which("agy")
+        if found:
+            return [found]
+        fallback = Path(os.environ.get("LOCALAPPDATA", "")) / "agy" / "bin" / "agy.exe"
+        return [str(fallback)] if fallback.is_file() else None
+
+    def version(self, base: list[str]) -> tuple[str | None, bool | None]:
+        out = _run_text([*base, "--version"], 15)
+        text = out.stdout.strip().splitlines()[0][:60] if out and out.stdout.strip() else None
+        return text, None
+
+    def command(
+        self, base: list[str], model: str, turns: int, directory: Path, task: str = ""
+    ) -> list[str]:
+        command = [
+            *base,
+            f"--print={task}",
+            "--output-format",
+            "stream-json",
+            "--mode",
+            "accept-edits",
+        ]
+        return command + (["--model", model] if model else [])
+
+    def stream(self) -> AntigravityStream:
+        return AntigravityStream()
 
 
 AGENTS: dict[str, Agent] = {
     "claude": ClaudeAgent("claude", "Claude Code", init_agent="claude-code"),
     "codex": CodexAgent("codex", "Codex", init_agent="codex"),
     "antigravity": AntigravityAgent(
-        "antigravity", "Antigravity", manual=True, init_agent="antigravity"
+        "antigravity", "Antigravity", init_agent="antigravity", stdin_prompt=False
     ),
 }
 
@@ -602,6 +794,10 @@ class LiveRunner:
     def base_command(self, agent_id: str) -> list[str] | None:
         return self._commands.get(agent_id) or AGENTS[agent_id].find()
 
+    def is_manual(self, agent: Agent) -> bool:
+        """Antigravity runs headless through `agy`; without it the user runs it by hand."""
+        return agent.manual or (agent.id == "antigravity" and self.base_command(agent.id) is None)
+
     def agents(self) -> list[dict[str, Any]]:
         """Each agent's availability. Checked in parallel and kept for 30 seconds."""
         now = time.monotonic()
@@ -611,11 +807,11 @@ class LiveRunner:
 
         def check(agent: Agent) -> None:
             base = self.base_command(agent.id)
-            version, logged = agent.version(base) if base and not agent.manual else (None, None)
+            version, logged = agent.version(base) if base else (None, None)
             rows[agent.id] = {
                 "id": agent.id,
                 "name": agent.name,
-                "mode": "manual" if agent.manual else "live",
+                "mode": "manual" if self.is_manual(agent) else "live",
                 "found": base is not None,
                 "version": version,
                 "logged_in": logged,
@@ -662,7 +858,7 @@ class LiveRunner:
         if type(minutes) is not int or not 1 <= minutes <= 60:
             raise UserError("Timeout must be between 1 and 60 minutes")
         base = self.base_command(agent_id)
-        if base is None and not agent.manual:
+        if base is None and not self.is_manual(agent):
             raise UserError(
                 f"{agent.name} was not found on this computer. Install it and log in, then try again"
             )
@@ -676,7 +872,7 @@ class LiveRunner:
                 "state": "preparing",
                 "agent": agent_id,
                 "agent_name": agent.name,
-                "manual": agent.manual,
+                "manual": self.is_manual(agent),
                 "task": task.strip(),
                 "check_command": check.strip(),
                 "model": model,
@@ -854,7 +1050,8 @@ class LiveRunner:
             return
         dirs = {"without": Path(preparation["arms"]["without"]), "with": with_dir}
         before = {arm: _snapshot(path) for arm, path in dirs.items()}
-        if agent.manual:
+        manual = self.is_manual(agent)
+        if manual:
             self._manual_before = before
             self._update(
                 run,
@@ -934,7 +1131,7 @@ class LiveRunner:
             return
         with self._lock:
             run["verdict"] = compare(run["arms"], bool(run["check_command"]))
-            if agent.manual:
+            if manual:
                 # The hand-off interval is human workflow time, not measured agent execution.
                 run["verdict"]["time_saving_pct"] = None
                 run["verdict"]["commands_saving_pct"] = None
@@ -989,8 +1186,8 @@ class LiveRunner:
                     state["duration_seconds"] = state["finished"] - state["started"]
 
     def _install_integration(self, with_dir: Path, config_home: Path, agent: Agent) -> None:
-        """Real `prism init` for the agent in the With copy only: hooks, no MCP, no git hooks."""
-        env = dict(os.environ, PRISM_CONFIG_HOME=str(config_home))
+        """Real `prism init` for the agent in the With copy only: hooks and MCP, no git hooks."""
+        env = self._env(config_home, with_prism=True)
         process = subprocess.run(
             [
                 sys.executable,
@@ -1002,7 +1199,7 @@ class LiveRunner:
                 "--agent",
                 agent.init_agent,
                 "--hooks",
-                "--no-mcp",
+                "--mcp",
                 "--no-git-hooks",
                 "--no-scan",
                 "--yes",
@@ -1014,15 +1211,35 @@ class LiveRunner:
         )
         if process.returncode:
             raise UserError(f"prism init failed in the With PRISM copy: {process.stderr.strip()}")
+        self._require_connected(with_dir, agent, env)
+
+    def _require_connected(self, with_dir: Path, agent: Agent, env: dict[str, str]) -> None:
+        """The With copy must start every run with PRISM's hook and MCP connected, or not run."""
+        missing: list[str] = []
+        if agent.init_agent == "claude-code":
+            mcp = with_dir / ".mcp.json"
+            if not mcp.is_file() or '"prism"' not in mcp.read_text(encoding="utf-8", errors="replace"):
+                missing.append("MCP server (.mcp.json)")
+            settings = with_dir / ".claude" / "settings.json"
+            if not settings.is_file() or "prism" not in settings.read_text(encoding="utf-8", errors="replace"):
+                missing.append("hooks (.claude/settings.json)")
+        probe = subprocess.run(
+            ["prism", "--version"], capture_output=True, text=True, env=env, timeout=60, shell=os.name == "nt"
+        )
+        if probe.returncode:
+            missing.append("`prism` command on the agent's PATH")
+        if missing:
+            raise UserError("PRISM is not connected in the With PRISM copy: " + ", ".join(missing))
 
     def _env(self, config_home: Path, with_prism: bool) -> dict[str, str]:
         env = dict(os.environ)
         env["PRISM_CONFIG_HOME"] = str(config_home)
-        scripts = str(Path(sys.executable).parent)
         parts = [p for p in env.get("PATH", "").split(os.pathsep) if p]
-        # The baseline must not be able to find PRISM; the With copy must (its hooks run `prism`).
+        # The baseline must not be able to find PRISM; the With copy must (its hooks and MCP run `prism`).
         parts = [p for p in parts if not shutil.which("prism", path=p)]
-        env["PATH"] = os.pathsep.join(([scripts] if with_prism else []) + parts)
+        if with_prism:
+            parts.insert(0, str(_prism_shim(config_home / "bin")))
+        env["PATH"] = os.pathsep.join(parts)
         return env
 
     def _check(self, command: str, directory: Path) -> dict[str, Any]:
@@ -1103,7 +1320,7 @@ class LiveRunner:
         timeout: float,
     ) -> None:
         state = run["arms"][arm]
-        command = agent.command(base, run["model"], max_turns, directory)
+        command = agent.command(base, run["model"], max_turns, directory, run["task"])
         with self._lock:
             state.update(state="running", started=time.time())
         started = time.monotonic()
@@ -1114,7 +1331,7 @@ class LiveRunner:
                 command,
                 cwd=directory,
                 env=env,
-                stdin=subprocess.PIPE,
+                stdin=subprocess.PIPE if agent.stdin_prompt else subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -1126,13 +1343,14 @@ class LiveRunner:
                 state.update(state="failed", error=f"Could not start {agent.name}: {exc}")
             return
         self._processes[arm] = process
-        assert process.stdin and process.stdout and process.stderr
+        assert process.stdout and process.stderr
         stderr = process.stderr
-        try:
-            process.stdin.write(run["task"])
-            process.stdin.close()
-        except OSError:
-            pass
+        if process.stdin:
+            try:
+                process.stdin.write(run["task"])
+                process.stdin.close()
+            except OSError:
+                pass
         threading.Thread(
             target=lambda: stderr_tail.extend(stderr.readlines()[-20:]), daemon=True
         ).start()

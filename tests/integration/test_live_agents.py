@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from prism.core.errors import UserError
-from prism.viewer.live import LiveRunner
+from prism.viewer.live import AGENTS, LiveRunner
 from tests.integration.test_live import CHECK, root, runner_for, wait  # noqa: F401
 
 FAKE_CODEX = Path(__file__).parents[1] / "fixtures/fake_codex.py"
@@ -59,7 +59,10 @@ def test_codex_run_counts_cached_input_inside_input(root: Path) -> None:  # noqa
     assert "terminal_start" in kinds and "terminal_end" in kinds and "text" in kinds
 
 
-def test_antigravity_is_a_manual_handoff_with_real_checks(root: Path) -> None:  # noqa: F811
+def test_antigravity_without_agy_is_a_manual_handoff_with_real_checks(  # noqa: F811
+    root: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(AGENTS["antigravity"], "find", lambda: None)
     runner = runner_for(root)
     runner.start({"task": "Add a subtract method", "agent": "antigravity", "check_command": CHECK})
     deadline = time.monotonic() + 120
@@ -101,7 +104,10 @@ def test_antigravity_is_a_manual_handoff_with_real_checks(root: Path) -> None:  
         runner.finish_manual()
 
 
-def test_manual_read_only_task_requires_explicit_unchanged_override(root: Path) -> None:  # noqa: F811
+def test_manual_read_only_task_requires_explicit_unchanged_override(  # noqa: F811
+    root: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(AGENTS["antigravity"], "find", lambda: None)
     runner = runner_for(root)
     runner.start({"task": "Review the code without editing", "agent": "antigravity"})
     deadline = time.monotonic() + 120

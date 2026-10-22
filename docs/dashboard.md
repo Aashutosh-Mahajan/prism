@@ -29,16 +29,16 @@ Choose **1, 2 or 3 projects** to show several panels at once. Each panel has its
 | Agent | How it runs |
 |---|---|
 | Claude Code | Headless (`claude -p --output-format stream-json`). Tokens and cost come from Claude Code's own counters. |
-| Codex | Headless (`codex exec --json`). Tokens come from Codex's counters (cached input is part of input; total is input plus output). Codex reports no cost, so none is shown. The Codex adapter has only been tested against recorded-format stand-ins, not a real Codex install. |
-| Antigravity | This adapter uses a manual hand-off. PRISM prepares both folders; you run the task in each in Antigravity, confirm both are finished, and press **Done**. Tokens, cost, turns and agent terminal commands are not captured. |
+| Codex | Headless (`codex exec --json`). Tokens come from Codex's counters (cached input is part of input; total is input plus output). Codex reports no cost, so none is shown. On Windows the run uses Codex's restricted-token sandbox (`windows.sandbox="unelevated"`), because the elevated one fails with "setup refresh had errors" while the Codex app is open. |
+| Antigravity | Headless (`agy -p --output-format stream-json --mode accept-edits`). Tokens and turns come from the CLI's own usage counters; it reports no cost. Print mode cannot ask for permission, so the agent reads, searches and edits files but its shell commands are denied (the Activity tab says so); both copies have the same limits. |
+
+In the With PRISM copy the real `prism init` installs the agent's hooks and MCP server, and a small `prism` command is placed on the agent's PATH (the folder holding `python.exe` is not where pip puts `prism.exe`). The run is refused, with the reason, if the hook, the MCP entry or the `prism` command is missing. Codex reads a project's `.codex/` folder only for a trusted project, so the With copy is trusted at launch and the MCP server is also passed on the command line.
 
 Steps:
 
 1. Add the project on the **Projects** page and index it. It needs a committed Git repository when it is a Git project; uncommitted edits are excluded.
 2. Pick the agent, enter one task and, optionally, a **check command** such as `python -m pytest -q`. It is run in both finished copies and is what proves the result is still correct. Without it the page says quality is *not verified*.
 3. Start. The page prepares the two copies, runs both agents, runs the check, and shows a verdict.
-
-For Antigravity, Start prepares the folders and then waits; it does not launch the agent. Use the launch instructions in the hand-off panel in separate terminals (PowerShell on Windows) so each fresh Antigravity process inherits the correct `PRISM_CONFIG_HOME` and PATH. Run the exact same task and model in both folders, save the results, then confirm both tasks are finished. Done rejects unchanged copies unless you explicitly select the option for a task that intentionally requires no edits. The manual timer measures the hand-off interval, not agent execution time or a PRISM time saving.
 
 The Terminal tab includes PRISM's verification command and its output, separately from captured agent commands. Failed check details open automatically. A missing test folder, missing dependencies or an empty unittest suite cannot establish successful verification; inspect the output before interpreting the result. Verification commands do not count as agent commands.
 

@@ -7,8 +7,12 @@ All notable changes to PRISM are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Live comparison runs Antigravity headless (`agy -p`) with live messages, tool calls and token counters,
+  like Claude Code and Codex. Codex runs no longer fail on Windows with "setup refresh had errors".
+  The With PRISM copy always gets the hook and MCP server (checked before the run starts) and a `prism`
+  command on the agent's PATH.
 - Dashboard **Live** page and **Projects** page: add several projects (a local folder or an https git URL), pick Claude Code,
-  Codex or Antigravity (manual hand-off), and run one task with and without PRISM at the same time in two separate copies, with live
+  Codex or Antigravity, and run one task with and without PRISM at the same time in two separate copies, with live
   messages, terminal commands, token counters, time and an independent check that proves whether quality stayed the same. Up to three
   projects can be shown together; Graph, Compare and the other pages follow the selected project; finished runs are kept as history
   (`prism/viewer/live.py`, `prism/viewer/projects.py`).
