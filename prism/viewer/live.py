@@ -65,6 +65,14 @@ _SHELL_TOOLS = ("Bash", "PowerShell")
 # --- helpers ------------------------------------------------------------------------------
 
 
+# Print mode denies every shell command, and a model that tries one first often stops. Both arms get
+# the same note, so it changes nothing about the comparison except that the run does the work.
+_AGY_NOTE = (
+    "\n\nNote: shell commands are not available in this environment. Use your file listing, "
+    "search, read and edit tools, and make the requested edits yourself."
+)
+
+
 def _only_prism_hooks(path: Path) -> bool:
     try:
         hooks = json.loads(path.read_text(encoding="utf-8")).get("hooks", {})
@@ -758,7 +766,7 @@ class AntigravityAgent(Agent):
     ) -> list[str]:
         command = [
             *base,
-            f"--print={task}",
+            f"--print={task}{_AGY_NOTE}",
             "--output-format",
             "stream-json",
             "--mode",

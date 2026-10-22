@@ -61,7 +61,7 @@ def test_antigravity_error_result_fails_the_run() -> None:
 def test_antigravity_command_carries_the_task_even_when_it_starts_with_a_dash() -> None:
     agent = AGENTS["antigravity"]
     command = agent.command(["agy"], "claude-sonnet-4-6", 10, Path("."), "-fix the bug")
-    assert command[:2] == ["agy", "--print=-fix the bug"]
+    assert command[0] == "agy" and command[1].startswith("--print=-fix the bug")
     assert command[-2:] == ["--model", "claude-sonnet-4-6"]
     assert not agent.stdin_prompt and not agent.manual
 
