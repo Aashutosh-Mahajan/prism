@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import difflib
 import glob
+import hashlib
 import json
 import os
 import re
@@ -37,6 +38,7 @@ MAX_TEXT = 1500
 MAX_OUTPUT = 2500
 SNAPSHOT_FILE_LIMIT = 512 * 1024
 SNAPSHOT_TOTAL_LIMIT = 64 * 1024 * 1024
+_LARGE = b"\x00large:"
 ACTIVE = ("preparing", "running", "checking", "awaiting_manual")
 # Files PRISM's own integration adds or an agent run produces. They are not part of the solution.
 _NOISE_DIRS = {
@@ -68,8 +70,15 @@ _SHELL_TOOLS = ("Bash", "PowerShell")
 # Print mode denies every shell command, and a model that tries one first often stops. Both arms get
 # the same note, so it changes nothing about the comparison except that the run does the work.
 _AGY_NOTE = (
-    "\n\nNote: shell commands are not available in this environment. Use your file listing, "
-    "search, read and edit tools, and make the requested edits yourself."
+    "\n\nNote: shell commands are not available in this environment, and the run ends when you "
+    "reply, so do not delegate to subagents or background tasks. Use your file listing, search, read "
+    "and edit tools yourself, make the requested edits, then reply."
+)
+
+
+_AGY_RESUME = (
+    "The shell command was denied, and no shell command will be allowed. Continue the task with "
+    "your file listing, search, read and edit tools, make the edits, then reply."
 )
 
 
@@ -141,10 +150,18 @@ def _snapshot(directory: Path) -> dict[str, bytes] | None:
         ):
             continue
         size = path.stat().st_size
+        if size > SNAPSHOT_FILE_LIMIT:
+            # Models and datasets are compared by content hash, never held in memory or diffed.
+            digest = hashlib.sha1()
+            with path.open("rb") as handle:
+                for block in iter(lambda: handle.read(1 << 20), b""):
+                    digest.update(block)
+            files[relative.as_posix()] = _LARGE + digest.hexdigest().encode()
+            continue
         total += size
         if total > SNAPSHOT_TOTAL_LIMIT:
             return None
-        files[relative.as_posix()] = path.read_bytes() if size <= SNAPSHOT_FILE_LIMIT else b""
+        files[relative.as_posix()] = path.read_bytes()
     return files
 
 
@@ -161,6 +178,9 @@ def _changes(before: dict[str, bytes] | None, directory: Path) -> tuple[str, lis
         if old == new:
             continue
         changed.append(path)
+        if (old or b"").startswith(_LARGE) or (new or b"").startswith(_LARGE):
+            chunks.append(f"Large file changed: {path}\n")
+            continue
         try:
             a = old.decode("utf-8").splitlines(keepends=True) if old is not None else []
             b = new.decode("utf-8").splitlines(keepends=True) if new is not None else []
@@ -474,23 +494,40 @@ class AntigravityStream:
         self._text: dict[int, str] = {}
         self._usage: dict[int, dict[str, Any]] = {}
         self._shell: set[int] = set()
+        self._prior = {"input_tokens": 0, "cache_read_input_tokens": 0, "output_tokens": 0}
+        self._turns = 0
+        self.conversation = ""
+        self.denied = False
+        self.edited = False
+
+    def _current(self) -> dict[str, int]:
+        return {
+            "input_tokens": sum(int(u.get("input_tokens") or 0) for u in self._usage.values()),
+            "cache_read_input_tokens": sum(
+                int(u.get("cache_read_tokens") or 0) for u in self._usage.values()
+            ),
+            "output_tokens": sum(int(u.get("output_tokens") or 0) for u in self._usage.values()),
+        }
 
     def _totals(self) -> dict[str, int] | None:
-        if not self._usage:
+        if not self._usage and not any(self._prior.values()):
             return None
-        return usage_totals(
-            {
-                "input_tokens": sum(int(u.get("input_tokens") or 0) for u in self._usage.values()),
-                "cache_read_input_tokens": sum(
-                    int(u.get("cache_read_tokens") or 0) for u in self._usage.values()
-                ),
-                "output_tokens": sum(int(u.get("output_tokens") or 0) for u in self._usage.values()),
-            }
-        )
+        now = self._current()
+        return usage_totals({key: now[key] + self._prior[key] for key in now})
+
+    def next_attempt(self) -> None:
+        """Keep what this process used, then count a resumed process on top of it."""
+        now = self._current()
+        for key in self._prior:
+            self._prior[key] += now[key]
+        self._usage, self._text, self._shell = {}, {}, set()
+        self.denied = False
 
     def feed(self, message: dict[str, Any]) -> Update:
         update = Update()
         kind = message.get("event")
+        if isinstance(message.get("conversation_id"), str) and message["conversation_id"]:
+            self.conversation = message["conversation_id"]
         if kind == "init":
             init = message.get("init") if isinstance(message.get("init"), dict) else {}
             mode = init.get("permission_mode") or "default"
@@ -538,6 +575,8 @@ class AntigravityStream:
                             }
                         )
                 elif state == "ACTIVE":
+                    if name in ("edit_file", "write_to_file", "multi_replace_file_content"):
+                        self.edited = True
                     summary = ""
                     for key in ("Path", "AbsolutePath", "TargetFile", "Query", "Pattern", "Url"):
                         if isinstance(params.get(key), str) and params[key]:
@@ -554,11 +593,16 @@ class AntigravityStream:
                 self._usage = {0: raw_usage}
                 update.usage = self._totals()
                 update.final = True
+            if isinstance(result.get("conversation_id"), str) and result["conversation_id"]:
+                self.conversation = result["conversation_id"]
             turns = result.get("num_turns")
-            update.turns = turns if isinstance(turns, int) else None
+            if isinstance(turns, int):
+                self._turns += turns
+                update.turns = self._turns
             update.text = _clip(result.get("response") or "", 4000)
             update.done = True
             denied = result.get("denied_actions")
+            self.denied = bool(isinstance(denied, list) and denied)
             if isinstance(denied, list) and denied:
                 names = ", ".join(sorted({str(d.get("action")) for d in denied if isinstance(d, dict)}))
                 update.events.append(
@@ -595,6 +639,10 @@ class Agent:
 
     def stream(self) -> ClaudeStream | CodexStream | AntigravityStream:
         raise NotImplementedError
+
+    def resume(self, stream: Any, base: list[str], model: str, attempt: int) -> list[str] | None:
+        """A command that continues a run that stopped early, or None when it finished."""
+        return None
 
 
 def _run_text(command: list[str], timeout: float = 20) -> subprocess.CompletedProcess[str] | None:
@@ -776,6 +824,24 @@ class AntigravityAgent(Agent):
 
     def stream(self) -> AntigravityStream:
         return AntigravityStream()
+
+    def resume(self, stream: Any, base: list[str], model: str, attempt: int) -> list[str] | None:
+        """A denied shell command ends the headless turn. Continue the same conversation, up to
+        twice, so the agent carries on with its file tools instead of stopping with no edits."""
+        if attempt >= 2 or not stream.denied or stream.edited or not stream.conversation:
+            return None
+        stream.next_attempt()
+        command = [
+            *base,
+            f"--print={_AGY_RESUME}",
+            "--conversation",
+            stream.conversation,
+            "--output-format",
+            "stream-json",
+            "--mode",
+            "accept-edits",
+        ]
+        return command + (["--model", model] if model else [])
 
 
 AGENTS: dict[str, Agent] = {
@@ -1353,65 +1419,74 @@ class LiveRunner:
         started = time.monotonic()
         stream = agent.stream()
         stderr_tail: list[str] = []
-        try:
-            process = subprocess.Popen(
-                command,
-                cwd=directory,
-                env=env,
-                stdin=subprocess.PIPE if agent.stdin_prompt else subprocess.DEVNULL,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-            )
-        except OSError as exc:
-            with self._lock:
-                state.update(state="failed", error=f"Could not start {agent.name}: {exc}")
-            return
-        self._processes[arm] = process
-        assert process.stdout and process.stderr
-        stderr = process.stderr
-        if process.stdin:
+        attempt = 0
+        while True:
             try:
-                process.stdin.write(run["task"])
-                process.stdin.close()
-            except OSError:
-                pass
-        threading.Thread(
-            target=lambda: stderr_tail.extend(stderr.readlines()[-20:]), daemon=True
-        ).start()
-        watchdog = threading.Timer(timeout, lambda: _kill(process))
-        watchdog.start()
-        done = False
-        failure: str | None = None
-        try:
-            for line in process.stdout:
-                try:
-                    message = json.loads(line)
-                except ValueError:
-                    continue
-                if not isinstance(message, dict):
-                    continue
-                update = stream.feed(message)
-                for event in update.events:
-                    self._push(run, arm, event)
+                process = subprocess.Popen(
+                    command,
+                    cwd=directory,
+                    env=env,
+                    stdin=subprocess.PIPE if agent.stdin_prompt else subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                )
+            except OSError as exc:
                 with self._lock:
-                    if update.usage is not None and (update.final or not state["usage_final"]):
-                        state["usage"] = update.usage
-                        state["usage_final"] = state["usage_final"] or update.final
-                    if update.cost is not None:
-                        state["cost_usd"] = update.cost
-                    if update.turns is not None:
-                        state["turns"] = update.turns
-                    if update.text is not None:
-                        state["final_text"] = update.text
-                done = done or update.done
-                failure = update.failed or failure
-            process.wait()
-        finally:
-            watchdog.cancel()
-            self._processes.pop(arm, None)
+                    state.update(state="failed", error=f"Could not start {agent.name}: {exc}")
+                return
+            self._processes[arm] = process
+            assert process.stdout and process.stderr
+            stderr = process.stderr
+            if process.stdin:
+                try:
+                    process.stdin.write(run["task"])
+                    process.stdin.close()
+                except OSError:
+                    pass
+            threading.Thread(
+                target=lambda stream_=stderr: stderr_tail.extend(stream_.readlines()[-20:]), daemon=True
+            ).start()
+            watchdog = threading.Timer(timeout, lambda proc=process: _kill(proc))
+            watchdog.start()
+            done = False
+            failure: str | None = None
+            try:
+                for line in process.stdout:
+                    try:
+                        message = json.loads(line)
+                    except ValueError:
+                        continue
+                    if not isinstance(message, dict):
+                        continue
+                    update = stream.feed(message)
+                    for event in update.events:
+                        self._push(run, arm, event)
+                    with self._lock:
+                        if update.usage is not None and (update.final or not state["usage_final"]):
+                            state["usage"] = update.usage
+                            state["usage_final"] = state["usage_final"] or update.final
+                        if update.cost is not None:
+                            state["cost_usd"] = update.cost
+                        if update.turns is not None:
+                            state["turns"] = update.turns
+                        if update.text is not None:
+                            state["final_text"] = update.text
+                    done = done or update.done
+                    failure = update.failed or failure
+                process.wait()
+            finally:
+                watchdog.cancel()
+                self._processes.pop(arm, None)
+            resume = None
+            if done and not failure and not self._cancel.is_set():
+                resume = agent.resume(stream, base, run["model"], attempt)
+            if resume is None:
+                break
+            attempt += 1
+            command = resume
         seconds = time.monotonic() - started
         with self._lock:
             state.update(duration_seconds=round(seconds, 2), finished=time.time())
