@@ -88,16 +88,26 @@ def record_request(root: Path, session: str | None, text: str) -> None:
 
 
 def record_delivery(
-    root: Path, session: str | None, via: str, delivered: bool, why: str = ""
+    root: Path,
+    session: str | None,
+    via: str,
+    delivered: bool,
+    why: str = "",
+    host: str | None = None,
 ) -> None:
     """That a hook or a tool call answered (or deliberately stayed silent) in this session.
 
-    `prism doctor --session` reads these to say whether PRISM was actually used."""
-    append(
-        root,
-        session,
-        {"type": "delivery", "via": via, "ok": bool(delivered), "why": _clip(why, 80)},
-    )
+    `prism doctor --session` reads these to say whether PRISM was actually used, and by which
+    agent."""
+    event: dict[str, Any] = {
+        "type": "delivery",
+        "via": via,
+        "ok": bool(delivered),
+        "why": _clip(why, 80),
+    }
+    if host:
+        event["host"] = host
+    append(root, session, event)
 
 
 def record_focus(root: Path, session: str | None, symbols: list[str]) -> None:
@@ -149,6 +159,7 @@ class SessionLog:
     edits: dict[str, list[str]] = field(default_factory=dict)  # file -> anchors
     notes: list[str] = field(default_factory=list)
     deliveries: list[tuple[str, bool, str]] = field(default_factory=list)  # (via, ok, why)
+    host: str = ""  # the agent its hooks came from, when they said
 
     @property
     def substantive(self) -> bool:
@@ -192,6 +203,8 @@ def _read(path: Path) -> SessionLog | None:
             log.deliveries.append(
                 (event["via"], bool(event.get("ok")), str(event.get("why") or ""))
             )
+            if isinstance(event.get("host"), str) and event["host"] != "unknown":
+                log.host = event["host"]
     return log
 
 

@@ -103,7 +103,17 @@ def url_patterns(stmts: list[ast.stmt]) -> list[UrlPattern]:
             else:
                 view_name = _dotted(view)
             if view_name and not view_name.startswith("include"):
-                out.append(UrlPattern(pattern.value, view_name, sub.lineno))
+                name = next(
+                    (
+                        kw.value.value
+                        for kw in sub.keywords
+                        if kw.arg == "name"
+                        and isinstance(kw.value, ast.Constant)
+                        and isinstance(kw.value.value, str)
+                    ),
+                    "",
+                )
+                out.append(UrlPattern(pattern.value, view_name, sub.lineno, name))
     return out
 
 

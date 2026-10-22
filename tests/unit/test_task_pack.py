@@ -176,3 +176,39 @@ def test_task_cli_mcp_parity_and_invalid_budget(indexed: Path) -> None:
     finally:
         if tools._store:
             tools._store.close()
+
+
+def _sym(sid: str, name: str, doc: str = "", file: str = "pkg/mod.py") -> object:
+    from prism.navigator.store import SymbolRow
+
+    return SymbolRow(
+        sid, name, "function", "pkg.mod", file, 10, 20, "", doc, "public", None, 0.0, 30
+    )
+
+
+def test_search_channel_offers_a_clear_name_match_no_line_matched() -> None:
+    from prism.navigator.task_pack import _Block, _search_blocks
+
+    leader = _sym("pkg.graph.pick_seeds", "pick_seeds", "Choose seed symbols per label.")
+    runner = _sym("pkg.ui.select", "select_row", file="pkg/ui.py")
+    blocks = [_Block("pkg/other.py", 1, 5, None, 4.0, [1])]
+    _search_blocks(blocks, [(leader, 14.0), (runner, 9.0)], False, {"seed": 1.0, "label": 1.0})
+    added = [b for b in blocks if b.role == "search"]
+    assert [b.symbol.id for b in added] == ["pkg.graph.pick_seeds"]
+    assert added[0].score < 4.0  # offered below the best lexical evidence, never above it
+
+
+def test_search_channel_stays_out_when_anchored_or_path_only_or_no_leader() -> None:
+    from prism.navigator.task_pack import _Block, _search_blocks
+
+    money = _sym("shop.money.Money", "Money", file="shop/money.py")
+    other = _sym("shop.cart.total", "total", file="shop/cart.py")
+    terms = {"shop": 1.0, "promot": 1.0}
+    for found, anchored in (
+        ([(money, 0.5), (other, 0.2)], False),  # only the path matches "shopper"
+        ([(other, 0.5), (money, 0.48)], False),  # no clear leader
+        ([(_sym("p.m.promote", "promote"), 0.5)], True),  # an exact name already says where
+    ):
+        blocks = [_Block("pkg/other.py", 1, 5, None, 4.0, [1])]
+        _search_blocks(blocks, found, anchored, terms)
+        assert [b.role for b in blocks] == ["candidate"] and blocks[0].score == 4.0

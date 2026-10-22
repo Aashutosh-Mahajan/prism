@@ -219,6 +219,13 @@ def init(
             help="Claude Code: refuse to re-read an unchanged file already in context (opt-in).",
         ),
     ] = False,
+    shorten_output: Annotated[
+        bool,
+        typer.Option(
+            "--shorten-output",
+            help="Claude Code: shorten long command output before it is read, failures kept (opt-in).",
+        ),
+    ] = False,
     yes: Annotated[bool, typer.Option("--yes", "-y", help="Skip prompts (scripted use).")] = False,
     run_scan: Annotated[
         bool | None,
@@ -258,15 +265,16 @@ def init(
             hooks,
             bool(HAS_HOOKS & set(agents)),
         ),
-        # Hooks deliver the packet with no standing cost; MCP adds tool descriptions to every turn
-        # and measured no better. It is opt-in (`--mcp`) except for a host that has no hooks.
+        # The default is hook + MCP: the hook puts the first answer in the request, and
+        # `prism_task` (one tool, loaded upfront) serves every follow-up. `--no-mcp` opts out.
         mcp=ask(
             "Register the PRISM MCP server for your agent?",
-            mcp if mcp is not None else (False if set(agents) <= HAS_HOOKS else None),
+            mcp,
             bool(HAS_MCP & set(agents)),
         ),
         all_skills=all_skills,
         dedupe_reads=dedupe_reads,
+        shorten_output=shorten_output,
     )
     use_git_hooks = ask(
         "Install git hooks (update the index after commit/merge/checkout)?",
@@ -285,6 +293,8 @@ def init(
             raise typer.Exit(0)
         apply_init(plan)
         out.print("[green]PRISM initialized.[/green]")
+        if "antigravity" in agents and options.mcp:
+            _offer_antigravity_mcp(yes)
         for name in agents:
             for note in get_integration(name).notes(repo, options):
                 out.print(f"[yellow]note ({name}):[/yellow] {note}", markup=True, highlight=False)
@@ -298,6 +308,22 @@ def init(
         _print_scan(scan(repo), as_json=False)
     else:
         out.print("Run `prism scan` when you're ready to build the index.")
+
+
+def _offer_antigravity_mcp(yes: bool) -> None:
+    """Antigravity reads MCP servers only from a user-level list: add PRISM there if asked."""
+    from prism.integrations.antigravity import register_user_mcp, user_mcp_registered
+
+    if yes or user_mcp_registered() is not False:
+        # Scripted runs never change user-level settings; an installed entry or a missing agy
+        # needs nothing here (the printed note explains the manual step).
+        return
+    question = (
+        "Add the PRISM MCP server to Antigravity's user-level settings "
+        "(runs `agy mcp add prism prism mcp`)?"
+    )
+    if typer.confirm(question, default=True) and register_user_mcp():
+        out.print("Antigravity: PRISM MCP server added (`agy mcp remove prism` removes it).")
 
 
 @app.command("uninstall-integration")
@@ -327,6 +353,15 @@ def uninstall_integration(
         out.print("Nothing changed.")
         raise typer.Exit(0)
     apply_uninstall(repo, removals, purge=purge)
+    from prism.integrations.antigravity import unregister_user_mcp, user_mcp_registered
+
+    if (
+        not yes
+        and user_mcp_registered()
+        and typer.confirm("Also remove the PRISM MCP server from Antigravity's user settings?")
+        and unregister_user_mcp()
+    ):
+        out.print("Antigravity: PRISM MCP server removed.")
     out.print("PRISM integration removed." + (" Index deleted." if purge else ""))
 
 

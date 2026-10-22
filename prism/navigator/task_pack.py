@@ -18,7 +18,7 @@ import re
 from collections import deque
 from dataclasses import dataclass, field, replace
 from functools import lru_cache
-from itertools import combinations
+from itertools import combinations, pairwise
 from typing import Any
 
 from prism.core.errors import UserError
@@ -87,7 +87,17 @@ SEMANTIC_LEAD_COSINE = 0.28  # a clear leader (SEMANTIC_LEAD x the runner-up) ab
 SEMANTIC_LEAD = 1.4
 SEMANTIC_LEADER_SHARE = 0.9
 TIGHT_MAX_BLOCKS = 3
-_IMPORT_LINE = re.compile(r"^\s*(?:import|from|package|using|require)|^\s*#include")
+# Metadata search (names, ids, docstrings, paths) often ranks the right symbol first when no
+# single source line holds enough of the request's words to become a block on its own.
+SEARCH_CANDIDATES = 3
+SEARCH_ADDED = 2
+SEARCH_LEAD = 1.15  # the top symbol hit must beat the runner-up by this factor to lead
+SEARCH_NEAR = 0.85  # hits within this share of the top are added too, when the top leads
+SEARCH_LEADER_SHARE = 0.9
+SEARCH_SHARE = 0.6
+SEARCH_AGREEMENT = 0.3
+_TEST_REQUEST = re.compile(r"\b(?:test|tests|pytest|spec|coverage)\b|\btest_\w+", re.IGNORECASE)
+_IMPORT_LINE = re.compile(r"^\s*(?:import|from|package|using|require)\b|^\s*#include\b")
 
 _WORDS = re.compile(r"[^\W_]+")
 _STRUCTURAL = re.compile(
@@ -97,7 +107,41 @@ _STRUCTURAL = re.compile(
     r"|\btests?\s+(?:for|covering)\b",
     re.IGNORECASE,
 )
-_LOCATE = re.compile(r"^\s*(?:where\s+is|which\s+file|find|locate)\b", re.IGNORECASE)
+_LOCATE = re.compile(
+    r"^\s*(?:where\s+(?:is|are)|which\s+(?:file|function|class|component)|find|locate|explain"
+    r"|how\s+does|what\s+does)\b",
+    re.IGNORECASE,
+)
+# "Locate X. Return the source file and symbol names; do not edit files." The framing words
+# (locate, symbol, file, names, edit) would outweigh X itself, so they are not ranked.
+_LOCATE_VERB = re.compile(
+    r"^\s*(?:locate|find|explain(?:\s+(?:how|where|which|what|why))?|where\s+(?:is|are)"
+    r"|which\s+(?:file|function|class|component)|how\s+does|what\s+does)\b[\s:,]*",
+    re.IGNORECASE,
+)
+_ANSWER_FORMAT = re.compile(
+    r"(?:^|(?<=[.;!?]))\s*(?:return|name|give|list|cite|answer|do\s+not|don't|without)\b[^.;!?]*"
+    r"\b(?:file|files|symbol|symbols|name|names|path|paths|edit|edits|editing|function|functions)\b"
+    r"[^.;!?]*[.;!?]?",
+    re.IGNORECASE,
+)
+
+
+def locate_focus(query: str) -> str:
+    """The subject of a locate/explain request, without its verb and answer-format sentences."""
+    text = _ANSWER_FORMAT.sub(" ", _LOCATE_VERB.sub("", query, count=1))
+    text = " ".join(text.split())
+    return text if len(text.split()) >= 2 else query
+
+
+# A locate/explain answer is a short ranked list of where things are, not code to edit.
+MAX_LOCATIONS = 6
+LOCATION_RRF_K = 10
+LEXICAL_VOTES = 3
+LOCATION_CLIFF = 1.25  # a score gap this large in the top hits marks where the answer set ends
+LOCATION_COVERAGE = 0.5  # share of the request's words the top names and docstrings must cover
+LOCATION_TEXT = 70
+LOCATION_SHARE = 0.45  # of the budget; the rest is the code the list points to
 _SOURCE_RANGE = re.compile(r"^(.+):(\d+)(?:-(\d+))?$")
 _FLOW_REQUEST = re.compile(
     r"\b(?:explain|trace|pipeline|data\s+flow|call\s+flow)\b"
@@ -154,8 +198,13 @@ def render_task(pack: dict[str, Any]) -> str:
         patch = pack["patch"]
         parts.append(
             f"Patch: `{enrich.APPLY_COMMAND} {patch['path']}` {patch['old']} -> {patch['new']}; "
-            f"all {patch['sites']} sites in {patch['files']} files; git apply --check passed. "
-            "Review with git diff."
+            + (
+                f"the {patch['sites']} in-scope sites in {patch['files']} files "
+                f"({patch['left_alone']} other occurrences left unchanged); "
+                if patch.get("left_alone")
+                else f"all {patch['sites']} sites in {patch['files']} files; "
+            )
+            + "git apply --check passed. One command, no Read or Edit needed; review with git diff."
         )
     elif pack.get("patch_reason"):
         parts.append(f"Patch: none ({pack['patch_reason']})")
@@ -188,6 +237,15 @@ def render_task(pack: dict[str, Any]) -> str:
             parts.append(f"    {o['line']}: {o['text']}")
     if pack.get("absent"):
         parts.append("Not in the source (new names): " + ", ".join(pack["absent"]))
+    if pack.get("locations"):
+        parts.append("Locations (ranked):")
+        for place in pack["locations"]:
+            line = f"  {_loc(place['file'], *place['lines'])}  {place['symbol'].rsplit('.', 1)[-1]}"
+            if place["signature"]:
+                line += f"  {place['signature']}"
+            if place["doc"]:
+                line += f"  # {place['doc']}"
+            parts.append(line)
     for block in pack["blocks"]:
         start, end = block["lines"]
         label = {"candidate": "match", "definition": "def", "output definition": "output"}.get(
@@ -230,6 +288,8 @@ def render_task(pack: dict[str, Any]) -> str:
     tests = [link["file"] for link in links if link["role"] == "test"]
     if pack.get("run"):
         parts.append("Run: " + pack["run"])
+    elif pack.get("verify"):
+        parts.append("Verify: " + pack["verify"])
     elif tests:
         parts.append("Tests: " + ", ".join(tests))
     if pack.get("test_warning"):
@@ -695,7 +755,11 @@ def _fill(
     brief: bool = False,
 ) -> None:
     reader = SourceReader(store)
-    terms = _query_terms(query, index)
+    # Ranking for a locate/explain request uses its subject; evidence still uses every word.
+    ranked_query = (
+        locate_focus(query) if _LOCATE.search(query) and not _STRUCTURAL.search(query) else query
+    )
+    terms = _query_terms(ranked_query, index)
     operations = request_operations(query)
     evidence = _evidence(store, index, reader, query)
     for literal in evidence.literals:
@@ -763,11 +827,14 @@ def _fill(
     # Candidate files: body BM25, metadata search, literal hits and anything named outright.
     ranked = index.ranked(sorted(terms), MAX_FILE_CANDIDATES)
     metadata_files: list[str] = []
-    for hit in store.search(query, 40):
+    search_symbols: list[tuple[SymbolRow, float]] = []
+    for hit in store.search(ranked_query, 40):
         hit_file: str | None = None
         if hit.kind == "symbol":
             sym = store.symbol(hit.ref)
             hit_file = sym.file if sym else None
+            if sym is not None:
+                search_symbols.append((sym, hit.score))
         elif hit.kind == "module":
             mod = store.module(hit.ref)
             hit_file = mod.file if mod else None
@@ -860,10 +927,20 @@ def _fill(
         _semantic_blocks(
             blocks, similar, exact or any(lit.complete for lit in ranking_evidence.literals)
         )
+    wants_tests = bool(_TEST_REQUEST.search(query))
+    if search_symbols and requested_range is None:
+        # Tests are dropped from an edit packet below, so they must not set the lead either.
+        _search_blocks(
+            blocks,
+            [
+                (s, score)
+                for s, score in search_symbols
+                if allowed_document(s.file, query) and (wants_tests or not store._is_test(s.file))
+            ][:SEARCH_CANDIDATES],
+            exact or any(lit.complete for lit in ranking_evidence.literals),
+            terms,
+        )
     pack["stale_sources"] = len(reader.stale)
-    wants_tests = bool(
-        re.search(r"\b(?:test|tests|pytest|spec|coverage)\b|\btest_\w+", query, re.I)
-    )
     wants_tests = wants_tests or bool(
         (exact_file and store._is_test(exact_file))
         or (exact_symbol and store._is_test(exact_symbol.file))
@@ -930,6 +1007,21 @@ def _fill(
             blocks.extend(_flow_blocks(store, reader, blocks, terms))
         blocks = _select(blocks)
     structural = pack["intent"] == "structural"
+    located = False
+    if pack["intent"] == "locate" and requested_range is None:
+        locations, located = _locations(
+            store,
+            blocks,
+            [(s, score) for s, score in search_symbols if allowed_document(s.file, query)],
+            terms,
+        )
+        if locations:
+            pack["locations"] = locations
+            while pack["locations"] and _size(pack) > int(budget * LOCATION_SHARE):
+                pack["locations"].pop()  # the list must leave room for the code it points to
+            if not pack["locations"]:
+                del pack["locations"]
+                located = False
 
     # Literals first (cheap, and the part an agent would otherwise grep for), then code.
     literal_budget = int(budget * LITERAL_SHARE)
@@ -1018,6 +1110,11 @@ def _fill(
             _drop_graph_lines(pack)
     pack["stale_sources"] = len(reader.stale)
     _confidence(pack, evidence, blocks, terms, exact, query)
+    if located and pack.get("locations") and not pack["stale_sources"]:
+        # A clear ranked list answers "where" or "how" even when no code block is a sure match.
+        if pack["confidence"] == "low":
+            pack["confidence"] = "medium"
+        pack["next"] = "Answer from these locations; read a listed range only to confirm a detail."
     _read_next(
         pack,
         blocks[:1] + support,
@@ -1035,6 +1132,14 @@ def _fill(
         pack["confidence"] = "high"
         pack["sufficient"] = True
         pack["next"] = "Apply the checked patch; run the named tests."
+    if pack.get("verify"):
+        # Tests cannot start here (see Verify): every closing line names the check that can.
+        for old, new in (
+            ("run the listed tests", "check the diff"),
+            ("Run the listed tests", "Check the diff"),
+            ("run the named tests", "check the diff"),
+        ):
+            pack["next"] = pack["next"].replace(old, new)
     _sanitize_packet(pack, query, reader)
     pack["budget"]["used_est"] = _size(pack)
 
@@ -1557,6 +1662,106 @@ def _semantic_blocks(
         added += 1
 
 
+def _locations(
+    store: IndexStore,
+    blocks: list[_Block],
+    found: list[tuple[SymbolRow, float]],
+    terms: dict[str, float],
+) -> tuple[list[dict[str, Any]], bool]:
+    """Ranked places a locate/explain request asks about, and whether they clearly answer it.
+
+    Two channels vote by reciprocal rank: the lexical code blocks (what the body says) and
+    metadata search (names, ids, docstrings). The list answers the request when the search
+    scores fall off a cliff after the leaders, or when the leaders' names and docstrings
+    cover most of the request's words."""
+    votes: dict[str, float] = {}
+    rows: dict[str, SymbolRow] = {}
+    # Names and docstrings answer "where" better than body words: search order leads, and the
+    # best few lexical blocks add agreement rather than displacing named matches.
+    lexical = [b.symbol for b in sorted(blocks, key=lambda b: -b.score) if b.symbol is not None]
+    for channel, weight in (([sym for sym, _ in found], 1.0), (lexical[:LEXICAL_VOTES], 0.5)):
+        seen: set[str] = set()
+        for rank, sym in enumerate(channel):
+            if sym.id in seen or sym.kind not in CODE_KINDS or store._is_test(sym.file):
+                continue
+            seen.add(sym.id)
+            rows[sym.id] = sym
+            votes[sym.id] = votes.get(sym.id, 0.0) + weight / (LOCATION_RRF_K + rank)
+    ranked = sorted(votes, key=lambda sid: (-votes[sid], sid))[:MAX_LOCATIONS]
+    locations = []
+    for sid in ranked:
+        sym = rows[sid]
+        doc = sym.doc.strip().split("\n", 1)[0] if sym.doc else ""
+        locations.append(
+            {
+                "symbol": sym.id,
+                "file": sym.file,
+                "lines": [sym.start, sym.end],
+                "signature": " ".join(sym.signature.split())[:LOCATION_TEXT],
+                "doc": doc[:LOCATION_TEXT],
+            }
+        )
+    scores = [score for sym, score in found if not store._is_test(sym.file)][: MAX_LOCATIONS + 1]
+    cliff = any(
+        later > 0 and earlier / later >= LOCATION_CLIFF
+        for earlier, later in pairwise(scores)  # scores holds at most MAX_LOCATIONS + 1
+    )
+    named = set().union(
+        *(set(tokenize(f"{row['symbol']} {row['file']} {row['doc']}")) for row in locations[:3])
+    )
+    covered = sum(weight for term, weight in terms.items() if term in named)
+    clear = bool(locations) and (cliff or covered >= LOCATION_COVERAGE * sum(terms.values()))
+    return locations, clear
+
+
+def _search_blocks(
+    blocks: list[_Block],
+    found: list[tuple[SymbolRow, float]],
+    anchored: bool,
+    terms: dict[str, float],
+) -> None:
+    """Blend the metadata search channel into the lexical blocks, like `_semantic_blocks`.
+
+    Only when nothing in the request anchors the answer (an exact name or a complete literal
+    list already says where): then a symbol both channels found is raised, and a search hit
+    that clearly leads (and any close behind it) is added below the best lexical score, so a
+    docstring or name match is offered even when no line matched enough words."""
+    if not found or anchored:
+        return
+    top = found[0][1]
+    if top <= 0:
+        return
+    runner_up = found[1][1] if len(found) > 1 else 0.0
+    if top < SEARCH_LEAD * runner_up:
+        return  # no clear leader: the name channel is only noise here
+    relative = {sym.id: score / top for sym, score in found}
+    for block in blocks:
+        if block.symbol is not None and block.symbol.id in relative:
+            block.score *= 1.0 + SEARCH_AGREEMENT * relative[block.symbol.id]
+    covered = {b.symbol.id for b in blocks if b.symbol is not None}
+    best = max((b.score for b in blocks), default=0.0) or 1.0
+    added = 0
+    for rank, (sym, score) in enumerate(found):
+        if added >= SEARCH_ADDED or (rank and score < SEARCH_NEAR * top):
+            break
+        if sym.id in covered or sym.kind not in CODE_KINDS:
+            continue
+        # A hit carried only by its file or module path (e.g. "shopper" matching `shop/`)
+        # describes where code lives, not what it does: the name or docstring must match.
+        if not set(tokenize(f"{sym.name} {sym.doc}")) & terms.keys():
+            continue
+        whole = sym.end - sym.start + 1 <= WHOLE_SYMBOL_MAX
+        end = sym.end if whole else min(sym.end, sym.start + 14)
+        share = SEARCH_LEADER_SHARE if rank == 0 else SEARCH_SHARE * relative[sym.id]
+        blocks.append(
+            _Block(
+                sym.file, sym.start, end, sym, best * share, [sym.start], role="search", whole=whole
+            )
+        )
+        covered.add(sym.id)
+        added += 1
+
+
 def _reinforce(store: IndexStore, blocks: list[_Block]) -> None:
     """Blocks that call, or are called by, other retrieved blocks are mutually supported: code
     that the request touches tends to form a connected piece of the call graph."""
@@ -2020,7 +2225,16 @@ def _links(
         from prism.navigator.test_command import run_command
 
         command = run_command(store.root, test_paths)
-        if command:
+        reason = _safely(_unrunnable, store.root, command) if command else ""
+        if command and reason:
+            # A command that cannot start here costs the agent a hunt for an environment.
+            pack["verify"] = (
+                f"tests can't run in this checkout ({reason}); check the change by reading the "
+                "diff against the listed sites, without setting up an environment"
+            )
+            if _size(pack) > budget:
+                del pack["verify"]
+        elif command:
             pack["run"] = command
             if _size(pack) > budget:
                 del pack["run"]
@@ -2040,6 +2254,12 @@ def _links(
         pack["impact"] = {"symbols": len(deps["symbols"]), "files": len(files), "top": files[:3]}
         if _size(pack) > budget:
             del pack["impact"]
+
+
+def _unrunnable(root: Any, command: str) -> str:
+    from prism.navigator.verify_env import unrunnable
+
+    return unrunnable(root, command)
 
 
 def _margin(blocks: list[_Block]) -> float:
@@ -2115,7 +2335,7 @@ def _confidence(
             level = "low"
     if not shown and not literals:
         level = "low"
-    graph_led = bool(shown and shown[0]["role"] in ("similar",))
+    graph_led = bool(shown and shown[0]["role"] in ("similar", "search"))
     if graph_led:
         # Likewise for a block only the embedding model found: a candidate, never a proof.
         # Verified locations are useful candidates even without lexical source
@@ -2152,11 +2372,19 @@ def _confidence(
     )
     if stale:
         pack["next"] = "Index is behind the source: run prism update, then ask again."
+    elif pack.get("patch") and not evidence.limited:
+        # The patch's own site list is checked; a shortened display of other literals is not a gap.
+        # A checked patch is byte-exact over a complete site list whatever the ranking said.
+        pack["next"] = (
+            "Mechanical change: apply the patch above, then run the listed tests; "
+            "hand-edit only sites needing different wording."
+        )
     elif level == "low":
         pack["next"] = "Weak match: use grep for the exact strings before editing."
     elif level == "medium":
+        # Measured: an open invitation to "search other wording" cost agents extra turns.
         pack["next"] = (
-            "Candidates only: confirm against the request; search other wording if a spot is missing."
+            "Likely locations: check these first; search only for a part they don't cover, once."
         )
     elif evidence.limited:
         pack["next"] = (
@@ -2261,7 +2489,9 @@ def _enrich(
         if len(editable) >= 2:
             _offer(pack, "batch", len(editable), budget)
 
-    if pack.get("patch"):
+    if pack.get("patch") and pack.get("verify"):
+        done = "git apply succeeded and the diff covers the listed sites"
+    elif pack.get("patch"):
         done = "git apply succeeded, the listed tests pass"
     elif any(lit["complete"] and lit["kind"] != "identifier" for lit in pack.get("literals", [])):
         done = "every listed site is changed (`--mode verify` confirms none remain)"

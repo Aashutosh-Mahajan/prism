@@ -1,0 +1,50 @@
+[
+  {
+    "id": "h01",
+    "repo": "arogya",
+    "kind": "localise",
+    "prompt": "Locate where the web app and the mobile app send the 'dose taken' call, and the Django view that handles it. Name the files and functions; do not edit files.",
+    "required": [
+      "backend/adherence/views.py",
+      "record_dose_taken",
+      "frontend/lib/api.ts",
+      "markDoseTaken",
+      "mobile_app/lib/providers/patient_provider.dart"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "h02",
+    "repo": "arogya",
+    "kind": "explain",
+    "prompt": "Explain how a medication refill reminder is triggered and sent: name the scheduled task, the service check it calls, and the email helper, with their files. Do not edit files.",
+    "required": [
+      "backend/adherence/tasks.py",
+      "send_refill_reminders",
+      "check_refill_needed",
+      "_send_refill_email"
+    ],
+    "readonly": true
+  },
+  {
+    "id": "h03",
+    "repo": "arogya",
+    "kind": "edit",
+    "prompt": "Send medication refill reminders once 75% of the prescribed doses are consumed instead of 80%. Update the refill check, the scheduled task's description and the reminder email text. Keep the separate 80% low-adherence threshold unchanged.",
+    "checker": "refill_threshold"
+  },
+  {
+    "id": "h04",
+    "repo": "arogya",
+    "kind": "rename",
+    "prompt": "Rename the adherence record-dose API path to log-dose across the backend URL configuration, the web client and the mobile app. Keep the Django view function and its URL name unchanged.",
+    "checker": "dose_endpoint"
+  },
+  {
+    "id": "h05",
+    "repo": "arogya",
+    "kind": "edit",
+    "prompt": "Show upcoming doses for the next 48 hours by default instead of 24, in both the API view's default and the adherence service's default argument. Keep the hours query parameter override.",
+    "checker": "upcoming_window"
+  }
+]

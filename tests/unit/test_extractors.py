@@ -90,3 +90,59 @@ def test_detect_commands_in_a_django_and_react_monorepo(tmp_path: Path) -> None:
         "test (frontend/app)": "cd frontend/app && npx vitest run",
         "lint (frontend/app)": "cd frontend/app && npm run lint",
     }
+
+
+def test_http_requests_in_tests_link_to_route_handlers() -> None:
+    from prism.core.models import Route
+    from prism.extractors.tests_map import routes_requested
+
+    routes = [
+        Route("ANY", "/auth/login/", "app.views.LoginView", "app/urls.py", 3, "django"),
+        Route("ANY", "/orders/<int:pk>/", "app.views.OrderDetail", "app/urls.py", 4, "django"),
+        Route("POST", "/orders", "api.create_order", "api.py", 9, "fastapi"),
+        Route("GET", "/orders", "api.list_orders", "api.py", 5, "fastapi"),
+    ]
+    source = (
+        'self.client.post("/api/v1/auth/login/")\n'
+        "client.get(f'/api/orders/{order.pk}/')\n"
+        "await request(app).post(`/orders`)\n"
+        'client.get("/unrelated/")\n'
+    )
+    assert routes_requested(source, routes) == {
+        "app.views.LoginView",  # mounted under a prefix the route does not record
+        "api.create_order",  # the verb picks POST over GET
+        "api.list_orders",  # f-string: `/api/orders/` is the GET /orders suffix
+    }
+    assert routes_requested('client.get("/api/orders/7/")', routes) == {"app.views.OrderDetail"}
+
+
+def test_reverse_names_link_tests_to_views() -> None:
+    from prism.extractors.tests_map import url_names_requested
+
+    names = {"send-otp": {"accounts.views.SendOTPView"}, "detail": {"a.D", "b.D", "c.D", "d.D"}}
+    source = 'client.post(reverse("send-otp"))\nreverse("accounts:detail")\nreverse("missing")'
+    assert url_names_requested(source, names) == {"accounts.views.SendOTPView"}
+
+
+def test_django_test_urls_and_names_reach_the_tests_map(tmp_path: Path) -> None:
+    app = tmp_path / "shop"
+    (app / "tests").mkdir(parents=True)
+    (tmp_path / "other").mkdir()
+    for directory in (app, app / "tests", tmp_path / "other"):
+        (directory / "__init__.py").write_text("")
+    (app / "views.py").write_text("class Login:\n    pass\n\n\ndef card(request):\n    pass\n")
+    (tmp_path / "other" / "views.py").write_text("def unrelated():\n    pass\n")
+    (app / "urls.py").write_text(
+        "from django.urls import path\nfrom . import views\n\nurlpatterns = [\n"
+        '    path("login/", views.Login.as_view()),\n'
+        '    path("card/", views.card, name="health-card"),\n]\n'
+    )
+    (app / "tests" / "test_views.py").write_text(
+        "def test_login(client):\n    client.post('/api/shop/login/')\n\n\n"
+        "def test_card(client):\n    client.get(reverse('health-card'))\n"
+    )
+    index = build_index(tmp_path)
+    tests = "shop/tests/test_views.py"
+    assert tests in index.tests_map.by_symbol["shop.views.Login"]
+    assert tests in index.tests_map.by_symbol["shop.views.card"]
+    assert "other/views.py" not in index.tests_map.by_file  # same app wins the name match

@@ -40,6 +40,7 @@ POLL_SECONDS = 0.4
 HEARTBEAT_SECONDS = 15.0
 COOKIE = "prism_token"
 PROJECT_COOKIE = "prism_project"
+STALE_RETRY_DELAYS = (0.05, 0.1, 0.2, 0.4, 0.8)  # about 1.5 s, longer than one index update
 CSP = (
     "default-src 'self'; script-src 'self' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; "
     "img-src 'self' data:; connect-src 'self'; font-src 'self' data:; frame-ancestors 'none'; base-uri 'none'"
@@ -345,7 +346,7 @@ def make_handler(
                     self._events(self._ctx(query))
                     return
                 if path.startswith("/api/"):
-                    self._json(200, self._api_get(path, query))
+                    self._json(200, self._api_get_settled(path, query))
                     return
                 self._static(path)
             except (BrokenPipeError, ConnectionResetError):
@@ -420,6 +421,21 @@ def make_handler(
                 self._json(400, {"error": "bad_json"})
             except Exception as exc:
                 self._error(exc)
+
+        def _api_get_settled(self, path: str, q: dict[str, str]) -> Any:
+            """`_api_get`, retried while an update is replacing the index under the read.
+
+            A refresh swaps artifacts one by one, so a read can see a manifest and an artifact
+            from different generations. That is transient and marked retryable: wait for the
+            writer instead of showing the user an error."""
+            for delay in STALE_RETRY_DELAYS:
+                try:
+                    return self._api_get(path, q)
+                except PrismError as exc:
+                    if not exc.details.get("retryable"):
+                        raise
+                time.sleep(delay)
+            return self._api_get(path, q)
 
         def _api_get(self, path: str, q: dict[str, str]) -> Any:
             # Artifact publication briefly precedes the new manifest. A request

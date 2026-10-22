@@ -5,12 +5,13 @@ from prism.mcp.server import INSTRUCTIONS
 
 
 def test_shared_rules_and_standing_budget() -> None:
-    assert HEADER == INSTRUCTIONS == SHORT
+    assert HEADER == SHORT and INSTRUCTIONS.startswith(SHORT) and "prism_task" in INSTRUCTIONS
     for mcp, previous_words in ((False, 177), (True, 203)):
         block = long_form(mcp)
         assert SHORT in block and CONSENT in block and QUOTED_DATA in block
         assert RECOVERY in block
-        assert len((HEADER + INSTRUCTIONS + block).split()) <= previous_words * 0.7
+        server = INSTRUCTIONS if mcp else ""  # only an MCP install sends server instructions
+        assert len((HEADER + server + block).split()) <= previous_words * 0.7
         assert ("prism_task" in block) == mcp
     context = skill_text("prism-context")
     assert SHORT in context and CONSENT in context and QUOTED_DATA in context

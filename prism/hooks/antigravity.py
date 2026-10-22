@@ -107,7 +107,14 @@ def pre_invocation(raw_stdin: str) -> str:
         if tried >= MAX_EMPTY_ATTEMPTS:
             return "{}"  # injected already, or twice found nothing worth adding
         packet = user_prompt(
-            json.dumps({"cwd": str(workspaces[0]), "session_id": conversation, "prompt": text}),
+            json.dumps(
+                {
+                    "cwd": str(workspaces[0]),
+                    "session_id": conversation,
+                    "prompt": text,
+                    "host": "antigravity",
+                }
+            ),
             time_budget=HOOK_SECONDS,
             inline_build=True,
         )

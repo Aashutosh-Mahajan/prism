@@ -249,6 +249,111 @@ def parse_replacements(query: str) -> list[Replacement]:
     return list(unique.values())[:3]
 
 
+# A number names many unrelated things ("23" is an age, a port, a seed value), so a number patch
+# covers only the sites the request is about, unless it asks for every occurrence.
+_EVERYWHERE = re.compile(
+    r"\b(?:everywhere|throughout|every\s+(?:occurrence|place|use|mention)|all\s+(?:occurrences|"
+    r"places|uses|mentions)|across\s+the\s+(?:app|code|codebase|repo|repository|project))\b",
+    re.IGNORECASE,
+)
+MIN_TOPIC_WORDS = 2  # request words a site's line, function or path must share to be in scope
+MAX_SCOPED_SITES = 25
+
+
+def _topic_words(query: str, item: Replacement) -> set[str]:
+    from prism.navigator.request import request_focus
+    from prism.navigator.text import FILLER_WORDS, tokenize
+
+    words = set(tokenize(request_focus(query))) - FILLER_WORDS
+    return {w for w in words if not w.isdigit() and w not in tokenize(f"{item.old} {item.new}")}
+
+
+def scoped_sites(
+    store: IndexStore, query: str, item: Replacement, sites: dict[tuple[str, int], str]
+) -> dict[tuple[str, int], str] | None:
+    """The number sites a request is about, or None when too many remain to patch safely.
+
+    A site is in scope when its line and its enclosing symbol's name and docstring share at
+    least MIN_TOPIC_WORDS of the request's words, and score within one word of the best site.
+    Paths do not count: a folder named `medical` says nothing about which 10 in it is meant.
+    When the request names a folder ("in accounts validation"), sites outside it are dropped.
+    Precision wins: a missed site costs one hand edit, a wrong one silently changes behaviour."""
+    if item.kind != "number" or _EVERYWHERE.search(query):
+        return sites
+    from prism.navigator.text import tokenize
+
+    topic = _topic_words(query, item)
+    # Hyphenated compounds stay whole: "medical-certificate" names a thing, not a `medical` folder.
+    asked = {w.lower() for w in re.findall(r"[A-Za-z_][\w-]*", query)}
+    scores: dict[tuple[str, int], int] = {}
+    owners: dict[tuple[str, int], str] = {}
+    for (file, line), text in sites.items():
+        symbol = store.symbol_at(file, line)
+        context = f"{text} {symbol.name} {symbol.doc}" if symbol else text
+        scores[(file, line)] = len(topic & set(tokenize(context)))
+        owners[(file, line)] = symbol.id if symbol else f"{file}:{line}"
+    # A function's docstring and its code state one rule: every occurrence inside a function
+    # takes the best score found in it, so "6-20 characters" and `{6,20}` change together.
+    best_in: dict[str, int] = {}
+    for key, owner in owners.items():
+        best_in[owner] = max(best_in.get(owner, 0), scores[key])
+    scores = {key: best_in[owners[key]] for key in scores}
+    best = max(scores.values(), default=0)
+    floor = max(MIN_TOPIC_WORDS, -(-best // 2))  # at least half the best site's subject words
+    kept = {key: text for key, text in sites.items() if scores[key] >= floor}
+    # A file that holds the rule usually spells it more than once (`if age < 23`, the message):
+    # there, one subject word fewer is enough.
+    files = {file for file, _ in kept}
+    kept.update(
+        {
+            key: text
+            for key, text in sites.items()
+            if key[0] in files and scores[key] >= max(1, floor - 1)
+        }
+    )
+    folders = {
+        segment for file, _ in kept for segment in file.lower().split("/")[:-1] if segment in asked
+    }
+    if folders:
+        kept = {
+            key: text for key, text in kept.items() if folders & set(key[0].lower().split("/")[:-1])
+        }
+    if not kept or len(kept) > MAX_SCOPED_SITES:
+        return None
+    return kept
+
+
+MAX_RULE_FUNCTION_LINES = 60
+
+
+def _whole_functions(
+    store: IndexStore,
+    reader: SourceReader,
+    item: Replacement,
+    sites: dict[tuple[str, int], str],
+) -> dict[tuple[str, int], str]:
+    """Every occurrence of the number inside each small function that holds an in-scope site.
+
+    The request's wording finds one spelling ("20 characters"); the same rule is also written
+    as `{6,20}` and "6-20 alphanumeric characters" a few lines away. Long functions are left
+    as they are: one number in them is less likely to be the same rule."""
+    pattern = _pattern(item)
+    out = dict(sites)
+    seen: set[str] = set()
+    for file, line in list(sites):
+        symbol = store.symbol_at(file, line)
+        if symbol is None or symbol.id in seen:
+            continue
+        seen.add(symbol.id)
+        if symbol.end - symbol.start + 1 > MAX_RULE_FUNCTION_LINES:
+            continue
+        lines = reader.lines(file) or []
+        for number in range(symbol.start, min(symbol.end, len(lines)) + 1):
+            if pattern.search(lines[number - 1]):
+                out.setdefault((file, number), lines[number - 1])
+    return out
+
+
 def _pattern(item: Replacement) -> re.Pattern[str]:
     if item.kind == "number":
         return re.compile(rf"(?<![\w.]){re.escape(item.old)}(?!\w|\.\d)")
@@ -375,6 +480,7 @@ def build_patch(
         return "too_many_sites"
     edits: dict[str, set[int]] = {}
     used: list[Replacement] = []
+    left_alone = 0
     for item in replacements:
         sites: dict[tuple[str, int], str] = {}
         for lit in evidence.literals:
@@ -393,6 +499,14 @@ def build_patch(
             return (
                 "not_exhaustive"  # never offer only part of the explicitly requested substitutions
             )
+        all_sites = len(sites)
+        scoped = scoped_sites(store, query, item, sites)
+        if scoped is None:
+            return "unscoped_number"  # a bare number with no clear subject is not patched blindly
+        left_alone += all_sites - len(scoped)
+        sites = scoped
+        if item.kind == "number":
+            sites = _whole_functions(store, reader, item, sites)
         if item.kind == "identifier" and item.new not in set(evidence.absent):
             exists = any(
                 lit.kind == "identifier" and lit.text == item.new for lit in evidence.literals
@@ -470,6 +584,7 @@ def build_patch(
         "files": len(edits),
         "old": used[0].old if len(used) == 1 else ", ".join(i.old for i in used),
         "new": used[0].new if len(used) == 1 else ", ".join(i.new for i in used),
+        "left_alone": left_alone,
     }
 
 

@@ -57,6 +57,13 @@ DEDUPE_HOOK: dict[str, dict[str, Any]] = {
 }
 
 
+# A second PostToolUse entry: Bash output is shortened (failures kept) before Claude reads it.
+SHORTEN_HOOK: dict[str, Any] = {
+    "matcher": "Bash",
+    "hooks": [{"type": "command", "command": "prism hook shorten-output", "timeout": 10}],
+}
+
+
 def _json_change(root: Path, rel: str, data: dict[str, Any], detail: str) -> FileChange:
     return FileChange(rel, dump_json(data) if data else None, detail)
 
@@ -85,7 +92,10 @@ class ClaudeCodeIntegration(Integration):
             wanted["SessionStart"]["hooks"].append(
                 {"type": "command", "command": "prism hook dedupe-read", "timeout": 5}
             )
-        new_settings = add_hooks(settings, wanted) if options.hooks else strip_hooks(settings)
+        entries: dict[str, Any] = dict(wanted)
+        if options.shorten_output:
+            entries["PostToolUse"] = [wanted["PostToolUse"], SHORTEN_HOOK]
+        new_settings = add_hooks(settings, entries) if options.hooks else strip_hooks(settings)
         if new_settings != settings or options.hooks:
             changes.append(
                 _json_change(
@@ -98,7 +108,8 @@ class ClaudeCodeIntegration(Integration):
         mcp = load_json(root / MCP_JSON)
         if options.mcp:
             new_mcp = copy.deepcopy(mcp)
-            new_mcp.setdefault("mcpServers", {})["prism"] = MCP_ENTRY
+            # Loaded upfront: behind ToolSearch every first lookup costs an extra model call.
+            new_mcp.setdefault("mcpServers", {})["prism"] = {**MCP_ENTRY, "alwaysLoad": True}
             changes.append(_json_change(root, MCP_JSON, new_mcp, "MCP server `prism mcp` (stdio)"))
         changes.append(
             FileChange(

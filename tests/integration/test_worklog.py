@@ -179,3 +179,25 @@ def test_recall_and_note_from_cli_and_mcp(enabled: Path) -> None:
     assert tools.prism_note("left the old endpoint in place")["recorded"]
     assert tools.prism_recall()["sessions"][0]["notes"] == ["renamed Cart.total; update docs"]
     assert tools.prism_note("")["error"]
+
+
+def test_host_of_tells_each_agent_apart() -> None:
+    from prism.hooks.runner import host_of
+
+    assert host_of({"transcript_path": r"C:\Users\a\.claude\projects\x\s.jsonl"}) == "claude-code"
+    assert host_of({"transcript_path": "/home/a/.codex/sessions/2026/s.jsonl"}) == "codex"
+    assert host_of({"transcriptPath": "/h/.gemini/antigravity/brain/c/t.jsonl"}) == "antigravity"
+    assert host_of({"workspacePaths": ["/r"], "conversationId": "c"}) == "antigravity"
+    assert host_of({"hook_event_name": "BeforeAgent"}) == "gemini"
+    assert host_of({"conversation_id": "c", "cursor_version": "1"}) == "cursor"
+    assert host_of({"host": "codex", "permission_mode": "default"}) == "codex"
+    assert host_of({"cwd": "/r"}) == "unknown"
+
+
+def test_doctor_session_names_the_agent(enabled: Path) -> None:
+    from prism.maintenance import session_report
+
+    worklog.record_delivery(enabled, "s-host", "hook", True, host="codex")
+    worklog.record_delivery(enabled, "s-host", "hook", False, "x", host="unknown")
+    checks = session_report(enabled, "s-host")
+    assert "agent codex" in checks[0].detail

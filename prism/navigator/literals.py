@@ -143,6 +143,16 @@ def _identifier_candidates(query: str) -> list[str]:
     return _dedupe(found)
 
 
+# `record-dose`, `create-prescription`: URL paths, CSS classes, CLI flags and file names are
+# written in kebab-case, which no identifier rule recognises. They are searched like quoted text:
+# kept only where they occur, so an ordinary compound ("low-adherence") costs nothing.
+_KEBAB = re.compile(r"(?<![\w/.-])[a-z][a-z0-9]*(?:-[a-z0-9]+)+(?![\w/-])")
+
+
+def _kebab_spans(query: str) -> list[str]:
+    return _dedupe([m.group(0) for m in _KEBAB.finditer(query) if len(m.group(0)) >= 5])
+
+
 def _quoted_spans(query: str, context_fields: set[str] | None = None) -> list[str]:
     spans = []
     for match in _QUOTED.finditer(query):
@@ -506,7 +516,8 @@ def find_literals(
         result.limited |= not matches.complete
         return matches
 
-    for text in _quoted_spans(query, context_fields):
+    quoted = _quoted_spans(query, context_fields)
+    for text in _dedupe([*quoted, *(k for k in _kebab_spans(query) if k not in quoted)]):
         words = _QUERY_WORD.findall(text)
         if not words:
             continue

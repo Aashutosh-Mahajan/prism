@@ -9,7 +9,8 @@ def test_mcp_server_instructions_do_not_override_hook_reuse() -> None:
     from prism.instructions import SHORT
     from prism.mcp.server import INSTRUCTIONS
 
-    assert INSTRUCTIONS == SHORT
+    # Reuse stays the first rule: MCP replaces grep and reads only for code not yet delivered.
+    assert INSTRUCTIONS.startswith(SHORT) and "you don't have yet" in INSTRUCTIONS
 
 
 @pytest.mark.parametrize(
@@ -34,8 +35,8 @@ def test_installed_guidance_uses_selected_transport(
     assert SHORT in text and LOCATED in text
     assert RECOVERY in text  # transport failure must allow bounded ordinary investigation
     if mcp:
-        assert "native MCP `prism_task`" in text
+        assert "MCP `prism_task` for code you lack" in text
         assert 'prism task "' not in text
     else:
         assert 'prism task "<user request>"' in text
-        assert "native MCP" not in text
+        assert "MCP `prism_task`" not in text

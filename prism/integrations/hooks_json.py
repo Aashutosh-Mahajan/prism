@@ -48,10 +48,12 @@ def strip_hooks(settings: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
-def add_hooks(settings: dict[str, Any], entries: dict[str, dict[str, Any]]) -> dict[str, Any]:
-    """`settings` with exactly PRISM's `entries` (one per event) after the user's own."""
+def add_hooks(settings: dict[str, Any], entries: dict[str, Any]) -> dict[str, Any]:
+    """`settings` with exactly PRISM's `entries` (an entry, or a list of entries with different
+    matchers, per event) after the user's own."""
     data = strip_hooks(settings)
     hooks = data.setdefault("hooks", {})
     for event, entry in entries.items():
-        hooks.setdefault(event, []).append(copy.deepcopy(entry))
+        for one in entry if isinstance(entry, list) else [entry]:
+            hooks.setdefault(event, []).append(copy.deepcopy(one))
     return data

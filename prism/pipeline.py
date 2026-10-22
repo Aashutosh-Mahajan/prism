@@ -131,7 +131,8 @@ def build_index(
         node = import_graph.modules.get(ep.module)
         if node is not None and node.entry_point is None:
             node.entry_point = ep.kind
-    tests_map = TestsMapExtractor().run(ctx)
+    routes = RoutesExtractor().run(ctx)
+    tests_map = TestsMapExtractor(routes).run(ctx)
     # Communities over imports plus (aggregated) calls, excluding tests so they don't glue areas together.
     test_set = set(tests_map.test_files)
     module_of = {sid: sym.module for sid, sym in table.symbols.items()}
@@ -144,7 +145,6 @@ def build_index(
         if node.file in test_set:
             node.community = -1
     project = ProjectExtractor().run(ctx)
-    routes = RoutesExtractor().run(ctx)
     models = ModelsExtractor().run(ctx)
     config_keys = ConfigExtractor().run(ctx)
     dead_code = DeadCodeExtractor(entry_points).run(ctx)
