@@ -65,6 +65,20 @@ _SHELL_TOOLS = ("Bash", "PowerShell")
 # --- helpers ------------------------------------------------------------------------------
 
 
+def _only_prism_hooks(path: Path) -> bool:
+    try:
+        hooks = json.loads(path.read_text(encoding="utf-8")).get("hooks", {})
+        commands = [
+            str(h.get("command", ""))
+            for groups in hooks.values()
+            for group in groups
+            for h in group.get("hooks", [])
+        ]
+    except (OSError, ValueError, AttributeError, TypeError):
+        return False
+    return bool(commands) and all(c.startswith("prism hook ") for c in commands)
+
+
 _PACKAGE_ROOT = Path(__file__).resolve().parents[2].as_posix()
 
 
@@ -707,6 +721,11 @@ class CodexAgent(Agent):
                 "-c",
                 "mcp_servers.prism.startup_timeout_sec=20",
             ]
+        if _only_prism_hooks(directory / ".codex" / "hooks.json"):
+            # Codex asks the user to approve project hooks. These are the ones `prism init` just
+            # wrote in a disposable copy, so approval is skipped for this run only, and only
+            # when every hook in the file is a `prism hook` command.
+            command.insert(command.index("--cd"), "--dangerously-bypass-hook-trust")
         return command + (["-m", model] if model else []) + ["-"]
 
     def stream(self) -> CodexStream:

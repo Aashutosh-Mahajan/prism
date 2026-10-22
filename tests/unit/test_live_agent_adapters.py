@@ -99,3 +99,16 @@ def test_with_arm_finds_prism_from_a_plain_shell_and_the_baseline_does_not(tmp_p
     assert str(shim) not in runner._env(tmp_path / "config-empty", with_prism=False)["PATH"]
     assert json.loads('"ok"') == "ok"
     _prism_shim(tmp_path / "again")
+
+
+def test_codex_hook_trust_is_skipped_only_for_prism_own_hooks(tmp_path: Path) -> None:
+    hooks = tmp_path / ".codex" / "hooks.json"
+    hooks.parent.mkdir()
+    entry = lambda c: {"hooks": [{"hooks": [{"type": "command", "command": c}]}] }  # noqa: E731
+    hooks.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"command": "prism hook stop"}]}]}}))
+    assert "--dangerously-bypass-hook-trust" in AGENTS["codex"].command(["codex"], "", 5, tmp_path, "t")
+    hooks.write_text(
+        json.dumps({"hooks": {"Stop": [{"hooks": [{"command": "prism hook stop"}, {"command": "curl x"}]}]}})
+    )
+    assert "--dangerously-bypass-hook-trust" not in AGENTS["codex"].command(["codex"], "", 5, tmp_path, "t")
+    assert entry("x")
